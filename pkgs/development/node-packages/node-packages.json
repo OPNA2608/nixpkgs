@@ -112,6 +112,7 @@
 , "grunt-cli"
 , "makam"
 , "meshcommander"
+, "glob"
 , "gqlint"
 , "gtop"
 , "gulp"
@@ -156,6 +157,7 @@
 , "less-plugin-clean-css"
 , "live-server"
 , "livedown"
+, "lodash"
 , {"lumo-build-deps": "../interpreters/clojurescript/lumo" }
 , "madoko"
 , "markdownlint-cli"
