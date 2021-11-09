@@ -3449,6 +3449,8 @@ with pkgs;
 
   reg = callPackage ../tools/virtualization/reg { };
 
+  revolt-desktop = callPackage ../applications/networking/instant-messengers/revolt-desktop { };
+
   river = callPackage ../applications/window-managers/river { };
 
   rmapi = callPackage ../applications/misc/remarkable/rmapi { };
