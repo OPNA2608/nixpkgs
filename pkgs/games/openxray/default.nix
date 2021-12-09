@@ -1,68 +1,51 @@
-{ lib, stdenv, fetchFromGitHub, cmake, glew, freeimage,  liblockfile
-, openal, libtheora, SDL2, lzo, libjpeg, libogg, tbb
-, pcre, makeWrapper, fetchpatch }:
+{ lib
+, stdenv
+, fetchFromGitHub
+, cmake
+, glew
+, freeimage
+, liblockfile
+, openal
+, libtheora
+, SDL2
+, lzo
+, libjpeg
+, libogg
+, pcre
+, makeWrapper
+, enableMultiplayer ? false # Requires old, insecure Crypto++ version
+}:
 
-let
-  version = "822-december-preview";
+stdenv.mkDerivation rec {
+  pname = "openxray";
+  version = "1144-december-2021-rc1";
 
   src = fetchFromGitHub {
     owner = "OpenXRay";
     repo = "xray-16";
     rev = version;
     fetchSubmodules = true;
-    sha256 = "06f3zjnib7hipyl3hnc6mwcj9f50kbwn522wzdjydz8qgdg60h3m";
+    sha256 = "07qj1lpp21g4p583gvz5h66y2q71ymbsz4g5nr6dcys0vm7ph88v";
   };
-
-  # https://github.com/OpenXRay/xray-16/issues/518
-  cryptopp = stdenv.mkDerivation {
-    pname = "cryptopp";
-    version = "5.6.5";
-
-    inherit src;
-
-    sourceRoot = "source/Externals/cryptopp";
-
-    makeFlags = [ "PREFIX=${placeholder "out"}" ];
-    enableParallelBuilding = true;
-
-    doCheck = true;
-
-    meta = with lib; {
-      description = "Crypto++, a free C++ class library of cryptographic schemes";
-      homepage = "https://cryptopp.com/";
-      license = with licenses; [ boost publicDomain ];
-      platforms = platforms.all;
-    };
-  };
-in stdenv.mkDerivation rec {
-  pname = "openxray";
-  inherit version src;
-
-  # TODO https://github.com/OpenXRay/GameSpy/pull/6, check if merged in version > 822
-  # Fixes format hardening
-  patches = [
-    (fetchpatch {
-      url = "https://github.com/OpenXRay/GameSpy/pull/6/commits/155af876281f5d94f0142886693314d97deb2d4c.patch";
-      sha256 = "1l0vcgvzzx8n56shpblpfdhvpr6c12fcqf35r0mflaiql8q7wn88";
-      stripLen = 1;
-      extraPrefix = "Externals/GameSpy/";
-    })
-  ];
-
-  cmakeFlags = [ "-DCMAKE_INCLUDE_PATH=${cryptopp}/include/cryptopp" ];
 
   buildInputs = [
-    glew freeimage liblockfile openal cryptopp libtheora SDL2 lzo
-    libjpeg libogg tbb pcre
+    glew
+    freeimage
+    liblockfile
+    openal
+    libtheora
+    SDL2
+    lzo
+    libjpeg
+    libogg
+    pcre
   ];
 
   nativeBuildInputs = [ cmake makeWrapper ];
 
-  # https://github.com/OpenXRay/xray-16/issues/786
-  preConfigure = ''
-    substituteInPlace src/xrCore/xrCore.cpp \
-      --replace /usr/share $out/share
-  '';
+  cmakeFlags = [
+    "-DUSE_CRYPTOPP=${if enableMultiplayer then "ON" else "OFF"}"
+  ];
 
   postInstall = ''
     # needed because of SDL_LoadObject library loading code
@@ -76,6 +59,10 @@ in stdenv.mkDerivation rec {
     license = licenses.unfree // {
       url = "https://github.com/OpenXRay/xray-16/blob/xd_dev/License.txt";
     };
+    knownVulnerabilities = lib.optionals enableMultiplayer [
+      "CVE-2019-14318"
+      "outdated in general"
+    ];
     maintainers = with maintainers; [ OPNA2608 ];
     platforms = [ "x86_64-linux" "i686-linux" ];
   };
