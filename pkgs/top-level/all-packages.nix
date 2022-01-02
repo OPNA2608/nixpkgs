@@ -30632,6 +30632,10 @@ with pkgs;
     useProprietaryAssets = false;
   };
 
+  lain-bootleg-bootleg = callPackage ../games/lain-bootleg-bootleg {
+    inherit (darwin.apple_sdk.frameworks) CoreAudio AudioToolbox;
+  };
+
   leela-zero = libsForQt5.callPackage ../games/leela-zero { };
 
   legendary-gl = python38Packages.callPackage ../games/legendary-gl { };
