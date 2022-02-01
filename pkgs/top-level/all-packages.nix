@@ -7963,6 +7963,8 @@ with pkgs;
 
   mt32emu-smf2wav = callPackage ../applications/audio/mt32emu-smf2wav { };
 
+  mt32emu-qt = libsForQt5.callPackage ../applications/audio/mt32emu-qt { };
+
   mtdutils = callPackage ../tools/filesystems/mtdutils { };
 
   mtools = callPackage ../tools/filesystems/mtools { };
