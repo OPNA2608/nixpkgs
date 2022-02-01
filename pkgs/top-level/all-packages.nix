@@ -19160,6 +19160,8 @@ with pkgs;
 
   mstpd = callPackage ../os-specific/linux/mstpd { };
 
+  mt32emu = callPackage ../development/libraries/mt32emu { };
+
   mtdev = callPackage ../development/libraries/mtdev { };
 
   mtpfs = callPackage ../tools/filesystems/mtpfs { };
