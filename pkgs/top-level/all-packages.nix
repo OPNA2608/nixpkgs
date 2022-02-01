@@ -7961,6 +7961,8 @@ with pkgs;
 
   ms-sys = callPackage ../tools/misc/ms-sys { };
 
+  mt32emu-smf2wav = callPackage ../applications/audio/mt32emu-smf2wav { };
+
   mtdutils = callPackage ../tools/filesystems/mtdutils { };
 
   mtools = callPackage ../tools/filesystems/mtools { };
