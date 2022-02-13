@@ -24428,6 +24428,8 @@ with pkgs;
 
   ascii-image-converter = callPackage ../applications/graphics/ascii-image-converter { };
 
+  arkostracker2 = callPackage ../applications/audio/arkostracker2 { };
+
   artha = callPackage ../applications/misc/artha { };
 
   atlassian-cli = callPackage ../applications/office/atlassian-cli { };
