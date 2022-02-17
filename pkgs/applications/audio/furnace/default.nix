@@ -16,35 +16,30 @@
 , Cocoa
 }:
 
-let
-  version = "0.5.5";
+stdenv.mkDerivation rec {
+  pname = "furnace";
+  version = "0.5.6";
+
   src = fetchFromGitHub {
     owner = "tildearrow";
     repo = "furnace";
     rev = "v${version}";
     fetchSubmodules = true;
-    sha256 = "sha256-8CHRrfCe/lLPH6LYpzJUqXPSAe83v0zU18ooIDLtF84=";
+    sha256 = "sha256-BcaPQuDFkAaxFQKwoI6xdSWcyHo5VsqZcwf++JISqRs=";
   };
-  # SDL 2.0.18+ is needed, not packages yet
-  # https://github.com/NixOS/nixpkgs/issues/154137
-  vendoredSDL2 = SDL2.overrideAttrs (oa: {
-    version = "2.0.x-furnace";
-    src = "${src}/extern/SDL";
-    patches = [];
-  });
-in
-stdenv.mkDerivation rec {
-  pname = "furnace";
-
-  inherit version src;
 
   patches = [
     (fetchpatch {
-      name = "0001-furnace-Fix-ObjC-code-linking.patch";
-      url = "https://github.com/tildearrow/furnace/commit/f56d771a4dded1299fe4f0acb3382e2e4115dc74.patch";
-      sha256 = "1vi6934fsld7kx9wyx0mhxvgkp0z95ar6q3zbj5i9kcdhfqa2cdw";
+      name = "0001-furnace-fix-wrong-include-path.patch";
+      url = "https://github.com/tildearrow/furnace/commit/456db22f9d9f0ed40d74fe50dde492e69e901fcc.patch";
+      sha256 = "17ikb1z9ldm7kdj00m4swsrq1qx94vlzhc6h020x3ryzwnglc8d3";
     })
   ];
+
+  postPatch = ''
+    # rtmidi is not used yet
+    sed -i -e '/add_subdirectory(extern\/rtmidi/d' -e '/DEPENDENCIES_LIBRARIES rtmidi/d' CMakeLists.txt
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -56,7 +51,7 @@ stdenv.mkDerivation rec {
   buildInputs = [
     fmt_8
     libsndfile
-    vendoredSDL2
+    SDL2
     zlib
   ] ++ lib.optionals withJACK [
     libjack2
