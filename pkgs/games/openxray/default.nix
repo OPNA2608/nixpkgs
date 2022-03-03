@@ -18,14 +18,14 @@
 
 stdenv.mkDerivation rec {
   pname = "openxray";
-  version = "1144-december-2021-rc1";
+  version = "unstable-2022-02-20";
 
   src = fetchFromGitHub {
     owner = "OpenXRay";
     repo = "xray-16";
-    rev = version;
+    rev = "35fbe9728941dda2654dd62249c3a22c8b758e3b";
     fetchSubmodules = true;
-    sha256 = "07qj1lpp21g4p583gvz5h66y2q71ymbsz4g5nr6dcys0vm7ph88v";
+    sha256 = "0afgg97g4dqg7kazrybkcq00y916pdibncnca09nc1c4fqva0kjh";
   };
 
   buildInputs = [
