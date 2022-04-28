@@ -33672,6 +33672,8 @@ with pkgs;
 
   oh-my-git = callPackage ../games/oh-my-git { };
 
+  ohrrpgce = recurseIntoAttrs (callPackage ../games/ohrrpgce { });
+
   opendune = callPackage ../games/opendune { };
 
   openrct2 = callPackage ../games/openrct2 { };
