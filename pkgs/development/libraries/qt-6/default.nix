@@ -86,7 +86,7 @@ let
       wrapQtAppsHook = makeSetupHook
         {
           deps = [ self.qtbase.dev self.qtwayland.dev makeWrapper ];
-        } ../qt-5/hooks/wrap-qt-apps-hook.sh;
+        } ./hooks/wrap-qt-apps-hook.sh;
     };
 
   self = lib.makeScope newScope addPackages;
