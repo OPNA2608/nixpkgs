@@ -25222,7 +25222,7 @@ with pkgs;
 
   azpainter = callPackage ../applications/graphics/azpainter { };
 
-  bambootracker = libsForQt5.callPackage ../applications/audio/bambootracker { };
+  bambootracker = qt6Packages.callPackage ../applications/audio/bambootracker { };
 
   blocky = callPackage ../applications/networking/blocky { };
 

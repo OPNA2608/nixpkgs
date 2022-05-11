@@ -1,35 +1,35 @@
-{ mkDerivation
-, stdenv
+{ stdenv
 , lib
 , fetchFromGitHub
-, qmake
+, cmake
 , pkg-config
 , qttools
+, wrapQtAppsHook
 , qtbase
+, qt5compat
 , rtaudio
 , rtmidi
 }:
 
-mkDerivation rec {
+stdenv.mkDerivation rec {
   pname = "bambootracker";
-  version = "0.5.0";
+  version = "unstable-2022-04-06";
 
   src = fetchFromGitHub {
     owner = "BambooTracker";
     repo = "BambooTracker";
-    rev = "v${version}";
+    rev = "7d7ba47dea4782f1b13c95b9648e4b1865cf68af";
     fetchSubmodules = true;
-    sha256 = "1mpbvhsmrn0wdmxfp3n5dwv4474qlhy47r3vwc2jwdslq6vgl1fa";
+    sha256 = "0kxksc9whsq7v05skiaszybmsfj80c59wfa9ypn3n6mk8lfnpg23";
   };
 
-  nativeBuildInputs = [ qmake qttools pkg-config ];
+  nativeBuildInputs = [ cmake qttools pkg-config wrapQtAppsHook ];
 
-  buildInputs = [ qtbase rtaudio rtmidi ];
+  buildInputs = [ qtbase qt5compat rtaudio rtmidi ];
 
-  qmakeFlags = [ "CONFIG+=system_rtaudio" "CONFIG+=system_rtmidi" ];
+  cmakeFlags = [ "-DSYSTEM_RTAUDIO=ON" "-DSYSTEM_RTMIDI=ON" ];
 
-  postConfigure = "make qmake_all";
-
+  # Darwin untested on Qt6, I only have x86_64-darwin hardware
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/Applications
     mv $out/{bin,Applications}/BambooTracker.app
