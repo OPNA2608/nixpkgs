@@ -45,21 +45,23 @@ let
   ];
 in
 stdenv.mkDerivation rec {
-  pname = "ohrrpgce-${codename}${lib.optionalString (!isRelease) "-unstable"}";
-  version = rev;
+  pname = "ohrrpgce-${codename}";
+  version = "${lib.optionalString (!isRelease) "unstable-"}${rev}";
 
   src = fetchsvn {
     url = "https://rpg.hamsterrepublic.com/source";
     inherit rev sha256;
   };
 
-  postPatch = ''
+  postPatch = let
+    linkflagName = if (lib.versionAtLeast rev "12996") then "CCLINKFLAGS" else "CXXLINKFLAGS";
+  in ''
     cd ${dir}
     patchShebangs .
     substituteInPlace SConscript \
       --replace "CFLAGS = ['-Wall'" "CFLAGS = ['-Wall','${lib.strings.concatMapStringsSep "','" (x: "-isystem" + lib.getDev x + "/include") includeflagDeps}'" \
-      --replace "CXXLINKFLAGS = [" "CXXLINKFLAGS = ['${lib.strings.concatMapStringsSep "','" (x: "-L" + lib.makeLibraryPath [ x ]) linkflagDeps}'" \
-      --replace "'common_libraries': 'fbgfxmt'" "'common_libraries': 'fbgfxmt fbmt'"
+      --replace "${linkflagName} = [" "${linkflagName} = ['${lib.strings.concatMapStringsSep "','" (x: "-L" + lib.makeLibraryPath [ x ]) linkflagDeps}'" \
+      ${lib.optionalString (lib.versionOlder rev "12996") ''--replace "'common_libraries': libfbgfx" "'common_libraries': 'fbgfxmt fbmt'"''} \
 
     # For test that checks access to file without permissions
     substituteInPlace filetest.bas \
@@ -136,5 +138,7 @@ stdenv.mkDerivation rec {
       install -m755 $extraTool $out/bin/$extraTool
     done
   '';
+
+  passthru.updateScript = lib.optional (!isRelease) ./update.sh;
 }
 
