@@ -17,11 +17,20 @@ stdenv.mkDerivation rec {
   };
 
   postPatch = ''
+    # fix hardcoded / non-overridable compiler
+    for file in klystron{,/tools/{editor,makebundle}}/Makefile; do
+      substituteInPlace $file \
+        --replace 'gcc' '${stdenv.cc.targetPrefix}cc'
+    done
+
     # replace impure build dates
     for file in {,klystron/}Makefile; do
       substituteInPlace $file \
         --replace '$(Q)date' '$(Q)date -ud "@''${SOURCE_DATE_EPOCH}"'
     done
+  '' + lib.optionalString (!stdenv.hostPlatform.isLinux) ''
+    substituteInPlace Makefile \
+      --replace "-lasound" ""
   '';
 
   buildInputs = [
@@ -43,8 +52,11 @@ stdenv.mkDerivation rec {
   # TODO: remove it for 1.7.7+ release as it was fixed upstream.
   NIX_CFLAGS_COMPILE = "-fcommon";
 
-  # buildFlags = [ "PREFIX=${placeholder "out"}" "CFG=release" ];
-  buildFlags = [ "PREFIX=${placeholder "out"}" "CFG=debug" ];
+  buildFlags = [
+    "PREFIX=${placeholder "out"}"
+    "CC=${stdenv.cc.targetPrefix}cc"
+    "CFG=debug"
+  ];
 
   installPhase = ''
     install -Dm755 bin.debug/klystrack $out/bin/klystrack
@@ -66,6 +78,6 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/LTVA1/klystrack";
     license = licenses.mit;
     maintainers = with maintainers; [ OPNA2608 ];
-    platforms = platforms.linux;
+    platforms = platforms.all;
   };
 }
