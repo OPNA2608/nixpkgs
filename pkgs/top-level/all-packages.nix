@@ -7717,6 +7717,8 @@ with pkgs;
 
   klystrack = callPackage ../applications/audio/klystrack { };
 
+  klystrack-plus = callPackage ../applications/audio/klystrack/plus.nix { };
+
   knockpy = callPackage ../tools/security/knockpy { };
 
   kore = callPackage ../development/web/kore { };
