@@ -6,24 +6,24 @@
 
 let
   klystron = fetchFromGitHub {
-    name = "klystron-plus-unstable-2022-06-29-src";
+    name = "klystron-plus-unstable-2022-07-05-src";
     owner = "LTVA1";
     repo = "klystron";
-    rev = "633f2df21e99ded27b409e7f658d8a871241a732";
-    sha256 = "sha256-WH+NN9QVTvNfyzKVbZYy65SY+ayjJRFqdv4C7MSrKKI=";
+    rev = "a7b0ff63db3f2d657f59d78e9027be0245ac12a0";
+    sha256 = "sha256-n68lsqaJNAxzZGsnRBdHRb0djD0ZHjkLiWIWotqVMag=";
   };
 in
 stdenv.mkDerivation rec {
   pname = "klystrack-plus";
-  version = "unstable-2022-06-29";
+  version = "unstable-2022-07-05";
 
   src = fetchFromGitHub {
     owner = "LTVA1";
     repo = "klystrack";
-    rev = "4c70b31a1f2a03cf40045b0cd7066f05a00720c1";
+    rev = "b1367ec98e231544f53afe693323461b71a102f4";
     # submodule usage is broken, .gitmodule exists but the target directory doesn't...
     # fetchSubmodules = true;
-    sha256 = "sha256-9vbWo0fwLf5+whjRJVIy4xGzT1dHM8gM2eo8UzV8jHU=";
+    sha256 = "sha256-oKwoq1wd2INyhXYCrJi47Nt4EN2mVk8nUZsRzBrLEGg=";
   };
 
   prePatch = ''
@@ -31,11 +31,6 @@ stdenv.mkDerivation rec {
   '';
 
   postPatch = ''
-    # klystron is broken, doesn't generate necessary files properly
-    # re-enable file generation
-    substituteInPlace klystron/Makefile \
-      --replace '#$(Q)echo' '$(Q)echo' \
-      --replace '#$(Q)date' '$(Q)date' \
     # replace impure build dates
     for file in {,klystron/}Makefile; do
       substituteInPlace $file \
