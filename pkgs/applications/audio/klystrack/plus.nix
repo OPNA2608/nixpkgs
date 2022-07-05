@@ -4,15 +4,6 @@
 , pkg-config
 }:
 
-let
-  klystron = fetchFromGitHub {
-    name = "klystron-plus-unstable-2022-07-05-src";
-    owner = "LTVA1";
-    repo = "klystron";
-    rev = "784b6e699af18b9e2743b2b9413c04212551b7f3";
-    sha256 = "sha256-LqgIXohW/6bq+Hjne0SjMkzmjFWKogWhRQ+pJEEFjNY=";
-  };
-in
 stdenv.mkDerivation rec {
   pname = "klystrack-plus";
   version = "unstable-2022-07-05";
@@ -20,15 +11,10 @@ stdenv.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "LTVA1";
     repo = "klystrack";
-    rev = "b1367ec98e231544f53afe693323461b71a102f4";
-    # submodule usage is broken, .gitmodule exists but the target directory doesn't...
-    # fetchSubmodules = true;
-    sha256 = "sha256-oKwoq1wd2INyhXYCrJi47Nt4EN2mVk8nUZsRzBrLEGg=";
+    rev = "e8eb67a6a4dd7a6be74f13203eb43ed2a9f64de6";
+    fetchSubmodules = true;
+    sha256 = "sha256-/HyaWZWHeetbU/Scw9VX7E1yQzhoeOKziVQREZwzTgQ=";
   };
-
-  prePatch = ''
-    cp -r --no-preserve=all ${klystron} klystron
-  '';
 
   postPatch = ''
     # replace impure build dates
