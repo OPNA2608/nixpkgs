@@ -9,8 +9,8 @@ let
     name = "klystron-plus-unstable-2022-07-05-src";
     owner = "LTVA1";
     repo = "klystron";
-    rev = "a7b0ff63db3f2d657f59d78e9027be0245ac12a0";
-    sha256 = "sha256-n68lsqaJNAxzZGsnRBdHRb0djD0ZHjkLiWIWotqVMag=";
+    rev = "784b6e699af18b9e2743b2b9413c04212551b7f3";
+    sha256 = "sha256-LqgIXohW/6bq+Hjne0SjMkzmjFWKogWhRQ+pJEEFjNY=";
   };
 in
 stdenv.mkDerivation rec {
