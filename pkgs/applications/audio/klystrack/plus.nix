@@ -33,7 +33,9 @@ stdenv.mkDerivation rec {
     alsa-lib.dev
   ];
 
-  enableParallelBuilding = true;
+  # Parallelism looks like it works, but resource compilation has a
+  # very high chance of going wrong without causing a build failure
+  enableParallelBuilding = false;
 
   # Workaround build failure on -fno-common toolchains:
   #   ld: libengine_gui.a(gui_menu.o):(.bss+0x0): multiple definition of
@@ -41,10 +43,11 @@ stdenv.mkDerivation rec {
   # TODO: remove it for 1.7.7+ release as it was fixed upstream.
   NIX_CFLAGS_COMPILE = "-fcommon";
 
-  buildFlags = [ "PREFIX=${placeholder "out"}" "CFG=release" ];
+  # buildFlags = [ "PREFIX=${placeholder "out"}" "CFG=release" ];
+  buildFlags = [ "PREFIX=${placeholder "out"}" "CFG=debug" ];
 
   installPhase = ''
-    install -Dm755 bin.release/klystrack $out/bin/klystrack
+    install -Dm755 bin.debug/klystrack $out/bin/klystrack
 
     mkdir -p $out/lib/klystrack
     cp -R res $out/lib/klystrack
@@ -55,6 +58,8 @@ stdenv.mkDerivation rec {
     substitute linux/klystrack.desktop $out/share/applications/klystrack.desktop \
       --replace "klystrack %f" "$out/bin/klystrack %f"
   '';
+
+  dontStrip = true;
 
   meta = with lib; {
     description = "A fork of a chiptune tracker";
