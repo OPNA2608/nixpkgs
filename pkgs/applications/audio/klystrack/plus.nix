@@ -2,18 +2,22 @@
 , SDL2, SDL2_image
 , alsa-lib
 , pkg-config
+, withDebug ? false
 }:
 
+let
+  cfg = if withDebug then "debug" else "release";
+in
 stdenv.mkDerivation rec {
   pname = "klystrack-plus";
-  version = "unstable-2022-07-05";
+  version = "unstable-2022-07-06";
 
   src = fetchFromGitHub {
     owner = "LTVA1";
     repo = "klystrack";
-    rev = "e8eb67a6a4dd7a6be74f13203eb43ed2a9f64de6";
+    rev = "8bc2ba5c8f61b15779d98b8a1076be2cc5a0dbd9";
     fetchSubmodules = true;
-    sha256 = "sha256-/HyaWZWHeetbU/Scw9VX7E1yQzhoeOKziVQREZwzTgQ=";
+    sha256 = "sha256-uAX8pZL8i4vyTnldheyu/NBHpuaLz2QPZMZcse5HyMs=";
   };
 
   postPatch = ''
@@ -33,33 +37,34 @@ stdenv.mkDerivation rec {
       --replace "-lasound" ""
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+  ] ++ lib.optional stdenv.hostPlatform.isLinux [
+    # Can't find alsa/asoundlib.h without
+    alsa-lib.dev
+  ];
+
   buildInputs = [
-    SDL2 SDL2_image
+    SDL2
+    SDL2_image
   ] ++ lib.optional stdenv.hostPlatform.isLinux [
     alsa-lib
-  ];
-  nativeBuildInputs = [ pkg-config ] ++ lib.optional stdenv.hostPlatform.isLinux [
-    alsa-lib.dev
   ];
 
   # Parallelism looks like it works, but resource compilation has a
   # very high chance of going wrong without causing a build failure
   enableParallelBuilding = false;
 
-  # Workaround build failure on -fno-common toolchains:
-  #   ld: libengine_gui.a(gui_menu.o):(.bss+0x0): multiple definition of
-  #     `menu_t'; objs.release/action.o:(.bss+0x20): first defined here
-  # TODO: remove it for 1.7.7+ release as it was fixed upstream.
-  NIX_CFLAGS_COMPILE = "-fcommon";
-
   buildFlags = [
     "PREFIX=${placeholder "out"}"
     "CC=${stdenv.cc.targetPrefix}cc"
-    "CFG=debug"
+    "CFG=${cfg}"
   ];
 
   installPhase = ''
-    install -Dm755 bin.debug/klystrack $out/bin/klystrack
+    runHook preInstall
+
+    install -Dm755 bin.${cfg}/klystrack $out/bin/klystrack
 
     mkdir -p $out/lib/klystrack
     cp -R res $out/lib/klystrack
@@ -69,9 +74,11 @@ stdenv.mkDerivation rec {
     mkdir -p $out/share/applications
     substitute linux/klystrack.desktop $out/share/applications/klystrack.desktop \
       --replace "klystrack %f" "$out/bin/klystrack %f"
+
+    runHook postInstall
   '';
 
-  dontStrip = true;
+  dontStrip = withDebug;
 
   meta = with lib; {
     description = "A fork of a chiptune tracker";
