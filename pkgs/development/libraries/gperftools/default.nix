@@ -24,6 +24,13 @@ stdenv.mkDerivation rec {
       url = "https://src.fedoraproject.org/rpms/gperftools/raw/f62d87a34f56f64fb8eb86727e34fbc2d3f5294a/f/gperftools-2.7.90-disable-generic-dynamic-tls.patch";
       sha256 = "02falhpaqkl27hl1dib4yvmhwsddmgbw0krb46w31fyf3awb2ydv";
     })
+    # Fix nullptr_t cast with Musl
+    # https://github.com/gperftools/gperftools/issues/1338
+    # Remove with bump 2.10+
+    (fetchpatch {
+      url = "https://github.com/gperftools/gperftools/commit/6c99def347460adbb9f17815feb641cf5474548e.patch";
+      sha256 = "sha256-f5W87lBnuweC3be+WBzd7Feb2fiCHDcRq30dnS8bE8U=";
+    })
   ];
 
   nativeBuildInputs = [ autoreconfHook ];
