@@ -1,5 +1,6 @@
 { lib, stdenv
 , fetchgit
+, fetchpatch
 , autoreconfHook
 , pkg-config
 , dbus
@@ -16,6 +17,15 @@ stdenv.mkDerivation rec {
     rev = version;
     sha256 = "sha256-UGc6msj+V3U7IzquD4+KDLWt1vUxdV2Qm9Y0FOmsqtc=";
   };
+
+  patches = [
+    # Fix breakage on musl
+    # Remove with bump > 0.51
+    (fetchpatch {
+      url = "https://git.kernel.org/pub/scm/libs/ell/ell.git/patch/?id=ce7fcfe194f0abcb8f419f83276b16a4ab274032";
+      sha256 = "sha256-7z2ObSGeSLyNqQ0JGa/qLK0I0pUiNB9F5FrEtY7XLNA=";
+    })
+  ];
 
   nativeBuildInputs = [
     pkg-config
