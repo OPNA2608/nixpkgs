@@ -27,6 +27,10 @@ stdenv.mkDerivation rec {
 
   strictDeps = true;
 
+  mesonFlags = [
+    "-Ddemo=false"
+  ];
+
   nativeBuildInputs = [
     meson
     ninja
