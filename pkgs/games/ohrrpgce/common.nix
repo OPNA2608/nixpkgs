@@ -49,14 +49,14 @@ stdenv.mkDerivation rec {
   version = "${lib.optionalString (!isRelease) "unstable-"}${rev}";
 
   src = fetchsvn {
-    url = "https://rpg.hamsterrepublic.com/source";
+    name = "${pname}-r${rev}";
+    url = "https://rpg.hamsterrepublic.com/source/${dir}";
     inherit rev sha256;
   };
 
   postPatch = let
     linkflagName = if (lib.versionAtLeast rev "12996") then "CCLINKFLAGS" else "CXXLINKFLAGS";
   in ''
-    cd ${dir}
     patchShebangs .
     substituteInPlace SConscript \
       --replace "CFLAGS = ['-Wall'" "CFLAGS = ['-Wall','${lib.strings.concatMapStringsSep "','" (x: "-isystem" + lib.getDev x + "/include") includeflagDeps}'" \
