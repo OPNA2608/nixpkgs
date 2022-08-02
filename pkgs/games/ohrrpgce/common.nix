@@ -5,7 +5,7 @@
 }:
 
 { stdenv, lib, fetchsvn
-, freebasic
+, fbc
 , openeuphoria
 , scons
 , libX11
@@ -76,7 +76,7 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [
     scons
-    freebasic
+    fbc
   ];
 
   buildInputs = linkflagDeps ++ [
