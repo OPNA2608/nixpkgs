@@ -180,6 +180,9 @@ in
   i686-musl = mapTestOnCross lib.systems.examples.musl32 linuxCommon;
   i686-gnu = mapTestOnCross lib.systems.examples.gnu32 linuxCommon;
 
+  ppc64 = mapTestOnCross lib.systems.examples.ppc64 linuxCommon;
+  ppc64-musl = mapTestOnCross lib.systems.examples.ppc64-musl linuxCommon;
+
   ppc64le = mapTestOnCross lib.systems.examples.powernv linuxCommon;
   ppc64le-musl = mapTestOnCross lib.systems.examples.musl-power linuxCommon;
 
