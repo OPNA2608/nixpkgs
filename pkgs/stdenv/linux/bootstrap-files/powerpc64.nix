@@ -3,27 +3,29 @@
 #
 #   nix-build ./pkgs/stdenv/linux/make-bootstrap-tools-cross.nix -A powerpc64.build
 #
-# Which used nixpkgs revision ec90f8ea7355f843bd450cb5f8e9c7a693511e38
+# Which used nixpkgs revision fb66cf2d50c5bb374e8fdbfb4f3f888bbc33e24a
 # to instantiate:
 #
-#   /nix/store/hswspikcg0fjsqn7lk9rgzac9jv9gfjb-stdenv-bootstrap-tools-powerpc64-unknown-linux-gnu.drv
+#   /nix/store/49lfdfr41zg5sbk3d6q645krvcyfnilj-stdenv-bootstrap-tools-powerpc64-unknown-linux-gnuabielfv2.drv
 #
 # and then built:
 #
-#   /nix/store/17591m4m7dn771vwljbsa3ac79ayfvf6-stdenv-bootstrap-tools-powerpc64-unknown-linux-gnu
+#   /nix/store/8ldnj57601cqlj36vgw6si81l009mda5-stdenv-bootstrap-tools-powerpc64-unknown-linux-gnuabielfv2
 #
 {
   # Included for convenience, removed from the final PR
   # nix store add-path ./ppc64/busybox
+  # nix hash to-sri --type sha256 $(nix-prefetch-url --executable file://$PWD/ppc64/busybox)
   busybox = import <nix/fetchurl.nix> {
-    url = "http://tarballs.nixos.org/stdenv-linux/powerpc64/ec90f8ea7355f843bd450cb5f8e9c7a693511e38/busybox";
-    sha256 = "sha256-4yYRzUCMnZit+B7n9J1j+OnTGBTFmL+OCPLDytn2Bb8=";
+    url = "http://tarballs.nixos.org/stdenv-linux/powerpc64/fb66cf2d50c5bb374e8fdbfb4f3f888bbc33e24a/busybox";
+    sha256 = "sha256-B64XaMCnHsWASsadSQns9vMFc4Lh4+eQovBq7nh17Y8=";
     executable = true;
   };
   # Included for convenience, removed from the final PR
   # nix store add-file ./ppc64/bootstrap-tools.tar.xz
+  # nix hash to-sri --type sha256 $(nix-prefetch-url file://$PWD/ppc64/busybox)
   bootstrapTools = import <nix/fetchurl.nix> {
-    url = "http://tarballs.nixos.org/stdenv-linux/powerpc64/ec90f8ea7355f843bd450cb5f8e9c7a693511e38/bootstrap-tools.tar.xz";
-    sha256 = "sha256-/+Utfmpxn7T8LuBVTa2Z5mVaLv/5yRKTK/LzmPbqrww=";
+    url = "http://tarballs.nixos.org/stdenv-linux/powerpc64/fb66cf2d50c5bb374e8fdbfb4f3f888bbc33e24a/bootstrap-tools.tar.xz";
+    sha256 = "sha256-kR1r5a+s8VeccaFlqqNOqMyWDaGlWqHdR+bQz9yO+uM=";
   };
 }
