@@ -90,6 +90,7 @@ let
           else if stdenv.hostPlatform.isMips64n32
           then "./Configure linux-mips64"
           else throw "unsupported ABI for ${stdenv.hostPlatform.system}";
+        powerpc64-linux = "./Configure linux-ppc64";
       }.${stdenv.hostPlatform.system} or (
         if stdenv.hostPlatform == stdenv.buildPlatform
           then "./config"
@@ -215,6 +216,11 @@ in {
     sha256 = "sha256-15Oc5hQCnN/wtsIPDi5XAxWKSJpyslB7i9Ub+Mj9EMo=";
     patches = [
       ./1.1/nix-ssl-cert-file.patch
+
+      # https://github.com/openssl/openssl/commit/34ab13b7d8e3e723adb60be8142e38b7c9cd382a.patch
+      ./1.1/add-linux64v2-flavour.patch
+      # https://github.com/openssl/openssl/commit/098404128383ded87ba390dd74ecd9e2ffa6f530.patch
+      ./1.1/use-ELFv2-ABI-on-some-ppc64-big-endian-systems.patch
 
       (if stdenv.hostPlatform.isDarwin
        then ./use-etc-ssl-certs-darwin.patch
