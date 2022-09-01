@@ -32160,6 +32160,14 @@ with pkgs;
 
   osu-lazer = callPackage ../games/osu-lazer { };
 
+  pokemmo-installer = callPackage ../games/pokemmo-installer { };
+  pokemmo-installer-gtk = callPackage ../games/pokemmo-installer {
+    dialogApp = "zenity";
+  };
+  pokemmo-installer-qt = callPackage ../games/pokemmo-installer {
+    dialogApp = "kdialog";
+  };
+
   pro-office-calculator = libsForQt5.callPackage ../games/pro-office-calculator { };
 
   qgo = libsForQt5.callPackage ../games/qgo { };
