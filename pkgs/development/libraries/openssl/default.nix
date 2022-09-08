@@ -85,6 +85,7 @@ let
         x86_64-linux = "./Configure linux-x86_64";
         x86_64-solaris = "./Configure solaris64-x86_64-gcc";
         riscv64-linux = "./Configure linux64-riscv64";
+        powerpc64-linux = "./Configure linux-ppc64";
         mips64el-linux =
           if stdenv.hostPlatform.isMips64n64
           then "./Configure linux64-mips64"
@@ -217,6 +218,8 @@ in {
     sha256 = "sha256-15Oc5hQCnN/wtsIPDi5XAxWKSJpyslB7i9Ub+Mj9EMo=";
     patches = [
       ./1.1/nix-ssl-cert-file.patch
+      ./1.1/add-linux64v2-flavour.patch 
+      ./1.1/use-ELFv2-ABI-on-some-ppc64-big-endian-systems.patch
 
       (if stdenv.hostPlatform.isDarwin
        then ./use-etc-ssl-certs-darwin.patch
@@ -249,3 +252,4 @@ in {
     };
   };
 }
+
