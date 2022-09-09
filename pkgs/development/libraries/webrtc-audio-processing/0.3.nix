@@ -1,4 +1,4 @@
-{ lib, stdenv, fetchurl, darwin }:
+{ lib, stdenv, fetchurl, fetchpatch, autoreconfHook, darwin }:
 
 stdenv.mkDerivation rec {
   pname = "webrtc-audio-processing";
@@ -12,7 +12,19 @@ stdenv.mkDerivation rec {
   patches = [
     ./enable-riscv.patch
     ./enable-powerpc.patch
+    (fetchpatch {
+      name = "enable-mips-and-big-endian.patch";
+      url = "https://github.com/void-linux/void-packages/raw/0c9bd3db16797d6a5eb9319179ca3ed6d1cc083c/srcpkgs/webrtc-audio-processing/patches/mips.patch";
+      sha256 = "sha256-lMRHLzjk7K5ZQB8G4WCmrH+y4+5G+Wbd4Hyl6kWDbrA=";
+    })
   ];
+
+  postPatch = ''
+    # Remove failing statement PKG_CHECK_MODULE(GNUSTL, gnustl)
+    sed -i configure.ac -e'/if test "x$with_gnustl" != "xno"; then/,+2d'
+  '';
+
+  nativeBuildInputs = [ autoreconfHook ];
 
   buildInputs = lib.optionals stdenv.isDarwin (with darwin.apple_sdk.frameworks; [ ApplicationServices ]);
 
