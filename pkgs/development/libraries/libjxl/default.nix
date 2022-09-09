@@ -141,7 +141,7 @@ stdenv.mkDerivation rec {
 
   LDFLAGS = lib.optionalString stdenv.hostPlatform.isRiscV "-latomic";
 
-  doCheck = !stdenv.hostPlatform.isi686;
+  doCheck = !stdenv.hostPlatform.isi686 && !stdenv.hostPlatform.isPower;
 
   meta = with lib; {
     homepage = "https://github.com/libjxl/libjxl";
