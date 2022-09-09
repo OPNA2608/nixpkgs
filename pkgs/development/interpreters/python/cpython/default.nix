@@ -175,7 +175,11 @@ let
       # abi detection, our wrapper should match.
       if stdenv.hostPlatform.isMusl then
         replaceStrings [ "musl" ] [ "gnu" ] parsed.abi.name
-        else parsed.abi.name;
+      # or elf abis on glibc power
+      else if stdenv.hostPlatform.isPower && stdenv.hostPlatform.isAbiElfv2 then
+        replaceStrings [ "gnuabielfv2" ] [ "gnu" ] parsed.abi.name
+      else
+        parsed.abi.name;
     multiarch =
       if isDarwin then "darwin"
       else "${multiarchCpu}-${parsed.kernel.name}-${pythonAbiName}";
