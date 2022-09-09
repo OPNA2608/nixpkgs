@@ -34,7 +34,7 @@ stdenv.mkDerivation rec {
   buildInputs = [ openssl json_c curl libgcrypt uthash ]
     # cmocka doesn't build with pkgsStatic, and we don't need it anyway
     # when tests are not run
-    ++ lib.optionals (stdenv.buildPlatform == stdenv.hostPlatform) [
+    ++ lib.optionals (doCheck) [
     cmocka
   ];
 
@@ -63,12 +63,23 @@ stdenv.mkDerivation rec {
       --replace 'm4_esyscmd_s([git describe --tags --always --dirty])' '${version}'
   '';
 
-  configureFlags = lib.optionals (stdenv.buildPlatform == stdenv.hostPlatform) [
+  configureFlags = lib.optionals (doCheck) [
     "--enable-unit"
     "--enable-integration"
   ];
 
-  doCheck = true;
+  # TODO fails on my non-nixos powerpc64 machine, not sure why
+  # maybe affects non-nixos in general, sounds more like a sandbox problem?
+  #   Starting simulator on port 12202
+  #   successfully started daemon: tpm_server with PID: 26125
+  #   /build/source
+  #   simulator PID: 26125
+  #   Port conflict? Cleaning up PID: 26125
+  #   ./script/int-log-compiler-common.sh: line 246: kill (26125) - No such process
+  #   Failed to start simulator: port 12202 or  12203 probably in use. Retrying in 64.
+  #   ...
+  #   WARNING:tcti:src/util/io_c:262:socket_connect() Failed to connect to host 127.0.0.1, port 12202: errno 111: Connection refused
+  doCheck = !stdenv.hostPlatform.isPower;
   preCheck = ''
     # Since we rewrote the load path in the dynamic loader for the TCTI
     # The various tcti implementation should be placed in their target directory
