@@ -229,7 +229,10 @@ in stdenv.mkDerivation (rec {
     cp NATIVE/bin/llvm-config $dev/bin/llvm-config-native
   '';
 
-  doCheck = stdenv.isLinux && (!stdenv.isx86_32) && (!stdenv.hostPlatform.isMusl)
+  doCheck = stdenv.isLinux
+    && (!stdenv.isx86_32)
+    && (!stdenv.hostPlatform.isMusl)
+    && (!stdenv.hostPlatform.isPower)
     && (stdenv.hostPlatform == stdenv.buildPlatform);
 
   checkTarget = "check-all";

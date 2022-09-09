@@ -233,7 +233,9 @@ stdenv.mkDerivation (rec {
     cp NATIVE/bin/llvm-config $dev/bin/llvm-config-native
   '';
 
-  doCheck = stdenv.isLinux && (!stdenv.isi686)
+  doCheck = stdenv.isLinux
+    && (!stdenv.isi686)
+    && (!stdenv.isPower)
     && (stdenv.hostPlatform == stdenv.buildPlatform);
 
   checkTarget = "check-all";
