@@ -45,10 +45,11 @@
 , bluez
 , sbc
 , libfreeaptx
-, ldacbt
 , liblc3
 , fdk_aac
 , libopus
+, ldacSupport ? lib.meta.availableOn stdenv.hostPlatform ldacbt
+, ldacbt
 , nativeHspSupport ? true
 , nativeHfpSupport ? true
 , ofonoSupport ? true
@@ -142,7 +143,8 @@ let
     ++ lib.optionals gstreamerSupport [ gst_all_1.gst-plugins-base gst_all_1.gstreamer ]
     ++ lib.optionals libcameraSupport [ libcamera libdrm ]
     ++ lib.optional ffmpegSupport ffmpeg
-    ++ lib.optionals bluezSupport [ bluez libfreeaptx ldacbt liblc3 sbc fdk_aac libopus ]
+    ++ lib.optionals bluezSupport [ bluez libfreeaptx liblc3 sbc fdk_aac libopus ]
+    ++ lib.optional ldacSupport ldacbt
     ++ lib.optional pulseTunnelSupport libpulseaudio
     ++ lib.optional zeroconfSupport avahi
     ++ lib.optional raopSupport openssl
@@ -176,6 +178,7 @@ let
       "-Dbluez5-backend-hsphfpd=${mesonEnableFeature hsphfpdSupport}"
       "-Dbluez5-codec-lc3plus=disabled"
       "-Dbluez5-codec-lc3=${mesonEnableFeature bluezSupport}"
+      "-Dbluez5-codec-ldac=${mesonEnableFeature ldacSupport}"
       "-Dsysconfdir=/etc"
       "-Dpipewire_confdata_dir=${placeholder "lib"}/share/pipewire"
       "-Draop=${mesonEnableFeature raopSupport}"
