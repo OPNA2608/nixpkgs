@@ -38,6 +38,25 @@ let
   version = "22.2.1";
   branch  = versions.major version;
 
+  # auto doesn't work on all platforms mesa supports. if we're building for such a platform and
+  # auto was specified, manually fill in some drivers.
+  galliumDriversComp = if galliumDrivers == [ "auto" ] then (
+    rec {
+      powerpc-linux = [ "r300" "r600" "radeonsi" "nouveau" "virgl" "swrast" ];
+      powerpc64-linux = powerpc-linux;
+      powerpcle-linux = powerpc-linux;
+      powerpc64le-linux = powerpc-linux;
+    }.${stdenv.hostPlatform.system} or galliumDrivers
+  ) else galliumDrivers;
+  vulkanDriversComp = if vulkanDrivers == [ "auto" ] then (
+    rec {
+      powerpc-linux = [ "amd" ];
+      powerpc64-linux = powerpc-linux;
+      powerpcle-linux = powerpc-linux;
+      powerpc64le-linux = powerpc-linux;
+    }.${stdenv.hostPlatform.system} or vulkanDrivers
+  ) else vulkanDrivers;
+
 self = stdenv.mkDerivation {
   pname = "mesa";
   inherit version;
@@ -98,8 +117,8 @@ self = stdenv.mkDerivation {
     "-Ddri-search-path=${libglvnd.driverLink}/lib/dri"
 
     "-Dplatforms=${concatStringsSep "," eglPlatforms}"
-    "-Dgallium-drivers=${concatStringsSep "," galliumDrivers}"
-    "-Dvulkan-drivers=${concatStringsSep "," vulkanDrivers}"
+    "-Dgallium-drivers=${concatStringsSep "," galliumDriversComp}"
+    "-Dvulkan-drivers=${concatStringsSep "," vulkanDriversComp}"
 
     "-Ddri-drivers-path=${placeholder "drivers"}/lib/dri"
     "-Dvdpau-libs-path=${placeholder "drivers"}/lib/vdpau"
@@ -118,6 +137,9 @@ self = stdenv.mkDerivation {
   ] ++ optionals enableOpenCL [
     "-Dgallium-opencl=icd" # Enable the gallium OpenCL frontend
     "-Dclang-libdir=${llvmPackages.clang-unwrapped.lib}/lib"
+  ] ++ optionals (stdenv.hostPlatform.isPower && (stdenv.is32bit || stdenv.hostPlatform.isBigEndian)) [
+    # llvmpipe is not well supported on some platforms
+    "-Ddraw-use-llvm=false"
   ] ++ optional enablePatentEncumberedCodecs
     "-Dvideo-codecs=h264dec,h264enc,h265dec,h265enc,vc1dec";
 
@@ -132,7 +154,7 @@ self = stdenv.mkDerivation {
     ++ lib.optionals enableOpenCL [ libclc llvmPackages.clang llvmPackages.clang-unwrapped ]
     ++ lib.optional withValgrind valgrind-light
     # Mesa will not build zink when gallium-drivers=auto
-    ++ lib.optional (elem "zink" galliumDrivers) vulkan-loader;
+    ++ lib.optional (elem "zink" galliumDriversComp) vulkan-loader;
 
   depsBuildBuild = [ pkg-config ];
 
