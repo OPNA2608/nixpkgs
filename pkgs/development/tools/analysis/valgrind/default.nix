@@ -34,7 +34,18 @@ stdenv.mkDerivation rec {
       url = "https://bugsfiles.kde.org/attachment.cgi?id=149174";
       sha256 = "sha256-f1YIFIhWhXYVw3/UNEWewDak2mvbAd3aGzK4B+wTlys=";
     })
+    # Fix build on ppc64be w/ ELFv2 ABI.
+    (fetchpatch {
+      url = "https://github.com/void-linux/void-packages/raw/4529afc49ba0e9ed96f900a61de47a4de1ab67c2/srcpkgs/valgrind/patches/elfv2-ppc64-be.patch";
+      sha256 = "sha256-+Ve8TSeAhq9bDNWXdRIatQLsI5FEdcs7cgz86mzUi+o=";
+    })
   ];
+
+  postPatch = ''
+    substituteInPlace none/tests/ppc{32,64}/jm-insns.c \
+      --replace 'VGP_ppc64be_linux' 'VG_PLAT_USES_PPCTOC' \
+      --replace 'elif defined(VGP_ppc64le_linux)' 'else'
+  '';
 
   outputs = [ "out" "dev" "man" "doc" ];
 
