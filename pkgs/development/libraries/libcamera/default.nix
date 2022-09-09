@@ -31,6 +31,10 @@ stdenv.mkDerivation {
 
   postPatch = ''
     patchShebangs utils/
+  '' + lib.optionalString stdenv.hostPlatform.isPower ''
+    # IBM double-double long double + constexpr = no constant fold
+    substituteInPlace src/ipa/raspberrypi/raspberrypi.cpp --replace 'constexpr Duration defaultMinFrameDuration' 'Duration defaultMinFrameDuration'
+    substituteInPlace src/ipa/raspberrypi/raspberrypi.cpp --replace 'constexpr Duration controllerMinFrameDuration' 'Duration controllerMinFrameDuration'
   '';
 
   strictDeps = true;
