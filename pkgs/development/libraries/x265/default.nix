@@ -17,7 +17,9 @@
 , custatsSupport ? false # Internal profiling of encoder work
 , debugSupport ? false # Run-time sanity checks (debugging)
 , ppaSupport ? false # PPA profiling instrumentation
-, unittestsSupport ? (stdenv.is64bit && !(stdenv.isDarwin && stdenv.isAarch64)) # Unit tests - only testing x64 assembly
+# Unit tests - only testing x64 assembly
+# TODO this doesn't seem correct at all to me, according to CMake script should be: x86 || ARM
+, unittestsSupport ? (stdenv.is64bit && !(stdenv.isDarwin && stdenv.isAarch64) && !stdenv.hostPlatform.isPower) 
 , vtuneSupport ? false # Vtune profiling instrumentation
 , werrorSupport ? false # Warnings as errors
 }:
@@ -32,6 +34,9 @@ let
     (mkFlag ppaSupport "ENABLE_PPA")
     (mkFlag vtuneSupport "ENABLE_VTUNE")
     (mkFlag werrorSupport "WARNINGS_AS_ERRORS")
+  ] ++ lib.optionals stdenv.hostPlatform.isPower [
+    "-DENABLE_ALTIVEC=OFF" # https://bitbucket.org/multicoreware/x265_git/issues/320/fail-to-build-on-power8-le
+    "-DCPU_POWER8=${if stdenv.hostPlatform.system == "powerpc64le-linux" then "ON" else "OFF"}"
   ];
 
   cmakeStaticLibFlags = [
@@ -39,8 +44,6 @@ let
     "-DENABLE_CLI=OFF"
     "-DENABLE_SHARED=OFF"
     "-DEXPORT_C_API=OFF"
-  ] ++ lib.optionals stdenv.hostPlatform.isPower [
-    "-DENABLE_ALTIVEC=OFF" # https://bitbucket.org/multicoreware/x265_git/issues/320/fail-to-build-on-power8-le
   ];
 
 in
