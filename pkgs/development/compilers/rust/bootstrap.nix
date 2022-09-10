@@ -1,7 +1,10 @@
-{ stdenv, fetchurl, rust, callPackage, version, hashes }:
+{ stdenv, lib, fetchurl, rust, callPackage, version, hashes }:
 
 let
-  platform = rust.toRustTarget stdenv.hostPlatform;
+  platform = if stdenv.hostPlatform.isPower && stdenv.hostPlatform.isAbiElfv2 then
+    lib.replaceStrings [ "gnuabielfv2" ] [ "gnu" ] (rust.toRustTarget stdenv.hostPlatform)
+  else
+    rust.toRustTarget stdenv.hostPlatform;
 
   src = fetchurl {
      url = "https://static.rust-lang.org/dist/rust-${version}-${platform}.tar.gz";
