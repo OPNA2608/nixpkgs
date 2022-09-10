@@ -271,7 +271,7 @@ in stdenv.mkDerivation (rec {
     && (!stdenv.isx86_32)
     && (!stdenv.hostPlatform.isMusl)
     && (!stdenv.hostPlatform.isRiscV)
-    && (!stdenv.isPower)
+    && (!stdenv.hostPlatform.isPower)
     && (stdenv.hostPlatform == stdenv.buildPlatform);
 
   checkTarget = "check-all";

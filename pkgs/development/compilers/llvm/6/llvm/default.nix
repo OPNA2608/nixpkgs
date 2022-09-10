@@ -228,7 +228,7 @@ stdenv.mkDerivation (rec {
 
   doCheck = stdenv.isLinux
     && (!stdenv.isi686)
-    && (!stdenv.isPower)
+    && (!stdenv.hostPlatform.isPower)
     && (stdenv.hostPlatform == stdenv.buildPlatform);
 
   checkTarget = "check-all";
