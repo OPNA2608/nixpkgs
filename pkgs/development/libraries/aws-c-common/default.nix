@@ -34,6 +34,8 @@ stdenv.mkDerivation rec {
       "promise_test_multiple_waiters"
     ] ++ lib.optionals stdenv.hostPlatform.isMusl [
       "sba_metrics" # https://github.com/awslabs/aws-c-common/issues/839
+    ] ++ lib.optionals stdenv.hostPlatform.isBigEndian [
+      "sba_threaded_reallocs" # https://github.com/awslabs/aws-c-common/issues/710
     ];
   in ''
     cat <<EOW >CTestCustom.cmake
