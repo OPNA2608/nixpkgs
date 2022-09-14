@@ -48,7 +48,7 @@ in
 
 , enableDocumentation ? !atLeast24 || (stdenv.hostPlatform == stdenv.buildPlatform && (!stdenv.hostPlatform.isPower64 || !stdenv.hostPlatform.isBigEndian || !stdenv.hostPlatform.isAbiElfv2))
 , enableStatic ? stdenv.hostPlatform.isStatic
-, withAWS ? !enableStatic && (stdenv.isLinux || stdenv.isDarwin), aws-sdk-cpp
+, withAWS ? !enableStatic && (stdenv.isLinux || stdenv.isDarwin) && !(stdenv.hostPlatform.isPower64 && stdenv.hostPlatform.isBigEndian), aws-sdk-cpp
 , withLibseccomp ? lib.meta.availableOn stdenv.hostPlatform libseccomp, libseccomp
 
 , confDir
