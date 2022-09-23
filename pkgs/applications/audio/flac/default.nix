@@ -31,6 +31,9 @@ stdenv.mkDerivation rec {
 
   cmakeFlags = lib.optionals (!stdenv.hostPlatform.isStatic) [
     "-DBUILD_SHARED_LIBS=ON"
+  ] ++ lib.optionals (stdenv.hostPlatform.isPower64 && stdenv.hostPlatform.isBigEndian) [
+    # This isn't completely fixed yet. Doesn't actually check if VSX isntructions are available, just base AltiVec ones
+    "-DFLAC__USE_VSX=OFF"
   ];
 
   CFLAGS = [ "-O3" "-funroll-loops" ];
