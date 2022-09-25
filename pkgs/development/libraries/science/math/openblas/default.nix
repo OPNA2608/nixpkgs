@@ -102,6 +102,13 @@ let
       USE_OPENMP = !stdenv.hostPlatform.isMusl;
     };
 
+    powerpc64-linux = {
+      BINARY = 64;
+      TARGET = setTarget "POWER4";
+      DYNAMIC_ARCH = setDynamicArch false;
+      USE_OPENMP = !stdenv.hostPlatform.isMusl;
+    };
+
     riscv64-linux = {
       BINARY = 64;
       TARGET = setTarget "RISCV64_GENERIC";
