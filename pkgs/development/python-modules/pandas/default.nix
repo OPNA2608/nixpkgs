@@ -61,7 +61,7 @@ buildPythonPackage rec {
   # https://github.com/NixOS/nixpkgs/issues/39687
   hardeningDisable = lib.optional stdenv.cc.isClang "strictoverflow";
 
-  doCheck = !stdenv.isAarch32 && !stdenv.isAarch64; # upstream doesn't test this architecture
+  doCheck = !stdenv.isAarch32 && !stdenv.isAarch64 && !stdenv.hostPlatform.isPower64; # upstream doesn't test this architecture
 
   # don't max out build cores, it breaks tests
   dontUsePytestXdist = true;
