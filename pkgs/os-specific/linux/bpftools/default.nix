@@ -4,6 +4,9 @@
 , elfutils, readline
 , zlib
 , python3, bison, flex
+# https://github.com/NixOS/nixpkgs/pull/192670
+# fails with unknown type name '__vector128'
+, enableDebugger ? !stdenv.hostPlatform.isPower64
 }:
 
 stdenv.mkDerivation rec {
@@ -33,11 +36,13 @@ stdenv.mkDerivation rec {
       --replace '/sbin'      '/bin'
   '';
 
-  buildFlags = [ "bpftool" "bpf_asm" "bpf_dbg" ];
+  buildFlags = [ "bpftool" "bpf_asm" ]
+    ++ lib.optionals enableDebugger [ "bpf_dbg" ];
 
   installPhase = ''
     make -C bpftool install
     install -Dm755 -t $out/bin bpf_asm
+  '' + lib.optionalString enableDebugger ''
     install -Dm755 -t $out/bin bpf_dbg
   '';
 
