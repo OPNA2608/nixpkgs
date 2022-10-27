@@ -14,6 +14,10 @@ stdenv.mkDerivation rec {
     "man"
   ];
 
+  postPatch = ''
+    substituteInPlace lib/libcrypt.minver --replace 'GLIBC_2.3    linux.*gnu      powerpc64' 'GLIBC_2.17   linux.*gnu      powerpc64'
+  '';
+
   configureFlags = [
     "--enable-hashes=all"
     "--enable-obsolete-api=glibc"
