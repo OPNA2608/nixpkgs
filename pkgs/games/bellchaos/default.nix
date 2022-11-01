@@ -29,4 +29,19 @@ stdenv.mkDerivation rec {
     makeWrapper ${ohrrpgce.unstable}/bin/ohrrpgce-game $out/bin/bellchaos \
       --add-flags $out/share/bellchaos/bellchaos.rpgdir
   '';
+
+  meta = with lib; {
+    description = "Bell Of Chaos";
+    longDescription = ''
+      Having failed in his quest for immortality, King Gilgamesh has
+      declared war upon the gods and is building a Tower to Heaven on
+      the plain of Babel. The gods place a powerful curse in a bronze
+      bell, and entrust it to one young Demigoddess. She must carry
+      the Bell of Chaos to the top of the tower and ring it to complete
+      the curse and topple the tower.
+    '';
+    license = licenses.gpl2; # Not clarified if Only or Plus
+    platforms = platforms.all;
+    maintainers = with maintainers; [ OPNA2608 ];
+  };
 }
