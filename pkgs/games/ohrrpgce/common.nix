@@ -140,5 +140,22 @@ stdenv.mkDerivation rec {
   '';
 
   passthru.updateScript = lib.optional (!isRelease) ./update.sh;
+
+  meta = with lib; {
+    description = "Official Hamster Republic Role Playing Game Construction Engine, ${codename} ${if isRelease then "release" else "branch"}";
+    longDescription = ''
+      The OHRRPGCE is a free and open-source, cross-platform (Windows, Mac, GNU/Linux, Android), and easy-to-use utility
+      with which you can create your own 2D RPG game in a style similar to the classic Final Fantasy games on the
+      NES, SNES and GBA which have so shaped the RPG genre. No programming is required to create a game, though there
+      is a scripting language for customising the engine which has been used to create many non-RPG games.
+    '';
+    license = with licenses; ([
+      gpl2Plus
+    ] ++ lib.optionals (lib.versionAtLeast rev "12665") [
+      mit
+    ]);
+    platforms = platforms.all;
+    maintainers = with maintainers; [ OPNA2608 ];
+  };
 }
 
