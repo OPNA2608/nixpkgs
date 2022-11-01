@@ -33654,8 +33654,6 @@ with pkgs;
 
   barrage = callPackage ../games/lgames/barrage { };
 
-  bellchaos = callPackage ../games/bellchaos { };
-
   lbreakout2 = callPackage ../games/lgames/lbreakout2 { };
 
   lbreakouthd = callPackage ../games/lgames/lbreakouthd { };
@@ -33675,6 +33673,8 @@ with pkgs;
   oh-my-git = callPackage ../games/oh-my-git { };
 
   ohrrpgce = recurseIntoAttrs (callPackage ../games/ohrrpgce { });
+
+  bellchaos = callPackage ../games/ohrgames/bellchaos { };
 
   opendune = callPackage ../games/opendune { };
 
