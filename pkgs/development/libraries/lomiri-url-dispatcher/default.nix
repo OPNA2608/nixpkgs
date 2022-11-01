@@ -45,6 +45,11 @@ stdenv.mkDerivation rec {
 
     substituteInPlace tests/url_dispatcher_testability/CMakeLists.txt \
       --replace "\''${PYTHON_PACKAGE_DIR}" "$out/${python3.sitePackages}"
+
+    # TODO not working yet, path watcher never fires
+    # Update URI handler database whenever new url-handler is installed system-wide
+    substituteInPlace data/lomiri-url-dispatcher-update-system-dir.*.in \
+      --replace '@CMAKE_INSTALL_FULL_DATAROOTDIR@' '/run/current-system/sw/share'
   '' + lib.optionalString doCheck ''
     patchShebangs tests/test-sql.sh
   '';
