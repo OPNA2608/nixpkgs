@@ -33676,6 +33676,8 @@ with pkgs;
 
   bellchaos = callPackage ../games/ohrgames/bellchaos { };
 
+  wandering-hamster = callPackage ../games/ohrgames/wandering-hamster { };
+
   opendune = callPackage ../games/opendune { };
 
   openrct2 = callPackage ../games/openrct2 { };
