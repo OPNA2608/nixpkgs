@@ -33680,6 +33680,8 @@ with pkgs;
 
   franken = callPackage ../games/ohrgames/franken { };
 
+  vikings-of-midgard = callPackage ../games/ohrgames/vikings-of-midgard { };
+
   opendune = callPackage ../games/opendune { };
 
   openrct2 = callPackage ../games/openrct2 { };
