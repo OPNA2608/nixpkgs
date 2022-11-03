@@ -33678,6 +33678,8 @@ with pkgs;
 
   wandering-hamster = callPackage ../games/ohrgames/wandering-hamster { };
 
+  franken = callPackage ../games/ohrgames/franken { };
+
   opendune = callPackage ../games/opendune { };
 
   openrct2 = callPackage ../games/openrct2 { };
