@@ -1,0 +1,51 @@
+From 9862cae5496f21a3b042b847c79dfdc457930d79 Mon Sep 17 00:00:00 2001
+From: OPNA2608 <christoph.neidahl@gmail.com>
+Date: Sun, 15 Jan 2023 17:17:14 +0100
+Subject: [PATCH 2/4] Improve mirtest pkg-config
+
+---
+ tests/CMakeLists.txt |  4 +---
+ tests/mirtest.pc.in  | 10 +++++-----
+ 2 files changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 73a8d53899..d8a88f7bf6 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -207,12 +207,10 @@ PRIVATE
+   ${CMAKE_THREAD_LIBS_INIT} # Link in pthread.
+ )
+ 
+-set(PREFIX "${CMAKE_INSTALL_PREFIX}")
+-set(LIBDIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+-set(INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include/mirtest")
+ configure_file(
+   ${CMAKE_CURRENT_SOURCE_DIR}/mirtest.pc.in
+   ${CMAKE_CURRENT_BINARY_DIR}/mirtest.pc
++  @ONLY
+ )
+ 
+ install(TARGETS mir-test-assist
+diff --git a/tests/mirtest.pc.in b/tests/mirtest.pc.in
+index 6dec4f69bb..1822ebf87d 100644
+--- a/tests/mirtest.pc.in
++++ b/tests/mirtest.pc.in
+@@ -1,10 +1,10 @@
+-prefix=@PREFIX@
+-libdir=@LIBDIR@
+-includedir=@INCLUDEDIR@
++prefix=@CMAKE_INSTALL_PREFIX@
++libdir=@PKGCONFIG_LIBDIR@
++includedir=@PKGCONFIG_INCLUDEDIR@/include/mirtest
+ 
+ Name: mirtest
+ Description: Mir test assist library
+ Version: @MIR_VERSION@
+ Requires: miral mirserver mirplatform mirclient mir-renderer-gl-dev protobuf-lite
+-Libs: -L@LIBDIR@ -lmir-test-assist -ldl -lboost_filesystem -lboost_system
+-Cflags: -I@INCLUDEDIR@
++Libs: -L${libdir} -lmir-test-assist -ldl -lboost_filesystem -lboost_system
++Cflags: -I${includedir}
+-- 
+2.38.1
+

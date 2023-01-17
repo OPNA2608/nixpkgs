@@ -1,0 +1,44 @@
+From 89251708498eb5ab71e7cd617fe3532eb8ec26e0 Mon Sep 17 00:00:00 2001
+From: OPNA2608 <christoph.neidahl@gmail.com>
+Date: Sun, 15 Jan 2023 18:58:20 +0100
+Subject: [PATCH 3/4] Fix GNUInstallDirs variable concatenations in CMake
+
+---
+ src/common/report/lttng/CMakeLists.txt | 5 +++--
+ src/platforms/CMakeLists.txt           | 2 +-
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/src/common/report/lttng/CMakeLists.txt b/src/common/report/lttng/CMakeLists.txt
+index d5d7d95363..faf1a1a79e 100644
+--- a/src/common/report/lttng/CMakeLists.txt
++++ b/src/common/report/lttng/CMakeLists.txt
+@@ -1,4 +1,5 @@
+-add_definitions(-DMIR_TRACEPOINT_LIB_INSTALL_PATH="${CMAKE_INSTALL_PREFIX}/${MIR_TRACEPOINT_LIB_INSTALL_DIR}")
++join_paths(MIR_TRACEPOINT_LIB_INSTALL_PATH "${CMAKE_INSTALL_PREFIX}" "${MIR_TRACEPOINT_LIB_INSTALL_DIR}")
++add_definitions(-DMIR_TRACEPOINT_LIB_INSTALL_PATH="${MIR_TRACEPOINT_LIB_INSTALL_PATH}")
+ 
+ add_library(mirsharedlttng OBJECT
+ 
+@@ -9,4 +10,4 @@ list(APPEND MIR_COMMON_SOURCES
+   $<TARGET_OBJECTS:mirsharedlttng>
+ )
+ 
+-set(MIR_COMMON_SOURCES ${MIR_COMMON_SOURCES} PARENT_SCOPE)
+\ No newline at end of file
++set(MIR_COMMON_SOURCES ${MIR_COMMON_SOURCES} PARENT_SCOPE)
+diff --git a/src/platforms/CMakeLists.txt b/src/platforms/CMakeLists.txt
+index b913b97c5e..0d5db5afe7 100644
+--- a/src/platforms/CMakeLists.txt
++++ b/src/platforms/CMakeLists.txt
+@@ -21,7 +21,7 @@ set(MIR_INPUT_PLATFORM_VERSION_SCRIPT
+ set(MIR_INPUT_PLATFORM_VERSION_SCRIPT ${MIR_INPUT_PLATFORM_VERSION_SCRIPT} PARENT_SCOPE)
+ 
+ set(MIR_SERVER_PLATFORM_PATH
+-  ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/mir/server-platform
++  ${CMAKE_INSTALL_FULL_LIBDIR}/mir/server-platform
+ )
+ set(MIR_SERVER_PLATFORM_PATH
+   ${MIR_SERVER_PLATFORM_PATH}
+-- 
+2.38.1
+
