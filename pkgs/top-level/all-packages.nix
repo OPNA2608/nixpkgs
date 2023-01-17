@@ -25525,6 +25525,7 @@ with pkgs;
   miniflux = callPackage ../servers/miniflux { };
 
   mir = callPackage ../servers/mir { };
+  mir_1 = callPackage ../servers/mir/1_x.nix { };
 
   miriway = callPackage ../applications/window-managers/miriway { };
 

@@ -1,0 +1,434 @@
+From 6e4c8e83bf8ad04fb26f77f04121574f889c9d18 Mon Sep 17 00:00:00 2001
+From: OPNA2608 <christoph.neidahl@gmail.com>
+Date: Sun, 15 Jan 2023 17:09:56 +0100
+Subject: [PATCH 1/4] Use better concatenation for pkg-config paths
+
+---
+ CMakeLists.txt                                |  4 ++++
+ cmake/JoinPaths.cmake                         | 23 +++++++++++++++++++
+ src/client/CMakeLists.txt                     |  5 ----
+ src/client/mirclient.pc.in                    |  7 +++---
+ src/client/mirclientcpp.pc.in                 |  3 ++-
+ src/common/CMakeLists.txt                     |  8 -------
+ src/common/mircommon.pc.in                    |  5 ++--
+ src/cookie/CMakeLists.txt                     |  5 ----
+ src/cookie/mircookie.pc.in                    |  7 +++---
+ src/core/CMakeLists.txt                       |  5 ----
+ src/core/mircore.pc.in                        |  7 +++---
+ src/miral/CMakeLists.txt                      |  3 ---
+ src/miral/miral.pc.in                         |  5 ++--
+ src/platform/CMakeLists.txt                   |  4 ----
+ src/platform/mirplatform.pc.in                | 11 ++++-----
+ src/platforms/mesa/CMakeLists.txt             |  4 +---
+ .../mesa/mir-client-platform-mesa.pc.in       |  3 ++-
+ src/renderer/CMakeLists.txt                   |  4 ----
+ src/renderer/mirrenderer.pc.in                |  8 +++----
+ src/renderers/gl/CMakeLists.txt               |  2 --
+ src/renderers/gl/mir-renderer-gl-dev.pc.in    |  3 ++-
+ src/server/CMakeLists.txt                     |  5 ----
+ src/server/mirserver.pc.in                    | 11 ++++-----
+ src/wayland/CMakeLists.txt                    |  2 --
+ src/wayland/mirwayland.pc.in                  |  6 ++---
+ 25 files changed, 65 insertions(+), 85 deletions(-)
+ create mode 100644 cmake/JoinPaths.cmake
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f091c62d59..0dce00bb07 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -380,6 +380,10 @@ endif()
+ 
+ set(MIR_TRACEPOINT_LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/mir/tools)
+ 
++include(JoinPaths)
++join_paths(PKGCONFIG_LIBDIR "\${prefix}" "${CMAKE_INSTALL_LIBDIR}")
++join_paths(PKGCONFIG_INCLUDEDIR "\${prefix}" "${CMAKE_INSTALL_INCLUDEDIR}")
++
+ set(MIR_GENERATED_INCLUDE_DIRECTORIES)
+ add_subdirectory(src/)
+ include_directories(${MIR_GENERATED_INCLUDE_DIRECTORIES})
+diff --git a/cmake/JoinPaths.cmake b/cmake/JoinPaths.cmake
+new file mode 100644
+index 0000000000..c68d91b84d
+--- /dev/null
++++ b/cmake/JoinPaths.cmake
+@@ -0,0 +1,23 @@
++# This module provides function for joining paths
++# known from most languages
++#
++# SPDX-License-Identifier: (MIT OR CC0-1.0)
++# Copyright 2020 Jan Tojnar
++# https://github.com/jtojnar/cmake-snips
++#
++# Modelled after Python’s os.path.join
++# https://docs.python.org/3.7/library/os.path.html#os.path.join
++# Windows not supported
++function(join_paths joined_path first_path_segment)
++    set(temp_path "${first_path_segment}")
++    foreach(current_segment IN LISTS ARGN)
++        if(NOT ("${current_segment}" STREQUAL ""))
++            if(IS_ABSOLUTE "${current_segment}")
++                set(temp_path "${current_segment}")
++            else()
++                set(temp_path "${temp_path}/${current_segment}")
++            endif()
++        endif()
++    endforeach()
++    set(${joined_path} "${temp_path}" PARENT_SCOPE)
++endfunction()
+diff --git a/src/client/CMakeLists.txt b/src/client/CMakeLists.txt
+index 9ee857b61b..e1a3ae029b 100644
+--- a/src/client/CMakeLists.txt
++++ b/src/client/CMakeLists.txt
+@@ -1,10 +1,5 @@
+ find_package(XKBCOMMON REQUIRED)
+ 
+-set(PREFIX "${CMAKE_INSTALL_PREFIX}")
+-set(EXEC_PREFIX "${CMAKE_INSTALL_PREFIX}")
+-set(LIBDIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+-set(INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include")
+-
+ configure_file(
+   ${CMAKE_CURRENT_SOURCE_DIR}/mirclient.pc.in
+   ${CMAKE_CURRENT_BINARY_DIR}/mirclient.pc
+diff --git a/src/client/mirclient.pc.in b/src/client/mirclient.pc.in
+index 3ad6fd6fd6..09eb960d40 100644
+--- a/src/client/mirclient.pc.in
++++ b/src/client/mirclient.pc.in
+@@ -1,7 +1,6 @@
+-prefix=@PREFIX@
+-exec_prefix=@EXEC_PREFIX@
+-libdir=@LIBDIR@
+-includedir=@INCLUDEDIR@/mirclient
++prefix=@CMAKE_INSTALL_PREFIX@
++libdir=@PKGCONFIG_LIBDIR@
++includedir=@PKGCONFIG_INCLUDEDIR@/mirclient
+ 
+ Name: mirclient
+ Description: Mir client library
+diff --git a/src/client/mirclientcpp.pc.in b/src/client/mirclientcpp.pc.in
+index 3646208011..6d7ca275da 100644
+--- a/src/client/mirclientcpp.pc.in
++++ b/src/client/mirclientcpp.pc.in
+@@ -1,4 +1,5 @@
+-includedir=@INCLUDEDIR@/mirclient
++prefix=@CMAKE_INSTALL_PREFIX@
++includedir=@PKGCONFIG_INCLUDEDIR@/mirclient
+ 
+ Name: mirclientcpp
+ Description: C++ wrapper for mirclient
+diff --git a/src/common/CMakeLists.txt b/src/common/CMakeLists.txt
+index f208a50691..83b1a3728d 100644
+--- a/src/common/CMakeLists.txt
++++ b/src/common/CMakeLists.txt
+@@ -27,11 +27,6 @@ list(APPEND MIR_COMMON_SOURCES
+   edid.cpp
+ )
+ 
+-set(PREFIX "${CMAKE_INSTALL_PREFIX}")
+-set(EXEC_PREFIX "${CMAKE_INSTALL_PREFIX}")
+-set(LIBDIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+-set(INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include/mircommon")
+-
+ set(
+   MIR_GENERATED_INCLUDE_DIRECTORIES
+   ${MIR_GENERATED_INCLUDE_DIRECTORIES}
+@@ -80,9 +75,6 @@ install(
+   DESTINATION "include/mircommon"
+ )
+ 
+-set(LIBDIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+-set(INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include")
+-
+ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mircommon.pc.in
+     ${CMAKE_CURRENT_BINARY_DIR}/mircommon.pc
+     @ONLY
+diff --git a/src/common/mircommon.pc.in b/src/common/mircommon.pc.in
+index 611387e649..b89695182d 100644
+--- a/src/common/mircommon.pc.in
++++ b/src/common/mircommon.pc.in
+@@ -1,5 +1,6 @@
+-libdir=@LIBDIR@
+-includedir=@INCLUDEDIR@/mircommon
++prefix=@CMAKE_INSTALL_PREFIX@
++libdir=@PKGCONFIG_LIBDIR@
++includedir=@PKGCONFIG_INCLUDEDIR@/mircommon
+ 
+ Name: mircommon
+ Description: Mir server library
+diff --git a/src/cookie/CMakeLists.txt b/src/cookie/CMakeLists.txt
+index 9a36ac49bb..8011bcc389 100644
+--- a/src/cookie/CMakeLists.txt
++++ b/src/cookie/CMakeLists.txt
+@@ -1,10 +1,5 @@
+ pkg_check_modules(NETTLE REQUIRED nettle)
+ 
+-set(PREFIX "${CMAKE_INSTALL_PREFIX}")
+-set(EXEC_PREFIX "${CMAKE_INSTALL_PREFIX}")
+-set(LIBDIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+-set(INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include")
+-
+ configure_file(
+   ${CMAKE_CURRENT_SOURCE_DIR}/mircookie.pc.in
+   ${CMAKE_CURRENT_BINARY_DIR}/mircookie.pc
+diff --git a/src/cookie/mircookie.pc.in b/src/cookie/mircookie.pc.in
+index 4c2c47445e..40b2b4fc32 100644
+--- a/src/cookie/mircookie.pc.in
++++ b/src/cookie/mircookie.pc.in
+@@ -1,7 +1,6 @@
+-prefix=@PREFIX@
+-exec_prefix=@EXEC_PREFIX@
+-libdir=@LIBDIR@
+-includedir=@INCLUDEDIR@/mircookie
++prefix=@CMAKE_INSTALL_PREFIX@
++libdir=@PKGCONFIG_LIBDIR@
++includedir=@PKGCONFIG_INCLUDEDIR@/mircookie
+ 
+ Name: mircookie
+ Description: Mir client library
+diff --git a/src/core/CMakeLists.txt b/src/core/CMakeLists.txt
+index 2ef01cedd4..babf182143 100644
+--- a/src/core/CMakeLists.txt
++++ b/src/core/CMakeLists.txt
+@@ -45,11 +45,6 @@ set_target_properties(mircore
+     LINK_DEPENDS ${symbol_map}
+ )
+ 
+-set(PREFIX "${CMAKE_INSTALL_PREFIX}")
+-set(EXEC_PREFIX "${CMAKE_INSTALL_PREFIX}")
+-set(LIBDIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+-set(INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include")
+-
+ configure_file(
+     ${CMAKE_CURRENT_SOURCE_DIR}/mircore.pc.in
+     ${CMAKE_CURRENT_BINARY_DIR}/mircore.pc
+diff --git a/src/core/mircore.pc.in b/src/core/mircore.pc.in
+index 8e1c614d44..ef59c44c9a 100644
+--- a/src/core/mircore.pc.in
++++ b/src/core/mircore.pc.in
+@@ -1,7 +1,6 @@
+-prefix=@PREFIX@
+-exec_prefix=@EXEC_PREFIX@
+-libdir=@LIBDIR@
+-includedir=@INCLUDEDIR@/mircore
++prefix=@CMAKE_INSTALL_PREFIX@
++libdir=@PKGCONFIG_LIBDIR@
++includedir=@PKGCONFIG_INCLUDEDIR@/mircore
+ 
+ Name: mircore
+ Description: Mir core library
+diff --git a/src/miral/CMakeLists.txt b/src/miral/CMakeLists.txt
+index c97c646c2d..aa1fe08401 100644
+--- a/src/miral/CMakeLists.txt
++++ b/src/miral/CMakeLists.txt
+@@ -134,9 +134,6 @@ if (CMAKE_COMPILER_IS_GNUCXX   AND  # clang generates slightly different symbols
+     endif()
+ endif()
+ 
+-set(LIBDIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+-set(INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include")
+-
+ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/miral.pc.in
+     ${CMAKE_CURRENT_BINARY_DIR}/miral.pc
+     @ONLY
+diff --git a/src/miral/miral.pc.in b/src/miral/miral.pc.in
+index b5f19f1c10..d902f742d2 100644
+--- a/src/miral/miral.pc.in
++++ b/src/miral/miral.pc.in
+@@ -1,5 +1,6 @@
+-libdir=@LIBDIR@
+-includedir=@INCLUDEDIR@/miral
++prefix=@CMAKE_INSTALL_PREFIX@
++libdir=@PKGCONFIG_LIBDIR@
++includedir=@PKGCONFIG_INCLUDEDIR@/miral
+ 
+ Name: miral
+ Description: Mir Abstraction Layer library
+diff --git a/src/platform/CMakeLists.txt b/src/platform/CMakeLists.txt
+index 4ffd220995..e46f52ff03 100644
+--- a/src/platform/CMakeLists.txt
++++ b/src/platform/CMakeLists.txt
+@@ -53,10 +53,6 @@ set_target_properties(
+ 
+ install(TARGETS mirplatform LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ 
+-set(INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include/mirplatform")
+-set(COMMON_INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include/mircommon")
+-set(LIBDIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+-
+ configure_file(
+   ${CMAKE_CURRENT_SOURCE_DIR}/mirplatform.pc.in
+   ${CMAKE_CURRENT_BINARY_DIR}/mirplatform.pc
+diff --git a/src/platform/mirplatform.pc.in b/src/platform/mirplatform.pc.in
+index d7df573ba9..9f1d21e6ed 100644
+--- a/src/platform/mirplatform.pc.in
++++ b/src/platform/mirplatform.pc.in
+@@ -1,11 +1,10 @@
+-prefix=@PREFIX@
+-exec_prefix=@EXEC_PREFIX@
+-libdir=@LIBDIR@
+-includedir=@INCLUDEDIR@
++prefix=@CMAKE_INSTALL_PREFIX@
++libdir=@PKGCONFIG_LIBDIR@
++includedir=@PKGCONFIG_INCLUDEDIR@
+ 
+ Name: mirplatform
+ Description: Mir platform library
+ Version: @MIR_VERSION@
+ Requires: mircommon, mircore
+-Libs: -L@LIBDIR@ -lmirplatform
+-Cflags: -I@INCLUDEDIR@ -I@COMMON_INCLUDEDIR@
++Libs: -L${libdir} -lmirplatform
++Cflags: -I${includedir}/mirplatform -I${includedir}/mircommon
+diff --git a/src/platforms/mesa/CMakeLists.txt b/src/platforms/mesa/CMakeLists.txt
+index 8c39e5f407..ff1c6f414b 100644
+--- a/src/platforms/mesa/CMakeLists.txt
++++ b/src/platforms/mesa/CMakeLists.txt
+@@ -1,5 +1,3 @@
+-set(INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include")
+-
+ configure_file(
+   ${CMAKE_CURRENT_SOURCE_DIR}/mir-client-platform-mesa.pc.in
+   ${CMAKE_CURRENT_BINARY_DIR}/mir-client-platform-mesa.pc
+@@ -17,7 +15,7 @@ add_subdirectory(client/)
+ 
+ install(
+   DIRECTORY ${CMAKE_SOURCE_DIR}/include/platforms/mesa/mir_toolkit
+-  DESTINATION "include/mirplatforms"
++  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mirplatforms"
+ )
+ 
+ install(
+diff --git a/src/platforms/mesa/mir-client-platform-mesa.pc.in b/src/platforms/mesa/mir-client-platform-mesa.pc.in
+index 86c24118b1..d61bce12e5 100644
+--- a/src/platforms/mesa/mir-client-platform-mesa.pc.in
++++ b/src/platforms/mesa/mir-client-platform-mesa.pc.in
+@@ -1,4 +1,5 @@
+-includedir=@INCLUDEDIR@/mirplatforms
++prefix=@CMAKE_INSTALL_PREFIX@
++includedir=@PKGCONFIG_INCLUDEDIR@/mirplatforms
+ 
+ Name: mir-client-platform-mesa
+ Description: Mir Mesa client platform development files
+diff --git a/src/renderer/CMakeLists.txt b/src/renderer/CMakeLists.txt
+index 10581ca643..abc5808b8b 100644
+--- a/src/renderer/CMakeLists.txt
++++ b/src/renderer/CMakeLists.txt
+@@ -3,10 +3,6 @@ install(
+   DESTINATION "include/mirrenderer"
+ )
+ 
+-set(INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include/mirrenderer")
+-set(PLATFORM_INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include/mirplatform")
+-set(COMMON_INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include/mircommon")
+-
+ configure_file(
+   ${CMAKE_CURRENT_SOURCE_DIR}/mirrenderer.pc.in
+   ${CMAKE_CURRENT_BINARY_DIR}/mirrenderer.pc
+diff --git a/src/renderer/mirrenderer.pc.in b/src/renderer/mirrenderer.pc.in
+index 3f0ccb04ac..2c820b0b3e 100644
+--- a/src/renderer/mirrenderer.pc.in
++++ b/src/renderer/mirrenderer.pc.in
+@@ -1,10 +1,8 @@
+-prefix=@PREFIX@
+-exec_prefix=@EXEC_PREFIX@
+-libdir=@LIBDIR@
+-includedir=@INCLUDEDIR@
++prefix=@CMAKE_INSTALL_PREFIX@
++includedir=@PKGCONFIG_INCLUDEDIR@
+ 
+ Name: mirrenderer
+ Description: Mir renderer
+ Version: @MIR_VERSION@
+-Cflags: -I@INCLUDEDIR@ -I@PLATFORM_INCLUDEDIR@ -I@COMMON_INCLUDEDIR@
++Cflags: -I${includedir}/mirrenderer -I${includedir}/mirplatform -I${includedir}/mircommon
+ 
+diff --git a/src/renderers/gl/CMakeLists.txt b/src/renderers/gl/CMakeLists.txt
+index 7b92ca6aaf..86c9e66b1d 100644
+--- a/src/renderers/gl/CMakeLists.txt
++++ b/src/renderers/gl/CMakeLists.txt
+@@ -1,5 +1,3 @@
+-set(INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include")
+-
+ configure_file(
+   ${CMAKE_CURRENT_SOURCE_DIR}/mir-renderer-gl-dev.pc.in
+   ${CMAKE_CURRENT_BINARY_DIR}/mir-renderer-gl-dev.pc
+diff --git a/src/renderers/gl/mir-renderer-gl-dev.pc.in b/src/renderers/gl/mir-renderer-gl-dev.pc.in
+index 486e884e78..b34730ecd0 100644
+--- a/src/renderers/gl/mir-renderer-gl-dev.pc.in
++++ b/src/renderers/gl/mir-renderer-gl-dev.pc.in
+@@ -1,4 +1,5 @@
+-includedir=@INCLUDEDIR@/mirrenderer
++prefix=@CMAKE_INSTALL_PREFIX@
++includedir=@PKGCONFIG_INCLUDEDIR@/mirrenderer
+ 
+ Name: mir-renderer-gl-dev
+ Description: Mir GL renderer development files
+diff --git a/src/server/CMakeLists.txt b/src/server/CMakeLists.txt
+index 5f78de58d8..3dba8d8bd4 100644
+--- a/src/server/CMakeLists.txt
++++ b/src/server/CMakeLists.txt
+@@ -38,11 +38,6 @@ add_subdirectory(shell/)
+ add_subdirectory(thread/)
+ add_subdirectory(console/)
+ 
+-set(PREFIX "${CMAKE_INSTALL_PREFIX}")
+-set(EXEC_PREFIX "${CMAKE_INSTALL_PREFIX}")
+-set(LIBDIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+-set(INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include/mirserver")
+-
+ configure_file(
+   ${CMAKE_CURRENT_SOURCE_DIR}/mirserver.pc.in
+   ${CMAKE_CURRENT_BINARY_DIR}/mirserver.pc
+diff --git a/src/server/mirserver.pc.in b/src/server/mirserver.pc.in
+index 87db9ff0d7..2557425221 100644
+--- a/src/server/mirserver.pc.in
++++ b/src/server/mirserver.pc.in
+@@ -1,12 +1,11 @@
+-prefix=@PREFIX@
+-exec_prefix=@EXEC_PREFIX@
+-libdir=@LIBDIR@
+-includedir=@INCLUDEDIR@
++prefix=@CMAKE_INSTALL_PREFIX@
++libdir=@PKGCONFIG_LIBDIR@
++includedir=@PKGCONFIG_INCLUDEDIR@/mirserver
+ 
+ Name: mirserver
+ Description: Mir server library
+ Version: @MIR_VERSION@
+ Requires.private: mirclient
+ Requires: mirplatform uuid mircore
+-Libs: -L@LIBDIR@ -lmirserver
+-Cflags: -I@INCLUDEDIR@
++Libs: -L${libdir} -lmirserver
++Cflags: -I${includedir}
+diff --git a/src/wayland/CMakeLists.txt b/src/wayland/CMakeLists.txt
+index e6a5a831ed..ec80b38eeb 100644
+--- a/src/wayland/CMakeLists.txt
++++ b/src/wayland/CMakeLists.txt
+@@ -35,8 +35,6 @@ set_target_properties(mirwayland
+     LINK_DEPENDS ${symbol_map}
+ )
+ 
+-set(INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include/mirwayland")
+-
+ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mirwayland.pc.in
+     ${CMAKE_CURRENT_BINARY_DIR}/mirwayland.pc
+     @ONLY
+diff --git a/src/wayland/mirwayland.pc.in b/src/wayland/mirwayland.pc.in
+index 578b7a583c..0da853ccc5 100644
+--- a/src/wayland/mirwayland.pc.in
++++ b/src/wayland/mirwayland.pc.in
+@@ -1,6 +1,6 @@
+-prefix=@PREFIX@
+-libdir=@LIBDIR@
+-includedir=@INCLUDEDIR@
++prefix=@CMAKE_INSTALL_PREFIX@
++libdir=@PKGCONFIG_LIBDIR@
++includedir=@PKGCONFIG_INCLUDEDIR@/mirwayland
+ 
+ Name: mirwayland
+ Description: Mir Wayland library
+-- 
+2.38.1
+
