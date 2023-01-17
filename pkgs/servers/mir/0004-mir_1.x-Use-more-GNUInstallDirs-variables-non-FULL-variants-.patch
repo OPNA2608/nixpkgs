@@ -1,0 +1,278 @@
+From 90a9813e16978975bd631526d86b07ae38603210 Mon Sep 17 00:00:00 2001
+From: OPNA2608 <christoph.neidahl@gmail.com>
+Date: Sun, 15 Jan 2023 20:31:28 +0100
+Subject: [PATCH 4/4] Use more GNUInstallDirs variables, non-FULL variants
+ where it makes sense
+
+---
+ examples/miral-shell/CMakeLists.txt         |  4 +--
+ examples/miral-shell/desktop/CMakeLists.txt |  8 +++---
+ src/CMakeLists.txt                          |  2 +-
+ src/client/CMakeLists.txt                   |  2 +-
+ src/common/CMakeLists.txt                   |  4 +--
+ src/cookie/CMakeLists.txt                   |  2 +-
+ src/core/CMakeLists.txt                     |  2 +-
+ src/miral/CMakeLists.txt                    |  6 ++---
+ src/renderer/CMakeLists.txt                 |  2 +-
+ src/renderers/gl/CMakeLists.txt             |  2 +-
+ src/server/CMakeLists.txt                   |  4 +--
+ src/wayland/CMakeLists.txt                  |  6 ++---
+ tests/CMakeLists.txt                        |  6 ++---
+ tests/performance-tests/CMakeLists.txt      | 29 +++++++++++++++++++--
+ 14 files changed, 52 insertions(+), 27 deletions(-)
+
+diff --git a/examples/miral-shell/CMakeLists.txt b/examples/miral-shell/CMakeLists.txt
+index aac3f601b6..66c0c08fca 100644
+--- a/examples/miral-shell/CMakeLists.txt
++++ b/examples/miral-shell/CMakeLists.txt
+@@ -6,7 +6,7 @@ add_custom_target(miral-app ALL
+ )
+ 
+ install(PROGRAMS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/miral-app
+-    DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
++    DESTINATION ${CMAKE_INSTALL_BINDIR}
+ )
+ 
+ add_custom_target(miral-terminal ALL
+@@ -14,7 +14,7 @@ add_custom_target(miral-terminal ALL
+ )
+ 
+ install(PROGRAMS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/miral-terminal
+-    DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
++    DESTINATION ${CMAKE_INSTALL_BINDIR}
+ )
+ 
+ mir_add_wrapped_executable(miral-shell
+diff --git a/examples/miral-shell/desktop/CMakeLists.txt b/examples/miral-shell/desktop/CMakeLists.txt
+index cea0a3fdca..7154ab3c94 100644
+--- a/examples/miral-shell/desktop/CMakeLists.txt
++++ b/examples/miral-shell/desktop/CMakeLists.txt
+@@ -4,7 +4,7 @@ configure_file(miral-shell.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/miral-shell.de
+ configure_file(mir-shell.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/mir-shell.desktop @ONLY)
+ 
+ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/miral-shell.desktop
+-    DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications
++    DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
+ )
+ 
+ add_custom_target(mir-shell ALL
+@@ -12,13 +12,13 @@ add_custom_target(mir-shell ALL
+ )
+ 
+ install(PROGRAMS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/mir-shell
+-    DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
++    DESTINATION ${CMAKE_INSTALL_BINDIR}
+ )
+ 
+ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mir-shell.desktop
+-    DESTINATION ${CMAKE_INSTALL_PREFIX}/share/wayland-sessions
++    DESTINATION ${CMAKE_INSTALL_DATADIR}/wayland-sessions
+ )
+ 
+ install(FILES ${ICON_NAME}.svg
+-    DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/scalable/apps
++    DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps
+ )
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index fc815ead98..4cc311c91b 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -12,7 +12,7 @@ add_subdirectory(cookie/)
+ # We need MIR_CLIENT_PLATFORM_PATH in both libmirclient and the platform
+ # implementations
+ set(MIR_CLIENT_PLATFORM_PATH
+-  ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/mir/client-platform
++  ${CMAKE_INSTALL_FULL_LIBDIR}/mir/client-platform
+ )
+ 
+ # Add the core and platform implementations before exposing any private APIs
+diff --git a/src/client/CMakeLists.txt b/src/client/CMakeLists.txt
+index e1a3ae029b..daf90482d7 100644
+--- a/src/client/CMakeLists.txt
++++ b/src/client/CMakeLists.txt
+@@ -149,7 +149,7 @@ install(
+ install(
+   DIRECTORY ${CMAKE_SOURCE_DIR}/include/client/mir_toolkit
+             ${CMAKE_SOURCE_DIR}/include/client/mir
+-  DESTINATION "include/mirclient"
++  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mirclient"
+ )
+ 
+ install(
+diff --git a/src/common/CMakeLists.txt b/src/common/CMakeLists.txt
+index 83b1a3728d..aaaf9b7683 100644
+--- a/src/common/CMakeLists.txt
++++ b/src/common/CMakeLists.txt
+@@ -72,11 +72,11 @@ install(TARGETS mircommon LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ 
+ install(
+   DIRECTORY ${CMAKE_SOURCE_DIR}/include/common/mir
+-  DESTINATION "include/mircommon"
++  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mircommon"
+ )
+ 
+ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mircommon.pc.in
+     ${CMAKE_CURRENT_BINARY_DIR}/mircommon.pc
+     @ONLY
+ )
+-install(FILES       ${CMAKE_CURRENT_BINARY_DIR}/mircommon.pc    DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig")
++install(FILES       ${CMAKE_CURRENT_BINARY_DIR}/mircommon.pc    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+diff --git a/src/cookie/CMakeLists.txt b/src/cookie/CMakeLists.txt
+index 8011bcc389..8a19c731f6 100644
+--- a/src/cookie/CMakeLists.txt
++++ b/src/cookie/CMakeLists.txt
+@@ -39,7 +39,7 @@ install(
+ 
+ install(
+   DIRECTORY ${CMAKE_SOURCE_DIR}/include/cookie/mir
+-  DESTINATION "include/mircookie"
++  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mircookie"
+ )
+ 
+ install(
+diff --git a/src/core/CMakeLists.txt b/src/core/CMakeLists.txt
+index babf182143..e1e51cd399 100644
+--- a/src/core/CMakeLists.txt
++++ b/src/core/CMakeLists.txt
+@@ -55,7 +55,7 @@ install(TARGETS mircore LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ 
+ install(
+     DIRECTORY ${CMAKE_SOURCE_DIR}/include/core/mir ${CMAKE_SOURCE_DIR}/include/core/mir_toolkit
+-    DESTINATION "include/mircore"
++    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mircore"
+ )
+ 
+ install(
+diff --git a/src/miral/CMakeLists.txt b/src/miral/CMakeLists.txt
+index aa1fe08401..5bce94095d 100644
+--- a/src/miral/CMakeLists.txt
++++ b/src/miral/CMakeLists.txt
+@@ -150,6 +150,6 @@ if(TARGET doc)
+             DEPENDS doc)
+ endif()
+ 
+-install(TARGETS     miral                           LIBRARY DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}")
+-install(DIRECTORY   ${CMAKE_SOURCE_DIR}/include/miral       DESTINATION "${INCLUDEDIR}")
+-install(FILES       ${CMAKE_CURRENT_BINARY_DIR}/miral.pc    DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig")
++install(TARGETS     miral                           LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
++install(DIRECTORY   ${CMAKE_SOURCE_DIR}/include/miral       DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
++install(FILES       ${CMAKE_CURRENT_BINARY_DIR}/miral.pc    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+diff --git a/src/renderer/CMakeLists.txt b/src/renderer/CMakeLists.txt
+index abc5808b8b..9ba8cc8f43 100644
+--- a/src/renderer/CMakeLists.txt
++++ b/src/renderer/CMakeLists.txt
+@@ -1,6 +1,6 @@
+ install(
+   DIRECTORY ${CMAKE_SOURCE_DIR}/include/renderer/mir
+-  DESTINATION "include/mirrenderer"
++  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mirrenderer"
+ )
+ 
+ configure_file(
+diff --git a/src/renderers/gl/CMakeLists.txt b/src/renderers/gl/CMakeLists.txt
+index 86c9e66b1d..06c0e80f9d 100644
+--- a/src/renderers/gl/CMakeLists.txt
++++ b/src/renderers/gl/CMakeLists.txt
+@@ -6,7 +6,7 @@ configure_file(
+ 
+ install(
+   DIRECTORY ${CMAKE_SOURCE_DIR}/include/renderers/gl/mir
+-  DESTINATION "include/mirrenderer"
++  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mirrenderer"
+ )
+ 
+ install(
+diff --git a/src/server/CMakeLists.txt b/src/server/CMakeLists.txt
+index 3dba8d8bd4..d6661d0a0c 100644
+--- a/src/server/CMakeLists.txt
++++ b/src/server/CMakeLists.txt
+@@ -160,10 +160,10 @@ install(TARGETS mirserver
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+ )
+ install(DIRECTORY
+-  ${CMAKE_SOURCE_DIR}/include/platform/mir DESTINATION "include/mirplatform"
++  ${CMAKE_SOURCE_DIR}/include/platform/mir DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mirplatform"
+ )
+ install(DIRECTORY
+-  ${CMAKE_SOURCE_DIR}/include/server/mir DESTINATION "include/mirserver"
++  ${CMAKE_SOURCE_DIR}/include/server/mir DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mirserver"
+ )
+ 
+ set(MIRSERVER_ABI 53) # Be sure to increment MIR_VERSION_MINOR at the same time
+diff --git a/src/wayland/CMakeLists.txt b/src/wayland/CMakeLists.txt
+index ec80b38eeb..2b89c8b74a 100644
+--- a/src/wayland/CMakeLists.txt
++++ b/src/wayland/CMakeLists.txt
+@@ -40,7 +40,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mirwayland.pc.in
+     @ONLY
+ )
+ 
+-install(TARGETS     mirwayland                           LIBRARY DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}")
+-install(FILES       ${CMAKE_CURRENT_BINARY_DIR}/mirwayland.pc    DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig")
+-install(DIRECTORY   ${CMAKE_SOURCE_DIR}/include/wayland/mir      DESTINATION "include/mirwayland")
++install(TARGETS     mirwayland                           LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
++install(FILES       ${CMAKE_CURRENT_BINARY_DIR}/mirwayland.pc    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
++install(DIRECTORY   ${CMAKE_SOURCE_DIR}/include/wayland/mir      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mirwayland")
+ 
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index d8a88f7bf6..2bb6d9a021 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -217,13 +217,13 @@ install(TARGETS mir-test-assist
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+ )
+ install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/test/mir
+-  DESTINATION "include/mirtest"
++  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mirtest"
+ )
+ install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/test/mir_test_framework
+-  DESTINATION "include/mirtest"
++  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mirtest"
+ )
+ install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/test/miral
+-  DESTINATION "include/mirtest"
++  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mirtest"
+ )
+ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mirtest.pc
+   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+diff --git a/tests/performance-tests/CMakeLists.txt b/tests/performance-tests/CMakeLists.txt
+index 18b3315ee8..586c3f43ff 100644
+--- a/tests/performance-tests/CMakeLists.txt
++++ b/tests/performance-tests/CMakeLists.txt
+@@ -20,5 +20,30 @@ add_custom_target(mir-smoke-test-runner ALL
+ )
+ 
+ install(PROGRAMS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/mir-smoke-test-runner
+-    DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+-)
+\ No newline at end of file
++    DESTINATION ${CMAKE_INSTALL_BINDIR}
++)
++
++find_program(XVFB_RUN_EXECUTABLE xvfb-run)
++find_program(GLMARK2_EXECUTABLE glmark2-es2-wayland)
++
++CMAKE_DEPENDENT_OPTION(
++  MIR_RUN_SMOKE_TESTS "Run mir-smoke-test-runner as part of testsuite" ON
++  "XVFB_RUN_EXECUTABLE" OFF
++)
++
++CMAKE_DEPENDENT_OPTION(
++  MIR_RUN_PERFORMANCE_TESTS "Run mir_performance_tests as part of testsuite" OFF
++  "XVFB_RUN_EXECUTABLE;GLMARK2_EXECUTABLE" OFF
++)
++
++if(MIR_RUN_SMOKE_TESTS)
++  mir_add_test(NAME mir-smoke-test-runner
++      COMMAND "xvfb-run" "--auto-servernum" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/mir-smoke-test-runner"
++  )
++endif()
++
++if(MIR_RUN_PERFORMANCE_TESTS)
++  mir_add_test(NAME mir_performance_tests
++    COMMAND "xvfb-run" "--auto-servernum" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/mir_performance_tests"
++  )
++endif()
+-- 
+2.38.1
+
