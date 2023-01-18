@@ -9,6 +9,7 @@
 , libqtdbustest
 , qtbase
 , qtdeclarative
+, python3
 }:
 
 stdenv.mkDerivation rec {
@@ -23,6 +24,10 @@ stdenv.mkDerivation rec {
   };
 
   postPatch = ''
+    for pyscript in $(find test -name '*.py'); do
+      patchShebangs $pyscript
+    done
+
     for pc in data/*.pc.in; do
       substituteInPlace $pc \
         --replace "\''${prefix}/include" '@CMAKE_INSTALL_FULL_INCLUDEDIR@' \
@@ -46,5 +51,11 @@ stdenv.mkDerivation rec {
     qtdeclarative
   ];
 
+  nativeCheckInputs = [
+    python3
+  ];
+
   dontWrapQtApps = true;
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 }
