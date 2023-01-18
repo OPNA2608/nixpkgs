@@ -39151,6 +39151,28 @@ with pkgs;
 
   uacme = callPackage ../tools/admin/uacme { };
 
+  # lomiri start
+
+  cmake-extras = callPackage ../development/libraries/cmake-extras { };
+
+  dbus-test-runner = callPackage ../development/libraries/dbus-test-runner { };
+
+  libqtdbusmock = libsForQt5.callPackage ../development/libraries/libqtdbusmock { };
+
+  libqtdbustest = libsForQt5.callPackage ../development/libraries/libqtdbustest { };
+
+  lomiri-click = callPackage ../tools/package-management/ubtouch-click { };
+
+  lomiri-app-launch = callPackage ../development/libraries/lomiri-app-launch { };
+
+  lomiri-api = libsForQt5.callPackage ../development/libraries/lomiri-api { };
+
+  lomiri-url-dispatcher = callPackage ../development/libraries/lomiri-url-dispatcher { };
+
+  qtmir = libsForQt5.callPackage ../development/libraries/qtmir { };
+
+  # lomiri end
+
   ufiformat = callPackage ../tools/system/ufiformat { };
 
   ums = callPackage ../servers/ums { };
