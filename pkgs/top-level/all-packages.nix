@@ -39153,23 +39153,58 @@ with pkgs;
 
   # lomiri start
 
+  # system-settings depends on older accountsservice version with specific patches
+  # expression mostly copied from https://github.com/NixOS/nixpkgs/commit/755be7ef793cd29394d821e72656ac0276ea1c9b
+  # https://gitlab.com/ubports/development/core/lomiri-system-settings/-/issues/65
+  accountsservice_0_6_42 = callPackage ../development/libraries/accountsservice/0.6.42.nix { };
+
   cmake-extras = callPackage ../development/libraries/cmake-extras { };
 
   dbus-test-runner = callPackage ../development/libraries/dbus-test-runner { };
+
+  deviceinfo = callPackage ../development/libraries/deviceinfo { };
+
+  geonames = callPackage ../development/libraries/geonames { };
+
+  gmenuharness = libsForQt5.callPackage ../development/libraries/gmenuharness { };
 
   libqtdbusmock = libsForQt5.callPackage ../development/libraries/libqtdbusmock { };
 
   libqtdbustest = libsForQt5.callPackage ../development/libraries/libqtdbustest { };
 
-  lomiri-click = callPackage ../tools/package-management/ubtouch-click { };
+  libusermetrics = libsForQt5.callPackage ../development/libraries/libusermetrics { };
+
+  lomiri = libsForQt5.callPackage ../development/libraries/lomiri { };
 
   lomiri-app-launch = callPackage ../development/libraries/lomiri-app-launch { };
 
   lomiri-api = libsForQt5.callPackage ../development/libraries/lomiri-api { };
 
+  lomiri-click = callPackage ../tools/package-management/ubtouch-click { };
+
+  lomiri-settings-components = libsForQt5.callPackage ../development/libraries/lomiri-settings-components { };
+
+  lomiri-system-settings = libsForQt5.callPackage ../development/libraries/lomiri-system-settings { };
+
+  lomiri-ui-toolkit = libsForQt5.callPackage ../development/libraries/lomiri-ui-toolkit { };
+
   lomiri-url-dispatcher = callPackage ../development/libraries/lomiri-url-dispatcher { };
 
+  lomiri-indicator-network = libsForQt5.callPackage ../development/libraries/lomiri-indicator-network { };
+
+  lomiri-download-manager = libsForQt5.callPackage ../development/libraries/lomiri-download-manager { };
+
+  lomiri-schemas = callPackage ../development/libraries/lomiri-schemas { };
+
+  qdjango = libsForQt5.callPackage ../development/libraries/qdjango { };
+
+  qmenumodel = libsForQt5.callPackage ../development/libraries/qmenumodel { };
+
   qtmir = libsForQt5.callPackage ../development/libraries/qtmir { };
+
+  qtpim = libsForQt5.callPackage ../development/libraries/qtpim { };
+
+  qtsystems = libsForQt5.callPackage ../development/libraries/qtsystems { };
 
   # lomiri end
 
