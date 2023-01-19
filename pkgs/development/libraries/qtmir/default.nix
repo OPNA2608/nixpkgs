@@ -24,6 +24,7 @@
 , glm
 , boost
 , properties-cpp
+, glib
 }:
 
 stdenv.mkDerivation rec {
@@ -41,8 +42,10 @@ stdenv.mkDerivation rec {
     sed -i \
       -e '/get_target_property(Qt5Gui_QPA_Plugin_Path/d' \
       -e '/_populate_Gui_plugin_properties/d' \
-      -e 's,''${CMAKE_INSTALL_PREFIX}/''${CMAKE_INSTALL_LIBDIR},''${CMAKE_INSTALL_FULL_LIBDIR},g' \
+      -e 's,''${CMAKE_INSTALL_PREFIX}/''${CMAKE_INSTALL_LIBDIR}/qt5/qml,''${CMAKE_INSTALL_FULL_LIBDIR}/qt-${qtbase.version}/qml,g' \
       CMakeLists.txt
+    substituteInPlace src/platforms/mirserver/CMakeLists.txt \
+      --replace 'qt5/plugins' 'qt-${qtbase.version}/plugins'
 
     substituteInPlace demos/paths.h.in \
       --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@' '@CMAKE_INSTALL_FULL_LIBDIR@' \
@@ -70,6 +73,7 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [
     cmake
+    glib # glib-compile-schemas
     pkg-config
     wrapQtAppsHook
   ];
@@ -102,4 +106,8 @@ stdenv.mkDerivation rec {
 
   # src/modules/QtMir/Application/surfacemanager.h:29:10: fatal error: boost/bimap.hpp: No such file or directory
   NIX_CFLAGS_COMPILE = "-isystem ${lib.getDev properties-cpp}/include";
+
+  postInstall = ''
+    glib-compile-schemas $out/share/glib-2.0/schemas
+  '';
 }

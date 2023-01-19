@@ -37,6 +37,15 @@ stdenv.mkDerivation rec {
         --replace "\''${prefix}/include" '@CMAKE_INSTALL_FULL_INCLUDEDIR@' \
         --replace "\''${prefix}/@CMAKE_INSTALL_LIBDIR@" '@CMAKE_INSTALL_FULL_LIBDIR@'
     done
+
+    # TODO not the correct way of handling this.
+    # SHELL_PLUGINDIR is intended to be relative to prefix so reverse-dependencies can replace the prefix
+    # and get the correct path for their plugin installs
+    # But the CMAKE_INSTALL_LIBDIR we pass in is absolute (which is permitted by the CMake specs)
+    # so it produces garbage in the pkg-config and rever-dependencies cannot resolve this properly,
+    # not without hacks of their own anyway
+    substituteInPlace CMakeLists.txt \
+      --replace 'SHELL_PLUGINDIR ''${CMAKE_INSTALL_LIBDIR}/lomiri/qml' 'SHELL_PLUGINDIR lib/lomiri/qml'
   '';
 
   strictDeps = true;
