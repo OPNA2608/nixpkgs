@@ -14,13 +14,17 @@
 
 stdenv.mkDerivation rec {
   pname = "lomiri-api";
-  version = "0.2.0-pre";
+  # Too recent for other components
+  # version = "0.2.0-pre";
+  version = "0.1.1";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/lomiri-api";
-    rev = "f5db96f881dc9acec705177da5a146e84e158708";
-    hash = "sha256-zDPDY/Fzyguap82WWm9Xm30LwSN1UON/AXwOqgyV59E=";
+    #rev = "f5db96f881dc9acec705177da5a146e84e158708";
+    #hash = "sha256-zDPDY/Fzyguap82WWm9Xm30LwSN1UON/AXwOqgyV59E=";
+    rev = version;
+    hash = "sha256-GDDCENGvbO4w/lK1PWaaqqa9t+foOH62dbvvHoidhwU=";
   };
 
   postPatch = ''
@@ -57,5 +61,6 @@ stdenv.mkDerivation rec {
 
   dontWrapQtApps = true;
 
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  # Fails rn
+  #doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 }

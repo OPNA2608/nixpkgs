@@ -1,7 +1,7 @@
-From 9862cae5496f21a3b042b847c79dfdc457930d79 Mon Sep 17 00:00:00 2001
-From: OPNA2608 <christoph.neidahl@gmail.com>
-Date: Sun, 15 Jan 2023 17:17:14 +0100
-Subject: [PATCH 2/4] Improve mirtest pkg-config
+From f22f9e48b41ddf7379b74a72e89889116b48abd4 Mon Sep 17 00:00:00 2001
+From: Puna2608 <opna2608@protonmail.com>
+Date: Thu, 19 Jan 2023 02:55:46 +0100
+Subject: [PATCH 2/2] Improve mirtest pkg-config
 
 ---
  tests/CMakeLists.txt |  4 +---
@@ -27,7 +27,7 @@ index 73a8d53899..d8a88f7bf6 100644
  
  install(TARGETS mir-test-assist
 diff --git a/tests/mirtest.pc.in b/tests/mirtest.pc.in
-index 6dec4f69bb..1822ebf87d 100644
+index 6dec4f69bb..5a7dd4c47d 100644
 --- a/tests/mirtest.pc.in
 +++ b/tests/mirtest.pc.in
 @@ -1,10 +1,10 @@
@@ -36,7 +36,7 @@ index 6dec4f69bb..1822ebf87d 100644
 -includedir=@INCLUDEDIR@
 +prefix=@CMAKE_INSTALL_PREFIX@
 +libdir=@PKGCONFIG_LIBDIR@
-+includedir=@PKGCONFIG_INCLUDEDIR@/include/mirtest
++includedir=@PKGCONFIG_INCLUDEDIR@/mirtest
  
  Name: mirtest
  Description: Mir test assist library
