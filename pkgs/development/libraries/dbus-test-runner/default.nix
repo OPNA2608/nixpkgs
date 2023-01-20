@@ -13,11 +13,6 @@
 , xvfb-run
 }:
 
-let
-  pythonTestEnv = python3.withPackages (ps: with ps; [
-    python-dbusmock
-  ]);
-in
 stdenv.mkDerivation rec {
   pname = "dbus-test-runner";
   version = "unstable-2019-10-02";
@@ -53,18 +48,25 @@ stdenv.mkDerivation rec {
   nativeCheckInputs = [
     coreutils
     dbus
-    pythonTestEnv
+    (python3.withPackages (ps: with ps; [
+      python-dbusmock
+    ]))
     xvfb-run
   ];
 
   enableParallelBuilding = true;
 
-  # Don't error on deprecations
-  NIX_CFLAGS_COMPILE = "-Wno-error";
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  makeFlags = [
+  checkFlags = [
     "XVFB_RUN=${xvfb-run}/bin/xvfb-run"
   ];
+
+  meta = with lib; {
+    description = "A small little utility to run a couple of executables under a new DBus session for testing";
+    homepage = "https://launchpad.net/dbus-test-runner";
+    license = licenses.gpl3Only;
+    platforms = platforms.all;
+    maintainers = with maintainers; [ OPNA2608 ];
+  };
 }
