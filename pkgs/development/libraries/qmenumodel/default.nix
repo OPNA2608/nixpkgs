@@ -2,10 +2,15 @@
 , lib
 , fetchFromGitHub
 , cmake
+, cmake-extras
 , pkg-config
 , glib
 , qtbase
 , qtdeclarative
+, dbus
+, dbus-test-runner
+, wrapQtAppsHook
+, python3
 }:
 
 stdenv.mkDerivation rec {
@@ -23,6 +28,11 @@ stdenv.mkDerivation rec {
     substituteInPlace libqmenumodel/src/qmenumodel.pc.in \
       --replace "\''${exec_prefix}/@CMAKE_INSTALL_LIBDIR@" '@CMAKE_INSTALL_FULL_LIBDIR@' \
       --replace "\''${prefix}/@CMAKE_INSTALL_INCLUDEDIR@" '@CMAKE_INSTALL_FULL_INCLUDEDIR@'
+
+    substituteInPlace libqmenumodel/QMenuModel/CMakeLists.txt \
+      --replace "\''${CMAKE_INSTALL_LIBDIR}/qt5/qml" "\''${CMAKE_INSTALL_LIBDIR}/qt-${qtbase.version}/qml"
+  '' + lib.optionalString doCheck ''
+    patchShebangs tests/{client,script}/*.py
   '';
 
   strictDeps = true;
@@ -33,10 +43,43 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [
+    cmake-extras
     glib
     qtbase
     qtdeclarative
   ];
 
+  nativeCheckInputs = [
+    dbus
+    dbus-test-runner
+    (python3.withPackages (ps: with ps; [
+      dbus-python
+      pygobject3
+    ]))
+  ];
+
   dontWrapQtApps = true;
+
+  cmakeFlags = [
+    "-DENABLE_TESTS=${if doCheck then "ON" else "OFF"}"
+  ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  preCheck = ''
+    # Tests all need some Qt stuff, can't get wrapQtApp to work on them
+    export QT_PLUGIN_PATH=${lib.getBin qtbase}/lib/qt-${qtbase.version}/plugins
+  '';
+
+  meta = with lib; {
+    description = "Qt5 renderer for Ayatana Indicators";
+    longDescription = ''
+      QMenuModel - a Qt/QML binding for GMenuModel
+      (see http://developer.gnome.org/gio/unstable/GMenuModel.html)
+    '';
+    homepage = "https://github.com/AyatanaIndicators/qmenumodel";
+    license = licenses.lgpl3Only;
+    platforms = platforms.linux;
+    maintainers = with maintainers; [ OPNA2608 ];
+  };
 }

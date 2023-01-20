@@ -8,6 +8,9 @@
 , libqtdbustest
 , networkmanager
 , qtbase
+, dbus
+, procps
+, python3
 }:
 
 stdenv.mkDerivation rec {
@@ -21,8 +24,15 @@ stdenv.mkDerivation rec {
   };
 
   postPatch = ''
+    # Look for the new(?) name
     substituteInPlace CMakeLists.txt \
       --replace 'NetworkManager' 'libnm'
+
+    # Workaround for "error: expected unqualified-id before 'public'" on "**signals"
+    sed -i -e '/add_definitions/a -DQT_NO_KEYWORDS' CMakeLists.txt
+  '' + lib.optionalString (!doCheck) ''
+    # Don't build tests when we're not running them
+    sed -i -e '/add_subdirectory(tests)/d' CMakeLists.txt
   '';
 
   strictDeps = true;
@@ -34,13 +44,41 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     cmake-extras
-    gtest
     libqtdbustest
     networkmanager
     qtbase
   ];
 
+  nativeCheckInputs = [
+    dbus
+    procps
+    (python3.withPackages (ps: with ps; [
+      python-dbusmock
+    ]))
+  ];
+
+  checkInputs = [
+    gtest
+  ];
+
   dontWrapQtApps = true;
 
-  NIX_CFLAGS_COMPILE = "-DQT_NO_KEYWORDS";
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  checkPhase = ''
+    runHook preCheck
+
+    # tests need access to the system bus
+    dbus-run-session --config-file=${../polkit/system_bus.conf} make test
+
+    runHook postCheck
+  '';
+
+  meta = with lib; {
+    description = "Library for mocking DBus interactions using Qt";
+    homepage = "https://launchpad.net/libqtdbusmock";
+    license = licenses.lgpl3Only;
+    platforms = platforms.all;
+    maintainers = with maintainers; [ OPNA2608 ];
+  };
 }
