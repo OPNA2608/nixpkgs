@@ -21,7 +21,6 @@ stdenv.mkDerivation rec {
     # HTML docs depend on regular docs
     substituteInPlace qdjango.pro \
       --replace 'dist.depends = docs' 'htmldocs.depends = docs'
-
   '';
 
   postConfigure = ''
@@ -42,8 +41,18 @@ stdenv.mkDerivation rec {
 
   dontWrapQtApps = true;
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   postInstall = ''
-    # And we don't even want these tests to be installed anyway
+    # Don't install the test binaries
     rm -r $out/tests
   '';
+
+  meta = with lib; {
+    description = "Qt-based C++ web framework";
+    homepage = "https://github.com/jlaine/qdjango";
+    license = licenses.lgpl21Plus;
+    platforms = platforms.all;
+    maintainers = with maintainers; [ OPNA2608 ];
+  };
 }
