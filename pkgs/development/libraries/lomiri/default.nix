@@ -1,6 +1,7 @@
 { stdenv
 , lib
 , fetchFromGitLab
+, fetchpatch
 , cmake
 , pkg-config
 , wrapQtAppsHook
@@ -21,7 +22,12 @@
 , lomiri-settings-components
 , lomiri-system-settings
 , lomiri-schemas
-, mir_1
+, lomiri-notifications
+, lomiri-thumbnailer
+, telephony-service
+, biometryd
+, hfd-service
+, mir
 , deviceinfo
 , libqtdbustest
 , libqtdbusmock
@@ -39,18 +45,28 @@
 , boost
 , wrapGAppsHook
 , qtgraphicaleffects
+, qtmultimedia
 }:
 
 stdenv.mkDerivation rec {
   pname = "lomiri";
-  version = "unstable-2022-01-17";
+  version = "0.1";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/lomiri";
-    rev = "8291f2d2ca73e2cfed5a5c31a2019aa30541e698";
-    hash = "sha256-MbC7kzQxni03dKIyg/V8sFsJujx8cP5lFsFQ4Se2SC8=";
+    rev = version;
+    hash = "sha256-wi/UBNgefHFG8l2k3dVn9coHNV7fT5xqMx4DPRyvhWw=";
   };
+
+  patches = [
+    # Convert to miroil for Mir 2.x support
+    # Remove when https://gitlab.com/ubports/development/core/lomiri/-/merge_requests/72 merged & in release
+    (fetchpatch {
+      url = "https://gitlab.com/ubports/development/core/lomiri/-/commit/f5832bde33149b51e6b47034dad7ecbb4345f47f.patch";
+      hash = "sha256-JBi0FzZgLNzT7qXZokA4q6w8vwdndPrqV+bws6uKWr8=";
+    })
+  ];
 
   postPatch = ''
     # This just doesn't seem to work?
@@ -78,6 +94,14 @@ stdenv.mkDerivation rec {
     lomiri-settings-components
     lomiri-system-settings
     qtgraphicaleffects
+    gsettings-qt
+    lomiri-notifications
+    telephony-service
+    biometryd
+    qmenumodel
+    lomiri-thumbnailer
+    hfd-service
+    qtmultimedia
 
     # Qt plugin path
     qtmir
@@ -95,8 +119,6 @@ stdenv.mkDerivation rec {
     gsettings-qt
     gtk3
     libevdev
-    libqtdbustest
-    libqtdbusmock
     libusermetrics
     libuuid
     lightdm_qt
@@ -108,7 +130,7 @@ stdenv.mkDerivation rec {
     lomiri-schemas
     lomiri-system-settings
     lomiri-ui-toolkit
-    mir_1
+    mir
     properties-cpp
     protobuf
     qmenumodel
@@ -119,9 +141,21 @@ stdenv.mkDerivation rec {
     qtsvg
   ];
 
+  checkInputs = [
+    libqtdbustest
+    libqtdbusmock
+  ];
+
   dontWrapGApps = true;
 
   preFixup = ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
+
+  cmakeFlags = [
+    "-DNO_TESTS=${lib.boolToString (!doCheck)}"
+  ];
+
+  # Tests not ported to Mir 2.x yet
+  doCheck = false;
 }
