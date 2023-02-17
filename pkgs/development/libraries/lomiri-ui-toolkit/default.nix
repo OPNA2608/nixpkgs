@@ -19,13 +19,13 @@
 
 stdenv.mkDerivation rec {
   pname = "lomiri-ui-toolkit";
-  version = "1.3.4000";
+  version = "1.3.5000";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/lomiri-ui-toolkit";
     rev = version;
-    hash = "sha256-xigFxkEt5pR+XgwJDVxMo+FdWIhRtjGC729PLd3bz2A=";
+    hash = "sha256-BkKZYD7auOOjVwNRTlU5bynQTjtRGX7yz9zGYTZjYOw=";
   };
 
   postPatch = ''
@@ -34,13 +34,8 @@ stdenv.mkDerivation rec {
     substituteInPlace tests/tests.pro \
       --replace "\''$\''$PYTHONDIR" "$out/${python3.sitePackages}"
 
-    for brokenInstall in \
-      po/po.pro \
-      app-launch-profiler/app-launch-profiler.pro \
-      lomiri-ui-toolkit-launcher/lomiri-ui-toolkit-launcher.pro \
-      apicheck/apicheck.pro
-    do
-      substituteInPlace $brokenInstall \
+    for subproject in po app-launch-profiler lomiri-ui-toolkit-launcher apicheck; do
+      substituteInPlace $subproject/$subproject.pro \
         --replace "\''$\''$[QT_INSTALL_PREFIX]" "$out" \
         --replace "\''$\''$[QT_INSTALL_LIBS]" "$out/lib"
     done
