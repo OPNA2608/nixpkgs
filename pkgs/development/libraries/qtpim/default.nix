@@ -1,6 +1,7 @@
 { stdenv
 , lib
 , fetchFromGitHub
+, fetchpatch
 , perl
 , qmake
 , qtbase
@@ -16,6 +17,13 @@ stdenv.mkDerivation rec {
     rev = "f9a8f0fc914c040d48bbd0ef52d7a68eea175a98";
     hash = "sha256-/1g+vvHjuRLB1vsm41MrHbBZ+88Udca0iEcbz0Q1BNQ=";
   };
+
+  patches = [
+    (fetchpatch {
+      url = "https://salsa.debian.org/qt-kde-team/qt/qtpim/-/raw/360682f88457b5ae7c92f32f574e51ccc5edbea0/debian/patches/0033-Set-PLUGIN_CLASS_NAME-in-.pro-files.patch";
+      hash = "sha256-2dXhkZyxPvY2KQq2veerAlpXkpU5/FeArWRlm1aOcEY=";
+    })
+  ];
 
   postPatch = ''
     for module in src/{contacts,organizer,versit{,organizer}}/*.pro; do
