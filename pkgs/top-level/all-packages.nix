@@ -39208,6 +39208,8 @@ with pkgs;
 
   qtsystems = libsForQt5.callPackage ../development/libraries/qtsystems { };
 
+  history-service = libsForQt5.callPackage ../development/libraries/history-service { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
