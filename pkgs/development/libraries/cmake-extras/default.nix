@@ -2,6 +2,7 @@
 , lib
 , fetchFromGitLab
 , cmake
+, qtbase
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -19,6 +20,10 @@ stdenvNoCC.mkDerivation rec {
     # We have nothing to build here, no need to depend on a C compiler
     substituteInPlace CMakeLists.txt \
       --replace 'project(cmake-extras)' 'project(cmake-extras NONE)'
+
+    # Qt's wrappers expect this to contain the Qt version
+    substituteInPlace src/QmlPlugins/QmlPluginsConfig.cmake \
+      --replace 'qt5/qml' 'qt-${qtbase.version}/qml'
   '';
 
   strictDeps = true;
