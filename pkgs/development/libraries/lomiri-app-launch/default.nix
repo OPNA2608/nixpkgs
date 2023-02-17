@@ -6,7 +6,6 @@
 , pkg-config
 , gobject-introspection
 , apparmor-bin-utils
-, mir_1
 , glib
 , json-glib
 , lomiri-click
@@ -23,13 +22,13 @@
 
 stdenv.mkDerivation rec {
   pname = "lomiri-app-launch";
-  version = "0.1.3";
+  version = "0.1.4";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/lomiri-app-launch";
     rev = version;
-    hash = "sha256-HI56LRXblZj6YWpjibTDOBez2RZJGNMske4N65nGfY0=";
+    hash = "sha256-G1bzAB9A8E6eTsL39RVWO9MlgXxXq6OHzHYyRJyyYa8=";
   };
 
   strictDeps = true;
@@ -50,13 +49,13 @@ stdenv.mkDerivation rec {
     lomiri-api
     lomiri-click
     lttng-ust
-    mir_1
     properties-cpp
     libxkbcommon
     zeitgeist
   ];
 
   cmakeFlags = [
+    "-DENABLE_MIRCLIENT=OFF"
     "-DLOMIRI_APP_LAUNCH_ARCH=${stdenv.hostPlatform.config}"
   ];
 }
