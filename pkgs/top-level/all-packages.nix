@@ -39218,6 +39218,8 @@ with pkgs;
 
   biometryd = libsForQt5.callPackage ../development/libraries/biometryd { };
 
+  persistent-cache-cpp = callPackage ../development/libraries/persistent-cache-cpp { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
