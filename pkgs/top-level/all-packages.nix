@@ -39216,6 +39216,8 @@ with pkgs;
 
   dbus-cpp = callPackage ../development/libraries/dbus-cpp { };
 
+  biometryd = libsForQt5.callPackage ../development/libraries/biometryd { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
