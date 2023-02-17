@@ -1,0 +1,124 @@
+From 097f11308f130e6e0c25bf09f75d071d09ad467c Mon Sep 17 00:00:00 2001
+From: OPNA2608 <christoph.neidahl@gmail.com>
+Date: Fri, 17 Feb 2023 14:51:05 +0100
+Subject: [PATCH] Drop deprecated qt5_use_modules
+
+Also seems broken on Nixpkgs, cannot pick up Qml (from qtdeclarative.dev).
+---
+ CMakeLists.txt       |  3 +++
+ src/CMakeLists.txt   |  2 +-
+ test/CMakeLists.txt  | 14 +++++++-------
+ tools/CMakeLists.txt | 24 ++++++++++++------------
+ 4 files changed, 23 insertions(+), 20 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ed66753..4337de0 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -37,6 +37,9 @@ include_directories(${Qt5DBus_INCLUDE_DIRS})
+ find_package(Qt5Widgets REQUIRED)
+ include_directories(${Qt5Widgets_INCLUDE_DIRS})
+ 
++find_package(Qt5Quick REQUIRED)
++find_package(Qt5Test REQUIRED)
++
+ # Workaround for https://bugreports.qt-project.org/browse/QTBUG-29987
+ set(QT_IMPORTS_DIR "${CMAKE_INSTALL_LIBDIR}/qt5/qml")
+ 
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 958ebd2..56f2ab0 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -73,7 +73,7 @@ target_link_libraries(
+   notifybackend
+ )
+ 
+-qt5_use_modules(notifybackend Widgets DBus Qml)
++target_link_libraries(notifybackend Qt5::Widgets Qt5::DBus Qt5::Qml)
+ 
+ execute_process(COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=plugindir_suffix lomiri-shell-api OUTPUT_VARIABLE SHELL_INSTALL_QML OUTPUT_STRIP_TRAILING_WHITESPACE)
+ if(SHELL_INSTALL_QML STREQUAL "")
+diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
+index 2ae556b..3c2ffa1 100644
+--- a/test/CMakeLists.txt
++++ b/test/CMakeLists.txt
+@@ -6,13 +6,13 @@ function(add_notification_test NAME)
+         ${QTDBUSTEST_LDFLAGS}
+     )
+ 
+-    qt5_use_modules(${NAME}
+-        Core
+-        DBus
+-        Gui
+-        Qml
+-        Test
+-        Widgets
++    target_link_libraries(${NAME}
++        Qt5::Core
++        Qt5::DBus
++        Qt5::Gui
++        Qt5::Qml
++        Qt5::Test
++        Qt5::Widgets
+     )
+ 
+     add_test(${NAME} ${NAME})
+diff --git a/tools/CMakeLists.txt b/tools/CMakeLists.txt
+index 1a35234..94392d4 100644
+--- a/tools/CMakeLists.txt
++++ b/tools/CMakeLists.txt
+@@ -10,7 +10,7 @@ add_executable(viewer
+   ${GUI_HEADERS}
+ )
+ 
+-qt5_use_modules(viewer Widgets)
++target_link_libraries(viewer Qt5::Widgets)
+ 
+ target_link_libraries(viewer notifybackend)
+ 
+@@ -21,11 +21,11 @@ add_executable(qmltest
+   qmltest.cpp
+ )
+ 
+-qt5_use_modules(qmltest
+-  Qml
+-  Quick
+-  DBus
+-  Widgets
++target_link_libraries(qmltest
++  Qt5::Qml
++  Qt5::Quick
++  Qt5::DBus
++  Qt5::Widgets
+ )
+ 
+ target_link_libraries(qmltest notifybackend)
+@@ -39,9 +39,9 @@ add_executable(dbusserver
+   ${GUI_HEADERS}
+ )
+ 
+-qt5_use_modules(dbusserver
+-  Widgets
+-  DBus
++target_link_libraries(dbusserver
++  Qt5::Widgets
++  Qt5::DBus
+ )
+ 
+ target_link_libraries(dbusserver notifybackend)
+@@ -55,9 +55,9 @@ add_executable(dbusclient
+   ${GUI_HEADERS}
+ )
+ 
+-qt5_use_modules(dbusclient
+-  Widgets
+-  DBus
++target_link_libraries(dbusclient
++  Qt5::Widgets
++  Qt5::DBus
+ )
+ 
+ target_link_libraries(dbusclient notifybackend)
+-- 
+2.38.3
+
