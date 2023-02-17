@@ -1,17 +1,18 @@
 { stdenv
 , lib
 , fetchFromGitLab
+, fetchpatch
 , cmake
 , pkg-config
 , intltool
 , cmake-extras
+, dbus
 , dbus-test-runner
 , glib
 , gtest
 , json-glib
 , libapparmor
 , lomiri-app-launch
-, mir_1
 , python3
 , sqlite
 , systemd
@@ -20,7 +21,7 @@
 
 stdenv.mkDerivation rec {
   pname = "lomiri-url-dispatcher";
-  version = "0.1.1";
+  version = "0.1.2";
 
   src = fetchFromGitLab {
     owner = "ubports";
@@ -29,12 +30,29 @@ stdenv.mkDerivation rec {
     hash = "sha256-RsTmcrnd+7gdkxi43lSWFCniAGWKS+Rau0jUHAJpXmE=";
   };
 
+  patches = [
+    # Support building without mirclient
+    # Remove when version > 0.1.2
+    (fetchpatch {
+      url = "https://gitlab.com/ubports/development/core/lomiri-url-dispatcher/-/commit/cb2be28d36934734c47cf87868a7959585c45968.patch";
+      hash = "sha256-WbkEWtcE4FUF2qOjQHVKg7/7NXUF31BUVsvA+LOOFDw=";
+    })
+    # Fix case-sensitivity in tests
+    # Remove when https://gitlab.com/ubports/development/core/lomiri-url-dispatcher/-/merge_requests/8 merged & in release
+    (fetchpatch {
+      url = "https://gitlab.com/sunweaver/lomiri-url-dispatcher/-/commit/ebdd31b9640ca243e90bc7b8aca7951085998bd8.patch";
+      hash = "sha256-g4EohB3oDcWK4x62/3r/g6CFxqb7/rdK51+E/Fji1Do=";
+    })
+  ];
+
   postPatch = ''
     substituteInPlace data/CMakeLists.txt \
       --replace "\''${SYSTEMD_USER_UNIT_DIR}" "\''${CMAKE_INSTALL_LIBDIR}/systemd/user"
 
     substituteInPlace tests/url_dispatcher_testability/CMakeLists.txt \
       --replace "\''${PYTHON_PACKAGE_DIR}" "$out/${python3.sitePackages}"
+  '' + lib.optionalString doCheck ''
+    patchShebangs tests/test-sql.sh
   '';
 
   strictDeps = true;
@@ -55,13 +73,26 @@ stdenv.mkDerivation rec {
     json-glib
     libapparmor
     lomiri-app-launch
-    mir_1
     sqlite
     systemd
     libxkbcommon
   ];
 
+  nativeCheckInputs = [
+    dbus
+    (python3.withPackages (ps: with ps; [
+      python-dbusmock
+    ]))
+    sqlite
+  ];
+
   cmakeFlags = [
     "-DLOCAL_INSTALL=ON"
+    "-Denable_mirclient=OFF"
   ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  # Tests work with an sqlite db, cannot handle >1 test at the same time
+  enableParallelChecking = false;
 }
