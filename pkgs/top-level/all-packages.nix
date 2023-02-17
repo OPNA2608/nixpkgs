@@ -39158,7 +39158,7 @@ with pkgs;
   # https://gitlab.com/ubports/development/core/lomiri-system-settings/-/issues/65
   accountsservice_0_6_42 = callPackage ../development/libraries/accountsservice/0.6.42.nix { };
 
-  cmake-extras = callPackage ../development/libraries/cmake-extras { };
+  cmake-extras = libsForQt5.callPackage ../development/libraries/cmake-extras { };
 
   dbus-test-runner = callPackage ../development/libraries/dbus-test-runner { };
 
