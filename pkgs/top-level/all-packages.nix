@@ -39212,6 +39212,8 @@ with pkgs;
 
   ayatana-indicator-messages = callPackage ../development/libraries/ayatana-indicator-messages { };
 
+  telephony-service = libsForQt5.callPackage ../development/libraries/telephony-service { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
