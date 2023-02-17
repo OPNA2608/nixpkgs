@@ -39214,6 +39214,8 @@ with pkgs;
 
   telephony-service = libsForQt5.callPackage ../development/libraries/telephony-service { };
 
+  dbus-cpp = callPackage ../development/libraries/dbus-cpp { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
