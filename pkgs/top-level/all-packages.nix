@@ -39222,6 +39222,8 @@ with pkgs;
 
   persistent-cache-cpp = callPackage ../development/libraries/persistent-cache-cpp { };
 
+  hfd-service = libsForQt5.callPackage ../development/libraries/hfd-service { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
