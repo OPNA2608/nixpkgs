@@ -40,8 +40,9 @@ stdenv.mkDerivation rec {
     # But the CMAKE_INSTALL_LIBDIR we pass in is absolute (which is permitted by the CMake specs)
     # so it produces garbage in the pkg-config and rever-dependencies cannot resolve this properly,
     # not without hacks of their own anyway
+    # Also, must have the Qt5 version in it, otherwise wrappers won't pick these up
     substituteInPlace CMakeLists.txt \
-      --replace 'SHELL_PLUGINDIR ''${CMAKE_INSTALL_LIBDIR}/lomiri/qml' 'SHELL_PLUGINDIR lib/lomiri/qml'
+      --replace 'SHELL_PLUGINDIR ''${CMAKE_INSTALL_LIBDIR}/lomiri/qml' 'SHELL_PLUGINDIR lib/qt-${qtbase.version}/qml'
   '';
 
   strictDeps = true;
