@@ -39985,6 +39985,8 @@ with pkgs;
 
   history-service = libsForQt5.callPackage ../development/libraries/history-service { };
 
+  ayatana-indicator-messages = callPackage ../development/libraries/ayatana-indicator-messages { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
