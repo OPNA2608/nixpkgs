@@ -39198,6 +39198,8 @@ with pkgs;
 
   lomiri-notifications = libsForQt5.callPackage ../development/libraries/lomiri-notifications { };
 
+  lomiri-thumbnailer = libsForQt5.callPackage ../development/libraries/lomiri-thumbnailer { };
+
   qdjango = libsForQt5.callPackage ../development/libraries/qdjango { };
 
   qmenumodel = libsForQt5.callPackage ../development/libraries/qmenumodel { };
