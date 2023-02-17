@@ -30,6 +30,8 @@ stdenv.mkDerivation rec {
 
     substituteInPlace libqmenumodel/QMenuModel/CMakeLists.txt \
       --replace "\''${CMAKE_INSTALL_LIBDIR}/qt5/qml" "\''${CMAKE_INSTALL_LIBDIR}/qt-${qtbase.version}/qml"
+  '' + lib.optionalString doCheck ''
+    patchShebangs tests/{client,script}/*.py
   '';
 
   strictDeps = true;
@@ -58,12 +60,16 @@ stdenv.mkDerivation rec {
   dontWrapQtApps = true;
 
   cmakeFlags = [
-    "-DENABLE_TESTS=OFF"
+    "-DENABLE_TESTS=${lib.boolToString doCheck}"
   ];
 
-  # The tests can be made to work, but are too flaky to be worth it
-  # They require access to the system bus and randomly failed at least twice on us
-  doCheck = false;
+  # Tests might be flaky
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  preCheck = ''
+    # Tests all need some Qt stuff
+    export QT_PLUGIN_PATH=${lib.getBin qtbase}/lib/qt-${qtbase.version}/plugins
+  '';
 
   meta = with lib; {
     description = "Qt5 renderer for Ayatana Indicators";

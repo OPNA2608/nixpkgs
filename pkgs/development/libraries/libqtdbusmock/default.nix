@@ -29,8 +29,10 @@ stdenv.mkDerivation rec {
       --replace 'NetworkManager' 'libnm'
 
     # Workaround for "error: expected unqualified-id before 'public'" on "**signals"
+    sed -i -e '/add_definitions/a -DQT_NO_KEYWORDS' CMakeLists.txt
+  '' + lib.optionalString (!doCheck) ''
     # Don't build tests when we're not running them
-    sed -i -e '/add_definitions/a -DQT_NO_KEYWORDS' -e '/add_subdirectory(tests)/d' CMakeLists.txt
+    sed -i -e '/add_subdirectory(tests)/d' CMakeLists.txt
   '';
 
   strictDeps = true;
@@ -61,9 +63,16 @@ stdenv.mkDerivation rec {
 
   dontWrapQtApps = true;
 
-  # The tests can be made to work, but are too flaky to be worth it
-  # They require access to the system bus and randomly failed at least twice on us
-  doCheck = false;
+  # Tests might be flaky
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  checkPhase = ''
+    runHook preCheck
+
+    dbus-run-session --config-file=${dbus}/share/dbus-1/session.conf -- make test
+
+    runHook postCheck
+  '';
 
   meta = with lib; {
     description = "Library for mocking DBus interactions using Qt";

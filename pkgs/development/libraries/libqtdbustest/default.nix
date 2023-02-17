@@ -21,9 +21,15 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-5MQdGGtEVE/pM9u0B0xFXyITiRln9p+8/MLtrrCZqi8=";
   };
 
+  patches = [
+    # Tests are overly pedantic when looking for launched process names in `ps`, break on python wrapper vs real python
+    # Just check if basename + arguments match, like libqtdbusmock does
+    ./less-pedantic-process-finding.patch
+  ];
+
   strictDeps = true;
 
-  postPatch = ''
+  postPatch =  lib.optionalString (!doCheck) ''
     # Don't build tests when we're not running them
     sed -i -e '/add_subdirectory(tests)/d' CMakeLists.txt
   '';
@@ -52,9 +58,16 @@ stdenv.mkDerivation rec {
 
   dontWrapQtApps = true;
 
-  # The tests can be made to work, but are too flaky to be worth it
-  # They require access to the system bus and randomly failed at least twice on us
-  doCheck = false;
+  # Tests might be flaky
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  checkPhase = ''
+    runHook preCheck
+
+    dbus-run-session --config-file=${dbus}/share/dbus-1/session.conf -- make test
+
+    runHook postCheck
+  '';
 
   meta = with lib; {
     description = "Library for testing DBus interactions using Qt";
