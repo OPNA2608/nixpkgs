@@ -39200,6 +39200,8 @@ with pkgs;
 
   lomiri-thumbnailer = libsForQt5.callPackage ../development/libraries/lomiri-thumbnailer { };
 
+  lomiri-session = callPackage ../development/libraries/lomiri-session { };
+
   qdjango = libsForQt5.callPackage ../development/libraries/qdjango { };
 
   qmenumodel = libsForQt5.callPackage ../development/libraries/qmenumodel { };
