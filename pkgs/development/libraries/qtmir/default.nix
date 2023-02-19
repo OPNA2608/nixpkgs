@@ -115,9 +115,11 @@ stdenv.mkDerivation rec {
 
   cmakeFlags = [
     "-DWITH_MIR2=ON"
-    "-DGSETTINGS_LOCALINSTALL=ON"
-    "-DGSETTINGS_COMPILE=ON"
   ];
+
+  postInstall = ''
+    glib-compile-schemas $out/share/glib-2.0/schemas
+  '';
 
   # Tests incompatible with Mir 2.x
   doCheck = false;
