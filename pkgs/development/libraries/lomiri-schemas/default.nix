@@ -35,9 +35,6 @@ stdenv.mkDerivation rec {
 
   cmakeFlags = [
     "-DGSETTINGS_LOCALINSTALL=ON"
+    "-DGSETTINGS_COMPILE=ON"
   ];
-
-  postInstall = ''
-    glib-compile-schemas $out/share/glib-2.0/schemas
-  '';
 }

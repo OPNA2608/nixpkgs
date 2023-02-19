@@ -70,5 +70,6 @@ stdenv.mkDerivation rec {
 
   cmakeFlags = [
     "-DGSETTINGS_LOCALINSTALL=ON"
+    "-DGSETTINGS_COMPILE=ON"
   ];
 }
