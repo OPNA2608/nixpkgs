@@ -2,14 +2,14 @@
 , lib
 , fetchbzr
 , autoreconfHook
-, intltool
-, pkg-config
-, dbus-glib
-, glib
+, bash
 , coreutils
 , dbus
+, dbus-glib
+, glib
+, intltool
+, pkg-config
 , python3
-, runtimeShell
 , xvfb-run
 }:
 
@@ -26,18 +26,20 @@ stdenv.mkDerivation rec {
   postPatch = ''
     patchShebangs tests/test-wait-outputer
 
+    # Tests `cat` together build shell scripts
+    # true is a PATHable call, bash a shebang
     substituteInPlace tests/Makefile.am \
-      --replace '/bin/true' '${coreutils}/bin/true' \
-      --replace '/bin/bash' '${runtimeShell}'
+      --replace '/bin/true' 'true' \
+      --replace '/bin/bash' '${lib.getBin bash}/bin/bash'
   '';
 
   strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
+    glib # for autoconf macro, gtester, gdbus
     intltool
     pkg-config
-    glib # for autoconf macro
   ];
 
   buildInputs = [
@@ -46,7 +48,7 @@ stdenv.mkDerivation rec {
   ];
 
   nativeCheckInputs = [
-    coreutils
+    bash
     dbus
     (python3.withPackages (ps: with ps; [
       python-dbusmock
