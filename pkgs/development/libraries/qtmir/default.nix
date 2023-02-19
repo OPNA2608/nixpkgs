@@ -42,11 +42,14 @@ stdenv.mkDerivation rec {
   };
 
   postPatch = ''
+    # get_target_property & _populate_Gui_plugin_properties don't work(?)
+    # Fix QML install path
     sed -i \
       -e '/get_target_property(Qt5Gui_QPA_Plugin_Path/d' \
       -e '/_populate_Gui_plugin_properties/d' \
       -e 's,''${CMAKE_INSTALL_PREFIX}/''${CMAKE_INSTALL_LIBDIR}/qt5/qml,''${CMAKE_INSTALL_FULL_LIBDIR}/qt-${qtbase.version}/qml,g' \
       CMakeLists.txt
+
     substituteInPlace src/platforms/mirserver/CMakeLists.txt \
       --replace 'qt5/plugins' 'qt-${qtbase.version}/plugins'
 
@@ -60,6 +63,12 @@ stdenv.mkDerivation rec {
         -e '/MIRAL_INCLUDE_DIRS/a "${lib.getDev boost}/include"' \
         $needsBoost
     done
+  '' + lib.optionalString (!doCheck) ''
+    # Remove test-specific dependencies
+    sed -i \
+      -e '/QTDBUSTEST/d' \
+      -e '/QTDBUSMOCK/d' \
+      CMakeLists.txt
   '';
 
   strictDeps = true;
@@ -75,9 +84,6 @@ stdenv.mkDerivation rec {
     cmake-extras
     boost
     gsettings-qt
-    gtest
-    libqtdbustest
-    libqtdbusmock
     libuuid
     lomiri-api
     lomiri-app-launch
@@ -98,14 +104,29 @@ stdenv.mkDerivation rec {
     properties-cpp
   ];
 
+  checkInputs = [
+    gtest
+    libqtdbustest
+    libqtdbusmock
+  ];
+
   # src/modules/QtMir/Application/surfacemanager.h:29:10: fatal error: boost/bimap.hpp: No such file or directory
   NIX_CFLAGS_COMPILE = "-isystem ${lib.getDev properties-cpp}/include";
 
   cmakeFlags = [
     "-DWITH_MIR2=ON"
+    "-DGSETTINGS_LOCALINSTALL=ON"
+    "-DGSETTINGS_COMPILE=ON"
   ];
 
-  postInstall = ''
-    glib-compile-schemas $out/share/glib-2.0/schemas
-  '';
+  # Tests incompatible with Mir 2.x
+  doCheck = false;
+
+  meta = with lib; {
+    description = "QPA plugin to make Qt a Mir server";
+    homepage = "https://gitlab.com/ubports/development/core/qtmir";
+    license = licenses.lgpl3Only;
+    platforms = platforms.linux;
+    maintainers = with maintainers; [ OPNA2608 ];
+  };
 }
