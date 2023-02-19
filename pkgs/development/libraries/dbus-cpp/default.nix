@@ -1,15 +1,15 @@
 { stdenv
 , lib
 , fetchFromGitLab
+, boost
 , cmake
 , cmake-extras
-, pkg-config
-, boost
-, libxml2
 , dbus
+, gtest
+, libxml2
+, pkg-config
 , process-cpp
 , properties-cpp
-, gtest
 }:
 
 stdenv.mkDerivation rec {
@@ -45,6 +45,14 @@ stdenv.mkDerivation rec {
     gtest
   ];
 
-  # TODO
-  doCheck = false;
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  meta = with lib; {
+    description = "A header-only dbus-binding leveraging C++-11";
+    homepage = "https://gitlab.com/ubports/development/core/lib-cpp/dbus-cpp";
+    license = licenses.lgpl3Only;
+    platforms = platforms.all;
+    maintainers = with maintainers; [ OPNA2608 ];
+    mainProgram = "dbus-cppc";
+  };
 }
