@@ -124,8 +124,8 @@ stdenv.mkDerivation rec {
       Database location: ~.local/share/history-service/history.sqlite
     '';
     homepage = "https://gitlab.com/ubports/development/core/history-service";
-    license = licenses.;
-    platforms = platforms.;
+    license = licenses.gpl3Only;
+    platforms = platforms.linux;
     maintainers = with maintainers; [ OPNA2608 ];
   };
 }
