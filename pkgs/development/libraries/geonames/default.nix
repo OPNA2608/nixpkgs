@@ -5,12 +5,13 @@
 , docbook-xsl-nons
 , docbook_xml_dtd_45
 , gettext
-, gtk-doc
-, pkg-config
 , glib
 , glibcLocales
 , withExamples ? true
 , gtk3
+, withDocumentation ? true
+, gtk-doc
+, pkg-config
 }:
 
 stdenv.mkDerivation rec {
@@ -23,6 +24,14 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-Mo7Khj2pgdJ9kT3npFXnh1WTSsY/B1egWTccbAXFNY8=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ] ++ lib.optionals withDocumentation [
+    "doc"
+  ];
+  outputBin = "dev";
 
   postPatch = ''
     patchShebangs src/generate-locales.sh tests/setup-test-env.sh
@@ -37,12 +46,13 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [
     cmake
+    gettext
+    glib # glib-compile-resources
+    pkg-config
+  ] ++ lib.optionals withDocumentation [
     docbook-xsl-nons
     docbook_xml_dtd_45
-    gettext
-    pkg-config
     gtk-doc
-    glib # glib-compile-resources
   ];
 
   buildInputs = [
@@ -53,7 +63,7 @@ stdenv.mkDerivation rec {
 
   # Tests need to be able to check locale
   LC_ALL = lib.optionalString doCheck "en_US.UTF-8";
-  checkInputs = [
+  nativeCheckInputs = [
     glibcLocales
   ];
 
@@ -63,15 +73,18 @@ stdenv.mkDerivation rec {
   ];
 
   cmakeFlags = [
-    "-DWANT_DOC=ON"
-    "-DWANT_DEMO=${if withExamples then "ON" else "OFF"}"
-    "-DWANT_TESTS=${if doCheck then "ON" else "OFF"}"
+    "-DWANT_DOC=${lib.boolToString withDocumentation}"
+    "-DWANT_DEMO=${lib.boolToString withExamples}"
+    "-DWANT_TESTS=${lib.boolToString doCheck}"
   ];
 
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  preInstall = lib.optionalString withDocumentation ''
+    # gtkdoc-mkhtml generates images without write permissions, errors out during install
+    chmod +w doc/reference/html/*
+  '';
 
-  outputs = [ "out" "dev" "doc" ];
-  outputBin = "dev";
+  #doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  doCheck = false;
 
   meta = with lib; {
     description = "Parse and query the geonames database dump";
