@@ -32,6 +32,10 @@ stdenvNoCC.mkDerivation rec {
     cmake
   ];
 
+  buildInputs = [
+    qtbase
+  ];
+
   meta = with lib; {
     description = "A collection of add-ons for the CMake build tool";
     homepage = "https://gitlab.com/ubports/development/core/cmake-extras/";
