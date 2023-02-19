@@ -83,8 +83,7 @@ stdenv.mkDerivation rec {
     chmod +w doc/reference/html/*
   '';
 
-  #doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-  doCheck = false;
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   meta = with lib; {
     description = "Parse and query the geonames database dump";
