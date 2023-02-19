@@ -1,6 +1,7 @@
 { stdenv
 , lib
 , fetchbzr
+, fetchpatch
 , cmake
 , cmake-extras
 , dbus
@@ -25,6 +26,16 @@ stdenv.mkDerivation rec {
     # Tests are overly pedantic when looking for launched process names in `ps`, break on python wrapper vs real python
     # Just check if basename + arguments match, like libqtdbusmock does
     ./less-pedantic-process-finding.patch
+    # Disable QProcess start timeout
+    (fetchpatch {
+      url = "https://salsa.debian.org/debian-ayatana-team/libqtdbustest/-/raw/0788df10bc6f2aa47c2b73fc1df944686a9ace1e/debian/patches/1003_no-QProcess-waitForstarted-timeout.patch";
+      hash = "sha256-ThDbn6URvkj5ARDMj+xO0fb1Qh2YQRzVy24O03KglHI=";
+    })
+    # More robust dbus address reading
+    (fetchpatch {
+      url = "https://salsa.debian.org/debian-ayatana-team/libqtdbustest/-/raw/7e55c79cd032c702b30d834c1fb0b65661fc6eeb/debian/patches/1004_make-reading-address-from-dbus-daemon-more-robust.patch";
+      hash = "sha256-hq8pdducp/udxoGWGt1dgL/7VHcbJO/oT1dOY1zew8M=";
+    })
   ];
 
   strictDeps = true;
