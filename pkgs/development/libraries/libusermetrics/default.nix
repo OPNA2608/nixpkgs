@@ -8,8 +8,10 @@
 , gsettings-qt
 , gtest
 , intltool
+, json-glib
 , libapparmor
 , libqtdbustest
+, lomiri-click
 , pkg-config
 , qdjango
 , qtbase
@@ -48,7 +50,9 @@ stdenv.mkDerivation rec {
   buildInputs = [
     cmake-extras
     gsettings-qt
+    json-glib
     libapparmor
+    lomiri-click
     qdjango
     qtxmlpatterns
   ];
@@ -71,6 +75,9 @@ stdenv.mkDerivation rec {
     "-DGSETTINGS_COMPILE=ON"
     "-DENABLE_TESTS=${lib.boolToString doCheck}"
   ];
+
+  # click -> json-glib -> include path not propagated?
+  NIX_CFLAGS_COMPILE = "-I${lib.getDev json-glib}/include/json-glib-1.0";
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
