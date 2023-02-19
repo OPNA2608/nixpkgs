@@ -1,18 +1,19 @@
 { stdenv
 , lib
 , fetchFromGitHub
+# This should maybe be the lomiri-specific accountsservice?
+, accountsservice
 , cmake
 , cmake-extras
-, pkg-config
-, accountsservice
-, glib
-, gobject-introspection
-, vala
-, systemd
-, intltool
-, gtk-doc
 , docbook_xsl
 , docbook_xml_dtd_45
+, glib
+, gobject-introspection
+, gtk-doc
+, intltool
+, pkg-config
+, systemd
+, vala
 , wrapGAppsHook
 }:
 
@@ -42,19 +43,19 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [
     cmake
-    pkg-config
-    vala
-    intltool
-    gtk-doc
     docbook_xsl
     docbook_xml_dtd_45
     glib # For glib-compile-schemas
+    gtk-doc
+    intltool
+    pkg-config
+    vala
     wrapGAppsHook
   ];
 
   buildInputs = [
-    cmake-extras
     accountsservice
+    cmake-extras
     glib
     gobject-introspection
     systemd
@@ -66,6 +67,7 @@ stdenv.mkDerivation rec {
   ];
 
   makeFlags = [
+    # ld: ...: undefined reference to symbol 'qsort@@GLIBC_2.2.5'
     "LD=${stdenv.cc.targetPrefix}cc"
   ];
 
@@ -73,4 +75,16 @@ stdenv.mkDerivation rec {
     # gtkdoc-mkhtml generates images without write permissions, errors out during install
     chmod +w doc/reference/html/*
   '';
+
+  meta = with lib; {
+    description = "Ayatana Indicator Messages Applet";
+    longDescription = ''
+      The -messages Ayatana System Indicator is the messages menu indicator for Unity7, MATE and Lomiri (optionally for
+      others, e.g. XFCE, LXDE).
+    '';
+    homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-messages";
+    license = licenses.gpl3Only;
+    platforms = platforms.linux;
+    maintainers = with maintainers; [ OPNA2608 ];
+  };
 }
