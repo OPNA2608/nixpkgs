@@ -15,7 +15,7 @@
 
 stdenv.mkDerivation rec {
   pname = "libqtdbusmock";
-  version = "0.7+17.04.20170316.1-0ubuntu1";
+  version = "unstable-2017-03-16";
 
   src = fetchbzr {
     url = "lp:libqtdbusmock";
