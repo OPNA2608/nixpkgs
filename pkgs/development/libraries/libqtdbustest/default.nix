@@ -13,7 +13,7 @@
 
 stdenv.mkDerivation rec {
   pname = "libqtdbustest";
-  version = "0.2+17.04.20170106-0ubuntu1";
+  version = "unstable-2017-01-06";
 
   src = fetchbzr {
     url = "lp:libqtdbustest";
