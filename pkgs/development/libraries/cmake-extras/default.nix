@@ -28,6 +28,8 @@ stdenvNoCC.mkDerivation rec {
 
   strictDeps = true;
 
+  dontWrapQtApps = true;
+
   nativeBuildInputs = [
     cmake
   ];
