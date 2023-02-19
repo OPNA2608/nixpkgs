@@ -1,7 +1,6 @@
 { stdenv
 , lib
 , fetchFromGitLab
-, fetchpatch
 , cmake
 , pkg-config
 , cmake-extras
@@ -11,22 +10,14 @@
 
 stdenv.mkDerivation rec {
   pname = "deviceinfo";
-  version = "0.1.0";
+  version = "0.1.1";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/deviceinfo";
-    rev = "v${version}";
-    hash = "sha256-YOjEYJkkGoArEFd9tZSBl+Vnjmd8NsPCnITVYT4Y56A=";
+    rev = version;
+    hash = "sha256-LiMExXB3x8N/+hkAXzO2uytAjRGpQneJVTbPQBzonKk=";
   };
-
-  patches = [
-    (fetchpatch {
-      name = "deviceinfo-0001-Fix-FTBFS-when-building-without-Android-properties.patch";
-      url = "https://gitlab.com/ubports/development/core/deviceinfo/-/commit/c25eedf01f6725aaa72f00e52eb2302383ea1429.patch";
-      hash = "sha256-5OgpEd/8BU7sL7yqKHiIWh61XafnvBZN1e5yFdaGH1s=";
-    })
-  ];
 
   strictDeps = true;
 
@@ -37,7 +28,25 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     cmake-extras
-    gtest
     yaml-cpp
   ];
+
+  checkInputs = [
+    gtest
+  ];
+
+  cmakeFlags = [
+    "-DDISABLE_TESTS=${lib.boolToString (!doCheck)}"
+  ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  meta = with lib; {
+    description = "Library to detect and configure devices";
+    homepage = "https://gitlab.com/ubports/development/core/deviceinfo";
+    license = licenses.gpl3Only;
+    platforms = platforms.all; # ?
+    maintainers = with maintainers; [ OPNA2608 ];
+    mainProgram = "device-info";
+  };
 }
