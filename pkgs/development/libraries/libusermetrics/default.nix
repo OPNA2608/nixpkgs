@@ -2,16 +2,18 @@
 , lib
 , fetchFromGitLab
 , cmake
-, doxygen
-, intltool
-, pkg-config
 , cmake-extras
+, dbus
+, doxygen
 , gsettings-qt
 , gtest
+, intltool
 , libapparmor
 , libqtdbustest
+, pkg-config
 , qdjango
 , qtbase
+, qtdeclarative
 , qtxmlpatterns
 }:
 
@@ -48,27 +50,38 @@ stdenv.mkDerivation rec {
     gsettings-qt
     libapparmor
     qdjango
-    qtbase
     qtxmlpatterns
+  ];
+
+  nativeCheckInputs = [
+    dbus
   ];
 
   checkInputs = [
     gtest
     libqtdbustest
+    qtbase
+    qtdeclarative
   ];
 
   dontWrapQtApps = true;
 
   cmakeFlags = [
     "-DGSETTINGS_LOCALINSTALL=ON"
+    "-DGSETTINGS_COMPILE=ON"
     "-DENABLE_TESTS=${lib.boolToString doCheck}"
   ];
 
-  # Tests rely on system D-Bus, flaky
-  doCheck = false;
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  preCheck = ''
+  checkPhase = ''
+    runHook preCheck
+
     export QT_PLUGIN_PATH=${lib.getBin qtbase}/lib/qt-${qtbase.version}/plugins/
+    export QML2_IMPORT_PATH=${lib.getBin qtdeclarative}/lib/qt-${qtbase.version}/qml/
+    dbus-run-session --config-file=${dbus}/share/dbus-1/session.conf -- make test
+
+    runHook postCheck
   '';
 
   meta = with lib; {
@@ -77,5 +90,6 @@ stdenv.mkDerivation rec {
     license = licenses.lgpl3Only;
     platforms = platforms.linux;
     maintainers = with maintainers; [ OPNA2608 ];
+    mainProgram = "usermetricsinput";
   };
 }
