@@ -27,16 +27,10 @@ stdenv.mkDerivation rec {
     owner = "ubports";
     repo = "development/core/lomiri-url-dispatcher";
     rev = version;
-    hash = "sha256-RsTmcrnd+7gdkxi43lSWFCniAGWKS+Rau0jUHAJpXmE=";
+    hash = "sha256-dOzoGH1BxCaMpWjMInwVS0lMNgxGgLzOB8IBqp9dcls=";
   };
 
   patches = [
-    # Support building without mirclient
-    # Remove when version > 0.1.2
-    (fetchpatch {
-      url = "https://gitlab.com/ubports/development/core/lomiri-url-dispatcher/-/commit/cb2be28d36934734c47cf87868a7959585c45968.patch";
-      hash = "sha256-WbkEWtcE4FUF2qOjQHVKg7/7NXUF31BUVsvA+LOOFDw=";
-    })
     # Fix case-sensitivity in tests
     # Remove when https://gitlab.com/ubports/development/core/lomiri-url-dispatcher/-/merge_requests/8 merged & in release
     (fetchpatch {
