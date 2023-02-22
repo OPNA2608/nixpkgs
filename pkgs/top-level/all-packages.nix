@@ -39210,7 +39210,7 @@ with pkgs;
 
   qtpim = libsForQt5.callPackage ../development/libraries/qtpim { };
 
-  qtsystems = libsForQt5.callPackage ../development/libraries/qtsystems { };
+  #qtsystems = libsForQt5.callPackage ../development/libraries/qtsystems { };
 
   history-service = libsForQt5.callPackage ../development/libraries/history-service { };
 
