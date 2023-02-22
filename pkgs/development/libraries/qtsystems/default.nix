@@ -104,8 +104,7 @@ stdenv.mkDerivation rec {
     runHook postCheck
   '';
 
-  postInstall = lib.optionalString withExamples ''
-    qtHostPathHook $out
+  postFixup = lib.optionalString withExamples ''
     for example in $(find $dev/share/examples -type f -executable); do
       wrapQtApp $example
     done
