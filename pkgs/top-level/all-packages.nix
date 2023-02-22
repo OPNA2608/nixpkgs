@@ -39210,8 +39210,6 @@ with pkgs;
 
   qtpim = libsForQt5.callPackage ../development/libraries/qtpim { };
 
-  #qtsystems = libsForQt5.callPackage ../development/libraries/qtsystems { };
-
   history-service = libsForQt5.callPackage ../development/libraries/history-service { };
 
   ayatana-indicator-messages = callPackage ../development/libraries/ayatana-indicator-messages { };
