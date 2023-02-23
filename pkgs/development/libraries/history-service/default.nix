@@ -15,6 +15,7 @@
 , qtbase
 , qtdeclarative
 , qtpim
+, sqlite
 , telepathy
 , telepathy-mission-control
 , xvfb-run
@@ -42,7 +43,25 @@ stdenv.mkDerivation rec {
   ];
 
   postPatch = ''
-    export VERBOSE=1
+    # Upstream's way of generating their schema doesn't work for us, don't quite understand why
+    # (gdb) bt
+    # #0  QSQLiteResult::prepare (this=0x4a4650, query=...) at qsql_sqlite.cpp:406
+    # #1  0x00007ffff344bcf4 in QSQLiteResult::reset (this=0x4a4650, query=...) at qsql_sqlite.cpp:378
+    # #2  0x00007ffff7f95f39 in QSqlQuery::exec (this=this@entry=0x7fffffffaad8, query=...) at kernel/qsqlquery.cpp:406
+    # #3  0x00000000004084cb in SQLiteDatabase::dumpSchema (this=<optimized out>) at /build/source/plugins/sqlite/sqlitedatabase.cpp:148
+    # #4  0x0000000000406d70 in main (argc=<optimized out>, argv=<optimized out>)
+    #     at /build/source/plugins/sqlite/schema/generate_schema.cpp:56
+    # (gdb) p lastError().driverText().toStdString()
+    # $17 = {_M_dataplus = {<std::allocator<char>> = {<std::__new_allocator<char>> = {<No data fields>}, <No data fields>},
+    #     _M_p = 0x4880d0 "Unable to execute statement"}, _M_string_length = 27, {
+    #     _M_local_buf = "\033\000\000\000\000\000\000\000+\344\371\367\377\177\000", _M_allocated_capacity = 27}}
+    # (gdb) p lastError().databaseText().toStdString()
+    # $18 = {_M_dataplus = {<std::allocator<char>> = {<std::__new_allocator<char>> = {<No data fields>}, <No data fields>},
+    #     _M_p = 0x48c480 "no such column: rowid"}, _M_string_length = 21, {
+    #     _M_local_buf = "\025\000\000\000\000\000\000\000A\344\371\367\377\177\000", _M_allocated_capacity = 21}}
+    #
+    # This replacement script should hopefully achieve the same / a similar-enough result with just sqlite
+    cp ${./update_schema.sh.in} plugins/sqlite/schema/update_schema.sh.in
 
     # Uses pkg_get_variable, cannot substitute prefix with that
     substituteInPlace daemon/CMakeLists.txt \
@@ -51,6 +70,10 @@ stdenv.mkDerivation rec {
     # Queries qmake for the QML installation path, which returns a reference to Qt5's build directory
     substituteInPlace CMakeLists.txt \
       --replace "\''${QMAKE_EXECUTABLE} -query QT_INSTALL_QML" "echo $out/lib/qt-${qtbase.version}/qml"
+
+    # Bad path concatenation
+    substituteInPlace config.h.in \
+      --replace '@CMAKE_INSTALL_PREFIX@/@HISTORY_PLUGIN_PATH@' '@HISTORY_PLUGIN_PATH@'
 
   '' + (if doCheck then ''
     substituteInPlace tests/common/dbus-services/CMakeLists.txt \
@@ -70,6 +93,8 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     cmake
     pkg-config
+    qtbase
+    sqlite
   ];
 
   buildInputs = [
@@ -97,19 +122,24 @@ stdenv.mkDerivation rec {
     "-DENABLE_WERROR=OFF"
   ];
 
-  # 50% of tests still fail
-  # doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  preBuild = ''
+    # SQLiteDatabase is used on host to generate SQL schemas
+    # Tests also need this to use SQLiteDatabase for verifying correct behaviour
+    export QT_PLUGIN_PATH=${lib.getBin qtbase}/lib/qt-${qtbase.version}/plugins
+  '';
+
+  # ContactMatcherTest failures, mostly on QSignalSpy's not seeing some signals (Qt5.15 problem?)
   doCheck = false;
 
-  # Multiple tests try to access the same sqlite db
+  # Parallelism in tests seems to break things
   enableParallelChecking = false;
 
   checkPhase = ''
     runHook preCheck
 
-    export QT_PLUGIN_PATH=${lib.getBin qtbase}/lib/qt-${qtbase.version}/plugins
     export HOME=$PWD
-    dbus-run-session --config-file=${dbus}/share/dbus-1/session.conf -- make test
+    dbus-run-session --config-file=${dbus}/share/dbus-1/session.conf -- \
+      make test
 
     runHook postCheck
   '';
@@ -121,7 +151,7 @@ stdenv.mkDerivation rec {
 
       See as well telepathy-ofono for incoming message events.
 
-      Database location: ~.local/share/history-service/history.sqlite
+      Database location: ~/.local/share/history-service/history.sqlite
     '';
     homepage = "https://gitlab.com/ubports/development/core/history-service";
     license = licenses.gpl3Only;
