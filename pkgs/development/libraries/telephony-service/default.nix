@@ -1,26 +1,30 @@
 { stdenv
 , lib
 , fetchFromGitLab
-, cmake
-, pkg-config
-, qtdeclarative
-, qtbase
-, qtpim
-, qtmultimedia
-, qtfeedback
-, libphonenumber
-, telepathy
-, libnotify
-, history-service
 , ayatana-indicator-messages
-, libusermetrics
-, lomiri-url-dispatcher
-, protobuf
-, telepathy-glib
-, dbus-glib
+, cmake
 , dbus
-, telepathy-mission-control
+, dbus-glib
+, dbus-test-runner
 , dconf
+, gnome
+, history-service
+, libnotify
+, libphonenumber
+, libusermetrics
+, lomiri-ui-toolkit
+, lomiri-url-dispatcher
+, pkg-config
+, protobuf
+, qtbase
+, qtdeclarative
+, qtfeedback
+, qtmultimedia
+, qtpim
+, telepathy
+, telepathy-glib
+, telepathy-mission-control
+, xvfb-run
 }:
 
 stdenv.mkDerivation rec {
@@ -45,7 +49,11 @@ stdenv.mkDerivation rec {
     substituteInPlace tests/common/dbus-services/CMakeLists.txt \
       --replace "\''${DBUS_SERVICES_DIR}/org.freedesktop.Telepathy.MissionControl5.service" "${telepathy-mission-control}/share/dbus-1/services/org.freedesktop.Telepathy.MissionControl5.service" \
       --replace "\''${DBUS_SERVICES_DIR}/org.freedesktop.Telepathy.AccountManager.service" "${telepathy-mission-control}/share/dbus-1/services/org.freedesktop.Telepathy.AccountManager.service" \
-      --replace "\''${DBUS_SERVICES_DIR}/ca.desrt.dconf.service" "${dconf}/share/dbus-1/services/ca.desrt.dconf.service
+      --replace "\''${DBUS_SERVICES_DIR}/ca.desrt.dconf.service" "${dconf}/share/dbus-1/services/ca.desrt.dconf.service"
+
+    substituteInPlace cmake/modules/GenerateTest.cmake \
+      --replace '/usr/lib/dconf' '${lib.getLib dconf}/libexec' \
+      --replace '/usr/lib/telepathy' '${lib.getLib telepathy-mission-control}/libexec'
   '' else ''
     sed -i -e '/add_subdirectory(tests)/d' CMakeLists.txt
   '');
@@ -58,32 +66,76 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [
-    qtbase
-    qtdeclarative
-    qtpim
-    qtmultimedia
-    qtfeedback
-    libphonenumber
-    telepathy
-    libnotify
-    history-service
     ayatana-indicator-messages
+    dbus-glib
+    history-service
+    libnotify
+    libphonenumber
     libusermetrics
     lomiri-url-dispatcher
-
-    # Missing includedirs
-    telepathy-glib
-    dbus-glib
-
-    # libphonenumber
     protobuf
+    qtbase
+    qtdeclarative
+    qtfeedback
+    qtmultimedia
+    qtpim
+    telepathy
+    telepathy-glib
   ];
 
-  # Somewhere in this telepathy stuff), an -I into telepathy-glib is missing
-  NIX_CFLAGS_COMPILE = "-I${lib.getDev telepathy-glib}/include/telepathy-1.0 -I${lib.getDev dbus-glib}/include/dbus-1.0 -I${lib.getDev dbus}/include/dbus-1.0";
+  nativeCheckInputs = [
+    dbus
+    dbus-test-runner
+    dconf
+    gnome.gnome-keyring
+    qtdeclarative
+    telepathy-mission-control
+    xvfb-run
+  ];
+
+  checkInputs = [
+    lomiri-ui-toolkit
+  ];
+
+  # Somewhere in this, some include paths aren't being identified/passed properly
+  NIX_CFLAGS_COMPILE = toString ([
+    "-I${lib.getDev telepathy-glib}/include/telepathy-1.0"
+    "-I${lib.getDev dbus-glib}/include/dbus-1.0"
+    "-I${lib.getDev dbus}/include/dbus-1.0"
+  ] ++ lib.optionals doCheck [
+    "-I${lib.getDev qtbase}/include/QtDBus"
+  ]);
 
   dontWrapQtApps = true;
 
-  # TODO
+  # - ContactUtils::sharedManager("memory") gives a QContactManager "invalid" (qtpim problem?)
+  # - phone numbers don't format as expected
+  # - many instances of QtTest QSignalSpy not seeing fired signals (count stays 0)
   doCheck = false;
+
+  # Ease with debugging
+  enableParallelChecking = false;
+
+  checkPhase = ''
+    runHook preCheck
+
+    export QT_PLUGIN_PATH=${lib.getBin qtbase}/lib/qt-${qtbase.version}/plugins
+    export QML2_IMPORT_PATH=${lib.getBin lomiri-ui-toolkit}/lib/qt-${qtbase.version}/qml
+    export HOME=$PWD
+    export XDG_RUNTIME_DIR=$PWD
+
+    xvfb-run -s '-screen 0 800x600x24' \
+      dbus-run-session --config-file=${dbus}/share/dbus-1/session.conf -- \
+        make test
+
+    runHook postCheck
+  '';
+
+  meta = with lib; {
+    description = "Backend dispatcher service for various mobile phone related operations";
+    homepage = "https://gitlab.com/ubports/development/core/telephony-service";
+    license = licenses.gpl3Only;
+    platforms = platforms.linux;
+    maintainers = with maintainers; [ OPNA2608 ];
+  };
 }
