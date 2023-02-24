@@ -70,8 +70,6 @@ stdenvNoCC.mkDerivation rec {
     deviceinfo
     dbus
     inotify-tools
-    # Wants=ayatana-indicators.target
-    # libayatana-common
     lomiri
     systemd
   ];
