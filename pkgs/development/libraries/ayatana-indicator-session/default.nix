@@ -10,6 +10,7 @@
 , libayatana-common
 , pkg-config
 , systemd
+, wrapGAppsHook
 }:
 
 stdenv.mkDerivation rec {
@@ -36,6 +37,7 @@ stdenv.mkDerivation rec {
     cmake
     intltool
     pkg-config
+    wrapGAppsHook
   ];
 
   buildInputs = [
