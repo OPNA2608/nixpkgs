@@ -39222,6 +39222,8 @@ with pkgs;
 
   hfd-service = libsForQt5.callPackage ../development/libraries/hfd-service { };
 
+  libayatana-common = callPackage ../development/libraries/libayatana-common { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
