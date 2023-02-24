@@ -7,6 +7,7 @@
 , wrapQtAppsHook
 , qtbase
 , qtdeclarative
+, qtfeedback
 , qtmir
 , qtsvg
 , lomiri-api
@@ -102,6 +103,7 @@ stdenv.mkDerivation rec {
     lomiri-thumbnailer
     hfd-service
     qtmultimedia
+    qtfeedback
 
     # Qt plugin path
     qtmir
