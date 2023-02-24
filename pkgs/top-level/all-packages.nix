@@ -40003,6 +40003,8 @@ with pkgs;
 
   libayatana-common = callPackage ../development/libraries/libayatana-common { };
 
+  ayatana-indicator-session = callPackage ../development/libraries/ayatana-indicator-session { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
