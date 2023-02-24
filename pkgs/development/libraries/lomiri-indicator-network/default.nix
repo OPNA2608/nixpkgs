@@ -20,17 +20,18 @@
 , libqtdbusmock
 , libqtdbustest
 , gmenuharness
+, wrapGAppsHook
 }:
 
 stdenv.mkDerivation rec {
   pname = "lomiri-indicator-network";
-  version = "unstable-2023-01-17";
+  version = "1.0.0";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/${pname}";
-    rev = "1adddec1163e9f5f21ceab71cc0410fd764884a3";
-    hash = "sha256-JT9K3h0pBstmXVO74YQZlrHaQ7rNCR2Z7ypJQnTIjDk=";
+    rev = version;
+    hash = "sha256-JrxJsdLd35coEJ0nYcYtPRQONLfKciNmBbLqXrEaOX0=";
   };
 
   postPatch = ''
@@ -47,6 +48,8 @@ stdenv.mkDerivation rec {
     intltool
     pkg-config
     qtdeclarative
+    # Needed? works fine without, but shouldn't be able to find its schemas
+    wrapGAppsHook
   ];
 
   buildInputs = [
