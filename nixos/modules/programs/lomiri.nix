@@ -34,6 +34,18 @@ in {
 
     # To make the Lomiri desktop session available if a display manager like SDDM is enabled:
     services.xserver.displayManager.sessionPackages = [ pkgs.lomiri-session ];
+
+    # TODO is this really the way to do this, can't we reuse upstream's files?
+    # Shadows ayatana-indicators.target from libayatana-common, brings up required indicator services
+    systemd.user.targets."ayatana-indicators" = {
+      description = "Target representing the lifecycle of the Ayatana Indicators. Each indicator should be bound to it in its individual service file.";
+      partOf = [ "graphical-session.target" ];
+      wants = [
+        "ayatana-indicator-session.service"
+        "ayatana-indicator-messages.service"
+        "lomiri-indicator-network.service"
+      ];
+    };
   };
 
   meta.maintainers = with lib.maintainers; [ OPNA2608 ];
