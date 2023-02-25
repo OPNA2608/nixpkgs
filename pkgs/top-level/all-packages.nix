@@ -39228,6 +39228,8 @@ with pkgs;
 
   xsct = callPackage ../tools/X11/xsct { };
 
+  ayatana-indicator-display = libsForQt5.callPackage ../development/libraries/ayatana-indicator-display { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };

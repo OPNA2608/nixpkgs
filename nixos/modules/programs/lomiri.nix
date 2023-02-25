@@ -18,6 +18,7 @@ in {
         libayatana-common
         ayatana-indicator-session
         ayatana-indicator-messages
+        ayatana-indicator-display
         lomiri-indicator-network
 
         # Used(?) themes
@@ -43,6 +44,7 @@ in {
       wants = [
         "ayatana-indicator-session.service"
         "ayatana-indicator-messages.service"
+        "ayatana-indicator-display.service"
         "lomiri-indicator-network.service"
       ];
     };
