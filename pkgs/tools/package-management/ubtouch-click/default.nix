@@ -85,7 +85,10 @@ python3.pkgs.buildPythonApplication rec {
   '';
 
   preFixup = ''
-    makeWrapperArgs+=(--prefix GI_TYPELIB_PATH : "$GI_TYPELIB_PATH")
+    makeWrapperArgs+=(
+      --prefix GI_TYPELIB_PATH : "$GI_TYPELIB_PATH"
+      --prefix LD_LIBRARY_PATH : "$out/lib"
+    )
   '';
 
   meta = with lib; {
