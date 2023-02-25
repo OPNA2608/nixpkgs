@@ -39226,6 +39226,8 @@ with pkgs;
 
   ayatana-indicator-session = callPackage ../development/libraries/ayatana-indicator-session { };
 
+  xsct = callPackage ../tools/X11/xsct { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
