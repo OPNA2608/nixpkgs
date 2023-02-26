@@ -39230,6 +39230,8 @@ with pkgs;
 
   ayatana-indicator-display = libsForQt5.callPackage ../development/libraries/ayatana-indicator-display { };
 
+  lomiri-sounds = callPackage ../development/libraries/lomiri-sounds { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
