@@ -40025,6 +40025,8 @@ with pkgs;
 
   ayatana-indicator-application = callPackage ../development/libraries/ayatana-indicator-application { };
 
+  ayatana-indicator-sound = libsForQt5.callPackage ../development/libraries/ayatana-indicator-sound { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
