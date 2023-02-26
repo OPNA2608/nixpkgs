@@ -39234,6 +39234,8 @@ with pkgs;
 
   ayatana-indicator-datetime = callPackage ../development/libraries/ayatana-indicator-datetime { };
 
+  ayatana-indicator-power = callPackage ../development/libraries/ayatana-indicator-power { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
