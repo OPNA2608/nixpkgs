@@ -39240,6 +39240,8 @@ with pkgs;
 
   ayatana-indicator-bluetooth = callPackage ../development/libraries/ayatana-indicator-bluetooth { };
 
+  ayatana-indicator-keyboard = callPackage ../development/libraries/ayatana-indicator-keyboard { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
