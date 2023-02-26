@@ -47,6 +47,7 @@
 , wrapGAppsHook
 , qtgraphicaleffects
 , qtmultimedia
+, nixos-artwork
 }:
 
 stdenv.mkDerivation rec {
@@ -74,11 +75,18 @@ stdenv.mkDerivation rec {
     substituteInPlace tests/uqmlscene/CMakeLists.txt \
       --replace 'set_target_properties(uqmlscene PROPERTIES INCLUDE_DIRECTORIES ''${XCB_INCLUDE_DIRS})' 'target_include_directories(uqmlscene PRIVATE ''${XCB_INCLUDE_DIRS})'
 
+    # Wrong prefix
     substituteInPlace data/systemd-user/CMakeLists.txt \
       --replace "\''${SYSTEMD_USERUNITDIR}" "$out/lib/systemd/user"
 
+    # Bad path concatenation
     substituteInPlace include/paths.h.in \
       --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@' '@CMAKE_INSTALL_FULL_BINDIR@'
+
+    # Replace default
+    # TODO there's prolly a better way of doing this than to hold this entire wallpaper hostage like this, try looking at other desktops?
+    substituteInPlace plugins/Utils/constants.cpp \
+      --replace '/usr/share/backgrounds/warty-final-ubuntu.png' '${nixos-artwork.wallpapers.simple-red.passthru.gnomeFilePath}'
   '';
 
   strictDeps = true;
@@ -133,6 +141,7 @@ stdenv.mkDerivation rec {
     lomiri-system-settings
     lomiri-ui-toolkit
     mir
+    nixos-artwork.wallpapers.simple-red
     properties-cpp
     protobuf
     qmenumodel
