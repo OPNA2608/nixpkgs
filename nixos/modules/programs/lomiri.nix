@@ -13,6 +13,7 @@ in {
       ayatana-indicator-bluetooth
       ayatana-indicator-datetime
       ayatana-indicator-display
+      ayatana-indicator-keyboard
       ayatana-indicator-messages
       ayatana-indicator-notifications
       ayatana-indicator-power
