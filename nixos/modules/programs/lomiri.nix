@@ -41,6 +41,7 @@ in {
         history-service
         telephony-service
         telepathy-mission-control
+        repowerd
 
         # Used(?) themes
         ubuntu-themes
