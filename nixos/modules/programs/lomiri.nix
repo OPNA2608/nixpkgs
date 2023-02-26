@@ -26,6 +26,7 @@ in {
         lomiri-url-dispatcher
         lomiri-click
         # lomiri-download-manager # install broken
+        lomiri-schemas # exposes some required dbus interfaces
 
         # Used(?) themes
         ubuntu-themes
