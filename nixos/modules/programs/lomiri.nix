@@ -10,6 +10,7 @@ in {
 
   config = let
     indicator-services = with pkgs; [
+      ayatana-indicator-bluetooth
       ayatana-indicator-datetime
       ayatana-indicator-display
       ayatana-indicator-messages
