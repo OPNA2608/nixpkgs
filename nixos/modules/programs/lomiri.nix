@@ -17,6 +17,7 @@ in {
       ayatana-indicator-messages
       ayatana-indicator-notifications
       ayatana-indicator-power
+      ayatana-indicator-printers
       ayatana-indicator-session
       lomiri-indicator-network
     ];
