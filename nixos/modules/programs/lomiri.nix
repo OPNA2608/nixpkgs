@@ -19,6 +19,7 @@ in {
         ayatana-indicator-session
         ayatana-indicator-messages
         ayatana-indicator-display
+        ayatana-indicator-datetime
         lomiri-indicator-network
 
         # Used(?) themes
@@ -45,6 +46,7 @@ in {
         "ayatana-indicator-session.service"
         "ayatana-indicator-messages.service"
         "ayatana-indicator-display.service"
+        "ayatana-indicator-datetime.service"
         "lomiri-indicator-network.service"
       ];
     };

@@ -39232,6 +39232,8 @@ with pkgs;
 
   lomiri-sounds = callPackage ../development/libraries/lomiri-sounds { };
 
+  ayatana-indicator-datetime = callPackage ../development/libraries/ayatana-indicator-datetime { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
