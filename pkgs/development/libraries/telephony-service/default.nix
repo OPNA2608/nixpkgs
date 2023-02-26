@@ -38,6 +38,8 @@ stdenv.mkDerivation rec {
     hash = "sha256-2hFB+0ySoyCRS0a5hXuiGc1HksLFpbJi65aBQ0ccYpA=";
   };
 
+  # TODO $out/bin/phone-gsettings-migration.py needs wrapping
+
   postPatch = ''
     # Queries qmake for the QML installation path, which returns a reference to Qt5's build directory
     # Same fix like in history-service, but someone un-negated the cross condition in this project
