@@ -30,6 +30,7 @@ in {
         lomiri-session # Wrappers to properly launch the session
         lomiri
 
+        # Required/Expected services
         libayatana-common
         lomiri-thumbnailer
         lomiri-url-dispatcher
@@ -39,6 +40,7 @@ in {
         hfd-service
         history-service
         telephony-service
+        telepathy-mission-control
 
         # Used(?) themes
         ubuntu-themes
