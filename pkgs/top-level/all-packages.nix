@@ -40017,6 +40017,8 @@ with pkgs;
 
   ayatana-indicator-notifications = callPackage ../development/libraries/ayatana-indicator-notifications { };
 
+  ayatana-indicator-bluetooth = callPackage ../development/libraries/ayatana-indicator-bluetooth { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
