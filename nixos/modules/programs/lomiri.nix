@@ -8,20 +8,23 @@ in {
       the Lomiri graphical shell (formerly known as Unity8)'');
   };
 
-  config = lib.mkIf cfg.enable {
+  config = let
+    indicator-services = with pkgs; [
+      ayatana-indicator-datetime
+      ayatana-indicator-display
+      ayatana-indicator-messages
+      ayatana-indicator-power
+      ayatana-indicator-session
+      lomiri-indicator-network
+    ];
+  in
+  lib.mkIf cfg.enable {
     environment = {
       systemPackages = with pkgs; [
         lomiri-session # Wrappers to properly launch the session
         lomiri
 
-        # Services
         libayatana-common
-        ayatana-indicator-session
-        ayatana-indicator-messages
-        ayatana-indicator-display
-        ayatana-indicator-datetime
-        lomiri-indicator-network
-
         lomiri-thumbnailer
         lomiri-url-dispatcher
         lomiri-click
@@ -31,7 +34,7 @@ in {
         # Used(?) themes
         ubuntu-themes
         vanilla-dmz
-      ];
+      ] ++ indicator-services;
     };
 
     # Copy-pasted
@@ -48,13 +51,7 @@ in {
     systemd.user.targets."ayatana-indicators" = {
       description = "Target representing the lifecycle of the Ayatana Indicators. Each indicator should be bound to it in its individual service file.";
       partOf = [ "graphical-session.target" ];
-      wants = [
-        "ayatana-indicator-session.service"
-        "ayatana-indicator-messages.service"
-        "ayatana-indicator-display.service"
-        "ayatana-indicator-datetime.service"
-        "lomiri-indicator-network.service"
-      ];
+      wants = lib.lists.forEach indicator-services (indicator: "${indicator.pname}.service");
     };
   };
 
