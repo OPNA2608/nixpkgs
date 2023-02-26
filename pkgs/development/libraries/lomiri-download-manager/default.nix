@@ -61,6 +61,9 @@ stdenv.mkDerivation rec {
   dontWrapQtApps = true;
 
   postInstall = ''
+    # TODO fix these before installing instead
     mv $out/lib{exec,}/pkgconfig
+    mv $out/lib/qt{5,-${qtbase.version}}
+    mv $out/share/share/dbus-1/* $out/share/dbus-1/
   '';
 }
