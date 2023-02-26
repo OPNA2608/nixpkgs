@@ -13,6 +13,7 @@ in {
       ayatana-indicator-datetime
       ayatana-indicator-display
       ayatana-indicator-messages
+      ayatana-indicator-notifications
       ayatana-indicator-power
       ayatana-indicator-session
       lomiri-indicator-network
