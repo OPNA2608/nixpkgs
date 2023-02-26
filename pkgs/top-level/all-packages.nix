@@ -39242,6 +39242,8 @@ with pkgs;
 
   ayatana-indicator-keyboard = callPackage ../development/libraries/ayatana-indicator-keyboard { };
 
+  ayatana-indicator-printers = callPackage ../development/libraries/ayatana-indicator-printers { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
