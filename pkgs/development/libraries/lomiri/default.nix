@@ -80,7 +80,7 @@ stdenv.mkDerivation rec {
       --replace "\''${SYSTEMD_USERUNITDIR}" "$out/lib/systemd/user"
 
     # Bad path concatenation
-    substituteInPlace include/paths.h.in \
+    substituteInPlace include/paths.h.in data/{indicators-client,lomiri,lomiri-greeter}.desktop.in.in \
       --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@' '@CMAKE_INSTALL_FULL_BINDIR@'
 
     # Replace default
@@ -158,6 +158,12 @@ stdenv.mkDerivation rec {
   ];
 
   dontWrapGApps = true;
+
+  postInstall = ''
+    # Broken on non-Ubuntu, likely requires patch similar to this (errors the same way):
+    # https://salsa.debian.org/ubports-team/lomiri-session/-/raw/58b8e4e8b8316cdacfde942b8288f792beb65cd5/debian/patches/0003_lomiri-session-Properly-differentiate-between-Ubuntu.patch
+    # install -Dm755 ../data/lomiri-greeter-wrapper $out/bin/lomiri-greeter-wrapper
+  '';
 
   preFixup = ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
