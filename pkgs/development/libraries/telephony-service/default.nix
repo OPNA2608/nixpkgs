@@ -47,6 +47,10 @@ stdenv.mkDerivation rec {
       --replace 'if(CMAKE_CROSSCOMPILING)' 'if(NOT CMAKE_CROSSCOMPILING)' \
       --replace "\''${QMAKE_EXECUTABLE} -query QT_INSTALL_QML" "echo $out/lib/qt-${qtbase.version}/qml"
 
+    # Bad path concatenation
+    substituteInPlace config.h.in handler/{com.lomiri.TelephonyServiceHandler,org.freedesktop.Telepathy.Client.TelephonyService*}.service.in \
+      --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@' '@CMAKE_INSTALL_FULL_BINDIR@'
+
   '' + (if doCheck then ''
     substituteInPlace tests/common/dbus-services/CMakeLists.txt \
       --replace "\''${DBUS_SERVICES_DIR}/org.freedesktop.Telepathy.MissionControl5.service" "${telepathy-mission-control}/share/dbus-1/services/org.freedesktop.Telepathy.MissionControl5.service" \
