@@ -22,6 +22,11 @@ in {
         ayatana-indicator-datetime
         lomiri-indicator-network
 
+        lomiri-thumbnailer
+        lomiri-url-dispatcher
+        lomiri-click
+        # lomiri-download-manager # install broken
+
         # Used(?) themes
         ubuntu-themes
         vanilla-dmz
