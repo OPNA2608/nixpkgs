@@ -30,6 +30,9 @@ in {
         lomiri-click
         # lomiri-download-manager # install broken
         lomiri-schemas # exposes some required dbus interfaces
+        hfd-service
+        history-service
+        telephony-service
 
         # Used(?) themes
         ubuntu-themes
