@@ -18,6 +18,7 @@
 , sqlite
 , telepathy
 , telepathy-mission-control
+, wrapQtAppsHook
 , xvfb-run
 }:
 
@@ -95,6 +96,7 @@ stdenv.mkDerivation rec {
     pkg-config
     qtbase
     sqlite
+    wrapQtAppsHook
   ];
 
   buildInputs = [
@@ -114,8 +116,6 @@ stdenv.mkDerivation rec {
     telepathy-mission-control
     xvfb-run
   ];
-
-  dontWrapQtApps = true;
 
   cmakeFlags = [
     # Many deprecation warnings with Qt5.15
