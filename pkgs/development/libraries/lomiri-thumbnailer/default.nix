@@ -16,6 +16,7 @@
 , taglib
 , python3
 , leveldb
+, wrapGAppsHook
 }:
 
 stdenv.mkDerivation rec {
@@ -52,6 +53,7 @@ stdenv.mkDerivation rec {
     cmake
     pkg-config
     python3
+    wrapGAppsHook
   ];
 
   buildInputs = [
