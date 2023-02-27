@@ -30,7 +30,7 @@ in {
         lomiri-session # Wrappers to properly launch the session
         lomiri
 
-        # Required/Expected services
+        # Required/Expected user services
         libayatana-common
         lomiri-thumbnailer
         lomiri-url-dispatcher
@@ -48,6 +48,16 @@ in {
         vanilla-dmz
       ] ++ indicator-services;
     };
+
+    # Required/Expected system services
+    systemd.packages = with pkgs; [
+      hfd-service
+      repowerd
+    ];
+    services.dbus.packages = with pkgs; [
+      hfd-service
+      repowerd
+    ];
 
     # Copy-pasted
     hardware.opengl.enable = lib.mkDefault true;
