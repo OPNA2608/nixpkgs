@@ -59,6 +59,10 @@ stdenv.mkDerivation rec {
     # Uses pkg_get_variable to get systemd system unit install dir, cannot replace prefix
     substituteInPlace data/CMakeLists.txt \
       --replace 'DESTINATION "''${SYSTEMD_SYSTEM_DIR}"' 'DESTINATION "${placeholder "out"}/lib/systemd/system"'
+
+    # Bad hardcoded path
+    substituteInPlace data/repowerd.service \
+      --replace '/usr' "$out"
   '';
 
   strictDeps = true;
