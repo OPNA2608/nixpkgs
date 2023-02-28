@@ -29,6 +29,8 @@ in {
       systemPackages = with pkgs; [
         lomiri-session # Wrappers to properly launch the session
         lomiri
+        # not having its desktop file for Xwayland available causes any X11 application to crash the session
+        qtmir
 
         # Required/Expected user services
         libayatana-common
