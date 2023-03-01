@@ -1,3 +1,7 @@
+# TODO
+# - tests
+# - meta
+# - check if there's a better solution for all the patching
 { stdenv
 , lib
 , fetchFromGitLab
@@ -19,13 +23,13 @@
 
 stdenv.mkDerivation rec {
   pname = "lomiri-ui-toolkit";
-  version = "1.3.5000";
+  version = "1.3.5010";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/lomiri-ui-toolkit";
     rev = version;
-    hash = "sha256-BkKZYD7auOOjVwNRTlU5bynQTjtRGX7yz9zGYTZjYOw=";
+    hash = "sha256-RH9xhbII2GfpxPg6QcPrBFIoI1/Ol7WmNdd0j9FkNs8=";
   };
 
   postPatch = ''
