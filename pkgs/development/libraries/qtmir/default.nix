@@ -1,3 +1,5 @@
+# TODO
+# - get some of the tests back to working?
 { stdenv
 , lib
 , fetchFromGitLab
@@ -31,15 +33,15 @@
 
 stdenv.mkDerivation rec {
   pname = "qtmir";
-  version = "unstable-2023-02-11-mir2.0";
-
   # Experimental support for Mir 2.x
   # Follows https://gitlab.com/ubports/development/core/qtmir/-/tree/ubports/focal_-_mir2.0
+  version = "unstable-2023-02-23-mir2.0";
+
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/qtmir";
-    rev = "2ba9390629c96ee5221d6d607210e9993f6f0346";
-    hash = "sha256-R8QBEViI+emKdW7lAcAQVi97th8oZiiYsGP1BjGM42c=";
+    rev = "bd21224b0fcd3edeaa56e5ccb90ac57a1785352d";
+    hash = "sha256-9M0VOkhaX/pP3UfiA1ydOYmuowJvAUdCNyNvT18Jdks=";
   };
 
   postPatch = ''
