@@ -39180,8 +39180,6 @@ with pkgs;
 
   lomiri-api = libsForQt5.callPackage ../development/libraries/lomiri-api { };
 
-  lomiri-click = callPackage ../tools/package-management/ubtouch-click { };
-
   lomiri-settings-components = libsForQt5.callPackage ../development/libraries/lomiri-settings-components { };
 
   lomiri-system-settings = libsForQt5.callPackage ../development/libraries/lomiri-system-settings { };

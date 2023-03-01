@@ -11,7 +11,7 @@
 , json-glib
 , libapparmor
 , libqtdbustest
-, lomiri-click
+, ubports-click
 , pkg-config
 , qdjango
 , qtbase
@@ -52,7 +52,7 @@ stdenv.mkDerivation rec {
     gsettings-qt
     json-glib
     libapparmor
-    lomiri-click
+    ubports-click
     qdjango
     qtxmlpatterns
   ];

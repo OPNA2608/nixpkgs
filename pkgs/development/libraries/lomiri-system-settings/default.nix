@@ -10,7 +10,7 @@
 , qtdeclarative
 , glib
 , geonames
-, lomiri-click
+, ubports-click
 , gettext
 , intltool
 , libqtdbustest
@@ -61,7 +61,7 @@ stdenv.mkDerivation rec {
     icu
     libqtdbustest
     libqtdbusmock
-    lomiri-click
+    ubports-click
     qtbase
     qtdeclarative
     upower

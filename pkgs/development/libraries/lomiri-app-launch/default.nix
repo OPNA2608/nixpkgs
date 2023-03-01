@@ -13,7 +13,7 @@
 , apparmor-bin-utils
 , glib
 , json-glib
-, lomiri-click
+, ubports-click
 , zeitgeist
 , dbus
 , dbus-test-runner
@@ -59,7 +59,7 @@ stdenv.mkDerivation rec {
     gtest
     json-glib
     lomiri-api
-    lomiri-click
+    ubports-click
     lttng-ust
     properties-cpp
     libxkbcommon
