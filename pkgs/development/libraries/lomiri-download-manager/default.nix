@@ -1,3 +1,7 @@
+# TODO
+# - tests
+# - meta
+# - see other TODO
 { stdenv
 , lib
 , fetchFromGitLab
@@ -16,19 +20,20 @@
 
 stdenv.mkDerivation rec {
   pname = "lomiri-download-manager";
-  version = "0.1.1";
+  version = "0.1.2";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/${pname}";
     rev = version;
-    hash = "sha256-wGvzPSToPTfoR3OdthjxkgwPpvGvBkNmo/DshZ8z+D0=";
+    hash = "sha256-a9C+hactBMHMr31E+ImKDPgpzxajy1klkjDcSEkPHqI=";
   };
 
   postPatch = ''
     substituteInPlace src/{uploads,downloads}/daemon/CMakeLists.txt \
       --replace '/usr/share' "\''${CMAKE_INSTALL_DATADIR}/share" \
-      --replace '/etc' "\''${CMAKE_INSTALL_SYSCONFDIR}"
+      --replace '/etc' "\''${CMAKE_INSTALL_SYSCONFDIR}" \
+      --replace '/usr/lib' "\''${CMAKE_INSTALL_LIBDIR}"
 
     # Deprecation warnings on Qt 5.15
     # https://gitlab.com/ubports/development/core/lomiri-download-manager/-/issues/1
