@@ -1,3 +1,6 @@
+# TODO
+# - tests
+# - meta
 { stdenv
 , lib
 , fetchFromGitLab
@@ -24,13 +27,13 @@
 
 stdenv.mkDerivation rec {
   pname = "lomiri-system-settings";
-  version = "unstable-2023-01-17";
+  version = "1.0.1";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/lomiri-system-settings";
-    rev = "47bd8f9e87cb61d7d2424ad0f5784a7bb33e5bc9";
-    hash = "sha256-IyQWBsgG3nVVrCSGw/MtAJ+7YkiHHwu32ZoCR1MmYFw=";
+    rev = version;
+    hash = "sha256-7XJ2mvqcI+tBEpT6tAVJrcEzyDhiY1ttB1X1e24kmd8=";
   };
 
   postPatch = ''
@@ -48,7 +51,7 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [
-    accountsservice_0_6_42
+    accountsservice_0_6_42 # https://gitlab.com/ubports/development/core/lomiri-system-settings/-/issues/341
     cmake-extras
     glib
     geonames
