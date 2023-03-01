@@ -26,6 +26,7 @@
 , properties-cpp
 , glib
 , wayland
+, xwayland
 }:
 
 stdenv.mkDerivation rec {
@@ -63,6 +64,11 @@ stdenv.mkDerivation rec {
         -e '/MIRAL_INCLUDE_DIRS/a "${lib.getDev boost}/include"' \
         $needsBoost
     done
+
+    # Needs path to Xwayland, else launching X11 applications crashes qtmir
+    substituteInPlace data/xwayland.qtmir.desktop \
+      --replace '/usr/bin/Xwayland' '${lib.getBin xwayland}/bin/Xwayland
+'
   '' + lib.optionalString (!doCheck) ''
     # Remove test-specific dependencies
     sed -i \
@@ -96,6 +102,7 @@ stdenv.mkDerivation rec {
     qtdeclarative
     qtsensors
     valgrind
+    xwayland
 
     # mir
     glm
