@@ -1,3 +1,7 @@
+# TODO
+# - tests
+# - meta
+# - use qtbase variable for plugin/qml path
 { stdenv
 , lib
 , fetchFromGitLab
@@ -10,13 +14,13 @@
 
 stdenv.mkDerivation rec {
   pname = "lomiri-settings-components";
-  version = "1.0.0";
+  version = "1.0.1";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/${pname}";
     rev = version;
-    hash = "sha256-vKofr2kbJU2qou62q/M+q83bMjp64EIAu9yO+4DfYzk=";
+    hash = "sha256-Ybg+qyecvhPUDoIoq+0194u57imx7SxDMEmufGN22jM=";
   };
 
   strictDeps = true;
