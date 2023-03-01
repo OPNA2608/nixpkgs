@@ -1,3 +1,8 @@
+# TODO
+# - reenable tests?
+# - meta
+# - fix lomiri-greeter-wrapper
+# - improve the way distro customisation is hacked in
 { stdenv
 , lib
 , fetchFromGitLab
@@ -48,17 +53,18 @@
 , qtgraphicaleffects
 , qtmultimedia
 , nixos-artwork
+, nixos-icons
 }:
 
 stdenv.mkDerivation rec {
   pname = "lomiri";
-  version = "0.1";
+  version = "0.1.2";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/lomiri";
     rev = version;
-    hash = "sha256-wi/UBNgefHFG8l2k3dVn9coHNV7fT5xqMx4DPRyvhWw=";
+    hash = "sha256-nU8nXXA8Mua4PPNPpfNDWcokOH2VWIdqK/nenPugnz0=";
   };
 
   patches = [
@@ -75,7 +81,7 @@ stdenv.mkDerivation rec {
     substituteInPlace tests/uqmlscene/CMakeLists.txt \
       --replace 'set_target_properties(uqmlscene PROPERTIES INCLUDE_DIRECTORIES ''${XCB_INCLUDE_DIRS})' 'target_include_directories(uqmlscene PRIVATE ''${XCB_INCLUDE_DIRS})'
 
-    # Wrong prefix
+    # Uses pkg_get_variable, cannot replace prefix
     substituteInPlace data/systemd-user/CMakeLists.txt \
       --replace "\''${SYSTEMD_USERUNITDIR}" "$out/lib/systemd/user"
 
@@ -83,10 +89,12 @@ stdenv.mkDerivation rec {
     substituteInPlace include/paths.h.in data/{indicators-client,lomiri,lomiri-greeter}.desktop.in.in \
       --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@' '@CMAKE_INSTALL_FULL_BINDIR@'
 
-    # Replace default
-    # TODO there's prolly a better way of doing this than to hold this entire wallpaper hostage like this, try looking at other desktops?
+    # NixOS-ify
     substituteInPlace plugins/Utils/constants.cpp \
-      --replace '/usr/share/backgrounds/warty-final-ubuntu.png' '${nixos-artwork.wallpapers.simple-red.passthru.gnomeFilePath}'
+      --replace '/usr/share/backgrounds/warty-final-ubuntu.png' '${nixos-artwork.wallpapers.simple-dark-gray.gnomeFilePath}'
+    substituteInPlace qml/Launcher/LauncherPanel.qml \
+      --replace 'LomiriColors.orange' '"#6586c8"' \
+      --replace '"graphics/home.svg"' '"${nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake-white.svg"'
   '';
 
   strictDeps = true;
@@ -141,7 +149,6 @@ stdenv.mkDerivation rec {
     lomiri-system-settings
     lomiri-ui-toolkit
     mir
-    nixos-artwork.wallpapers.simple-red
     properties-cpp
     protobuf
     qmenumodel
