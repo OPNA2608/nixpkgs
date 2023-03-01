@@ -1,3 +1,8 @@
+# TODO
+# - AA_EXEC_PATH apparmor path for by-hand apparmor usage (needed?)
+# - docs
+# - test
+# - meta
 { stdenv
 , lib
 , fetchFromGitLab
@@ -18,18 +23,25 @@
 , gtest
 , libxkbcommon
 , properties-cpp
+, systemd
 }:
 
 stdenv.mkDerivation rec {
   pname = "lomiri-app-launch";
-  version = "0.1.4";
+  version = "0.1.6";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/lomiri-app-launch";
     rev = version;
-    hash = "sha256-G1bzAB9A8E6eTsL39RVWO9MlgXxXq6OHzHYyRJyyYa8=";
+    hash = "sha256-952r6OsqthQJ7ACHsc3MsW+aTQnNpJJT2sMT9CGj1Y0=";
   };
+
+  postPatch = ''
+    # used pkg_get_variable, cannot replace prefix
+    substituteInPlace data/CMakeLists.txt \
+      --replace 'DESTINATION "''${SYSTEMD_USER_UNIT_DIR}"' 'DESTINATION "${placeholder "out"}/lib/systemd/user"'
+  '';
 
   strictDeps = true;
 
@@ -52,6 +64,7 @@ stdenv.mkDerivation rec {
     properties-cpp
     libxkbcommon
     zeitgeist
+    systemd
   ];
 
   cmakeFlags = [
