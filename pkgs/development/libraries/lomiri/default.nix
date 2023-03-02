@@ -90,11 +90,12 @@ stdenv.mkDerivation rec {
       --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@' '@CMAKE_INSTALL_FULL_BINDIR@'
 
     # NixOS-ify
+    install -Dm644 ${./lomiri-launcher-logo.svg} $out/share/icons/hicolor/scalable/apps/lomiri-launcher-logo.svg
     substituteInPlace plugins/Utils/constants.cpp \
       --replace '/usr/share/backgrounds/warty-final-ubuntu.png' '${nixos-artwork.wallpapers.simple-dark-gray.gnomeFilePath}'
     substituteInPlace qml/Launcher/LauncherPanel.qml \
       --replace 'LomiriColors.orange' '"#6586c8"' \
-      --replace '"graphics/home.svg"' '"${nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake-white.svg"'
+      --replace '"graphics/home.svg"' '"${placeholder "out"}/share/icons/hicolor/scalable/apps/lomiri-launcher-logo.svg"'
   '';
 
   strictDeps = true;
