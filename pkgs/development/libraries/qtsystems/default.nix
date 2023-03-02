@@ -1,4 +1,5 @@
 { stdenv
+, mkDerivation
 , lib
 , fetchFromGitHub
 , fetchpatch
@@ -12,11 +13,11 @@
 , qtbase
 , qtdeclarative
 , udev
-, withExamples ? true
-, wrapQtAppsHook
+# No examples available on Darwin
+, withExamples ? (!stdenv.hostPlatform.isDarwin)
 }:
 
-stdenv.mkDerivation rec {
+mkDerivation rec {
   pname = "qtsystems";
   version = "unstable-2019-01-03";
 
@@ -43,11 +44,8 @@ stdenv.mkDerivation rec {
   postPatch = ''
     substituteInPlace src/tools/{servicefw,sfwlisten}/*.pro \
       --replace '$$[QT_INSTALL_BINS]' "$dev/bin/"
-    # Too many & too much nesting to be explicit
-    for example_pro in $(find examples -name '*.pro'); do
-      substituteInPlace $example_pro \
-        --replace '$$[QT_INSTALL_EXAMPLES]' "$dev/share/examples"
-    done
+    substituteInPlace $(find examples -name '*.pro') \
+      --replace '$$[QT_INSTALL_EXAMPLES]' "$dev/share/examples"
   '';
 
   strictDeps = true;
@@ -56,18 +54,16 @@ stdenv.mkDerivation rec {
     perl
     pkg-config
     qmake
-  ] ++ lib.optionals (withExamples) [
-    qtdeclarative
-    wrapQtAppsHook
   ];
 
   buildInputs = [
+    qtbase
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [
     bluez
     libevdev
     libX11
-    qtbase
     udev
-  ] ++ lib.optionals (withExamples) [
+  ] ++ lib.optionals withExamples [
     qtdeclarative
   ];
 
@@ -90,8 +86,8 @@ stdenv.mkDerivation rec {
 
   dontWrapQtApps = true;
 
-  # Tests depend on examples
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform && withExamples;
+  # No test cases available on Darwin
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform && !stdenv.hostPlatform.isDarwin;
 
   checkPhase = ''
     runHook preCheck
@@ -99,7 +95,7 @@ stdenv.mkDerivation rec {
     export HOME=$PWD
     export XDG_DATA_HOME=$PWD/.local/share
     export LD_LIBRARY_PATH=$PWD/lib
-    dbus-run-session --config-file=${dbus}/share/dbus-1/session.conf -- make check
+    dbus-run-session --config-file=${dbus}/share/dbus-1/session.conf -- make check -C tests
 
     runHook postCheck
   '';
