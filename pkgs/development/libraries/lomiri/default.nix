@@ -105,24 +105,6 @@ stdenv.mkDerivation rec {
     pkg-config
     wrapGAppsHook # sets XDG_DATA_DIRS to found schemas
     wrapQtAppsHook
-
-    # QML import path
-    lomiri-ui-toolkit
-    lomiri-settings-components
-    lomiri-system-settings
-    qtgraphicaleffects
-    gsettings-qt
-    lomiri-notifications
-    telephony-service
-    biometryd
-    qmenumodel
-    lomiri-thumbnailer
-    hfd-service
-    qtmultimedia
-    qtfeedback
-
-    # Qt plugin path
-    qtmir
   ];
 
   buildInputs = [
@@ -140,7 +122,6 @@ stdenv.mkDerivation rec {
     libusermetrics
     libuuid
     lightdm_qt
-    pam
     lomiri-api
     lomiri-app-launch
     lomiri-download-manager
@@ -149,6 +130,7 @@ stdenv.mkDerivation rec {
     lomiri-system-settings
     lomiri-ui-toolkit
     mir
+    pam
     properties-cpp
     protobuf
     qmenumodel
@@ -157,6 +139,16 @@ stdenv.mkDerivation rec {
     qtgraphicaleffects
     qtmir
     qtsvg
+
+    # QML import path
+    biometryd
+    hfd-service
+    lomiri-notifications
+    lomiri-settings-components
+    lomiri-thumbnailer
+    qtfeedback
+    qtmultimedia
+    telephony-service
   ];
 
   checkInputs = [
