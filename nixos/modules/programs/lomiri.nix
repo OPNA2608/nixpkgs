@@ -36,7 +36,7 @@ in {
         libayatana-common
         lomiri-thumbnailer
         lomiri-url-dispatcher
-        lomiri-click
+        ubports-click
         # lomiri-download-manager # install broken
         lomiri-schemas # exposes some required dbus interfaces
         hfd-service
