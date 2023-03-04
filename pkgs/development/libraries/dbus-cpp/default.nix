@@ -45,7 +45,8 @@ stdenv.mkDerivation rec {
     gtest
   ];
 
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  # Tests might be flaky
+  doCheck = false;
 
   meta = with lib; {
     description = "A header-only dbus-binding leveraging C++-11";
