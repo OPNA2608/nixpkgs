@@ -6,6 +6,7 @@
 , cmake-extras
 , dbus
 , glib
+, gsettings-desktop-schemas
 , gtest
 , intltool
 , libayatana-common
@@ -59,6 +60,7 @@ stdenv.mkDerivation rec {
   buildInputs = [
     cmake-extras
     glib
+    gsettings-desktop-schemas
     libayatana-common
     systemd
   ];
