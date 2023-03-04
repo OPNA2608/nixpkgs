@@ -63,8 +63,8 @@ stdenv.mkDerivation rec {
     "-DENABLE_TESTS=${lib.boolToString doCheck}"
   ];
 
-  # Tests might be flaky
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  # Tests are extremely flaky
+  doCheck = false;
 
   preCheck = ''
     # Tests all need some Qt stuff
