@@ -62,13 +62,23 @@ in {
     ];
 
     # Copy-pasted
+    # TODO are all of these needed? just nice-have's? convenience?
     hardware.opengl.enable = lib.mkDefault true;
     fonts.enableDefaultFonts = lib.mkDefault true;
     programs.dconf.enable = lib.mkDefault true;
     programs.xwayland.enable = lib.mkDefault true;
 
-    # To make the Lomiri desktop session available if a display manager like SDDM is enabled:
-    services.xserver.displayManager.sessionPackages = [ pkgs.lomiri-session ];
+    services.accounts-daemon.enable = true;
+    services.udisks2.enable = true;
+    services.upower.enable = true;
+    services.xserver.displayManager.defaultSession = lib.mkDefault "lomiri";
+    services.xserver.displayManager.sessionPackages = with pkgs; [ lomiri-session ];
+    services.xserver.updateDbusEnvironment = true;
+
+    environment.pathsToLink = [
+      # Required for installed Ayatana indicators to show up in Lomiri
+      "/share/ayatana"
+    ];
 
     # TODO is this really the way to do this, can't we reuse upstream's files?
     # Shadows ayatana-indicators.target from libayatana-common, brings up required indicator services
