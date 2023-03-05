@@ -40026,6 +40026,8 @@ with pkgs;
 
   repowerd = callPackage ../development/libraries/repowerd { };
 
+  content-hub = libsForQt5.callPackage ../development/libraries/content-hub { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
