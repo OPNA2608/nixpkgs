@@ -35,8 +35,11 @@ stdenv.mkDerivation rec {
       --replace '/etc' "\''${CMAKE_INSTALL_SYSCONFDIR}" \
       --replace '/usr/lib' "\''${CMAKE_INSTALL_LIBDIR}"
 
-    substituteInPlace src/common/public/CMakeLists.txt \
+    substituteInPlace src/{common/public,uploads/common,downloads/{client,common}}/CMakeLists.txt \
       --replace "\''${CMAKE_INSTALL_LIBEXECDIR}/pkgconfig" "\''${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+
+    substituteInPlace src/{uploads,downloads}/daemon/*.service \
+      --replace '/usr/bin' '${placeholder "out"}/bin'
 
     substituteInPlace CMakeLists.txt \
       --replace 'qt5/qml' 'qt-${qtbase.version}/qml'
