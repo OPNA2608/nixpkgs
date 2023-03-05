@@ -1,7 +1,6 @@
 # TODO
 # - tests
 # - meta
-# - see other TODO
 { stdenv
 , lib
 , fetchFromGitLab
@@ -16,6 +15,7 @@
 , qtdeclarative
 , dbus-test-runner
 , xvfb-run
+, wrapQtAppsHook
 }:
 
 stdenv.mkDerivation rec {
@@ -31,9 +31,15 @@ stdenv.mkDerivation rec {
 
   postPatch = ''
     substituteInPlace src/{uploads,downloads}/daemon/CMakeLists.txt \
-      --replace '/usr/share' "\''${CMAKE_INSTALL_DATADIR}/share" \
+      --replace '/usr/share' "\''${CMAKE_INSTALL_DATADIR}" \
       --replace '/etc' "\''${CMAKE_INSTALL_SYSCONFDIR}" \
       --replace '/usr/lib' "\''${CMAKE_INSTALL_LIBDIR}"
+
+    substituteInPlace src/common/public/CMakeLists.txt \
+      --replace "\''${CMAKE_INSTALL_LIBEXECDIR}/pkgconfig" "\''${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+
+    substituteInPlace CMakeLists.txt \
+      --replace 'qt5/qml' 'qt-${qtbase.version}/qml'
 
     # Deprecation warnings on Qt 5.15
     # https://gitlab.com/ubports/development/core/lomiri-download-manager/-/issues/1
@@ -46,6 +52,7 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     cmake
     pkg-config
+    wrapQtAppsHook
   ];
 
   buildInputs = [
@@ -62,13 +69,4 @@ stdenv.mkDerivation rec {
     dbus-test-runner
     xvfb-run
   ];
-
-  dontWrapQtApps = true;
-
-  postInstall = ''
-    # TODO fix these before installing instead
-    mv $out/lib{exec,}/pkgconfig
-    mv $out/lib/qt{5,-${qtbase.version}}
-    mv $out/share/share/dbus-1/* $out/share/dbus-1/
-  '';
 }
