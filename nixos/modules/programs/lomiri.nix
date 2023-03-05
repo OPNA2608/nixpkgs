@@ -31,19 +31,21 @@ in {
         lomiri
         # not having its desktop file for Xwayland available causes any X11 application to crash the session
         qtmir
+        lomiri-system-settings
 
         # Required/Expected user services
         libayatana-common
         lomiri-thumbnailer
         lomiri-url-dispatcher
         ubports-click
-        # lomiri-download-manager # install broken
+        lomiri-download-manager
         lomiri-schemas # exposes some required dbus interfaces
         hfd-service
         history-service
         telephony-service
         telepathy-mission-control
         repowerd
+        content-hub
 
         # Used(?) themes
         ubuntu-themes
@@ -54,10 +56,12 @@ in {
     # Required/Expected system services
     systemd.packages = with pkgs; [
       hfd-service
+      lomiri-download-manager
       repowerd
     ];
     services.dbus.packages = with pkgs; [
       hfd-service
+      lomiri-download-manager
       repowerd
     ];
 
@@ -78,6 +82,8 @@ in {
     environment.pathsToLink = [
       # Required for installed Ayatana indicators to show up in Lomiri
       "/share/ayatana"
+      # I think it reads this from installed applications to figure out how to open dispatched URIs
+      "/share/lomiri-url-dispatcher"
     ];
 
     # TODO is this really the way to do this, can't we reuse upstream's files?
