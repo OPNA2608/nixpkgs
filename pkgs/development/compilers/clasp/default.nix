@@ -436,7 +436,7 @@ stdenv.mkDerivation rec {
     # https://github.com/clasp-developers/clasp/blob/95e8cedcd5c5f8f1c064e7cab4e640f00a175d90/src/core/corePackage.cc#L1293
     # "Currently only x86_64 and i386 is supported"
     platforms = platforms.x86;
-    # Untested
+    # ../src/llvmo/runtimeJit.cc:304:16: error: use of undeclared identifier 'aligned_alloc'
     broken = stdenv.isDarwin;
     homepage = "https://clasp-developers.github.io/";
   };
