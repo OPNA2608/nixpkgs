@@ -1,13 +1,12 @@
 # TODO
 # - tests
 # - meta
-# - schemas
-#   - com.lomiri.keyboard.maliit = lomiri-keyboard
-#     - or patch into regular maliit-keyboard instead?
-# - keep Ubuntu-inised accountsservice or patch out Ubuntu-specific code?
 # - some of the plugin detection needs to be rewritten to check /run/current-system/sw
 #   i.e. whether battery entry should be displayed:
 #   "visible-if-file-exists": "/etc/dbus-1/system.d/com.lomiri.Repowerd.conf"
+# - Debian patches:
+#   - make compatible with regular accountsservice?
+#   - patch to use regular maliit-keyboard instead?
 { stdenv
 , lib
 , fetchFromGitLab
@@ -46,6 +45,7 @@
 , lomiri-schemas
 , ayatana-indicator-datetime
 , content-hub
+, lomiri-keyboard
 }:
 
 let
@@ -118,6 +118,7 @@ stdenv.mkDerivation rec {
 
     # QML
     qtfeedback # lomiri-ui-toolkit
+    qtgraphicaleffects # lomiri-ui-toolkit
     qmenumodel
     qtsystems
     lomiri-indicator-network
@@ -127,6 +128,7 @@ stdenv.mkDerivation rec {
     lomiri-schemas
     ayatana-indicator-datetime
     content-hub
+    lomiri-keyboard
   ];
 
   nativeCheckInputs = [
