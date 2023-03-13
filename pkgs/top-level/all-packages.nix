@@ -39249,6 +39249,8 @@ with pkgs;
 
   content-hub = libsForQt5.callPackage ../development/libraries/content-hub { };
 
+  lomiri-keyboard = libsForQt5.callPackage ../development/libraries/lomiri-keyboard { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
