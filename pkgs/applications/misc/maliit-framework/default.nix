@@ -12,6 +12,7 @@
 , libsepol
 , libthai
 , pcre
+, qtbase
 , util-linux
 , wayland
 , xorg
@@ -41,6 +42,13 @@ mkDerivation rec {
     })
   ];
 
+  postPatch = ''
+    # Fix paths in QMake specs
+    substituteInPlace common/maliit-framework.prf.in src/maliit-plugins.prf.in \
+      --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_INCLUDEDIR@' '@CMAKE_INSTALL_FULL_INCLUDEDIR@' \
+      --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@' '@CMAKE_INSTALL_FULL_LIBDIR@'
+  '';
+
   buildInputs = [
     at-spi2-atk
     at-spi2-core
@@ -64,9 +72,11 @@ mkDerivation rec {
     wayland-protocols
   ];
 
-  preConfigure = ''
-    cmakeFlags+="-DQT5_PLUGINS_INSTALL_DIR=$out/$qtPluginPrefix"
-  '';
+  cmakeFlags = [
+    "-DQT5_PLUGINS_INSTALL_DIR=${placeholder "out"}/${qtbase.qtPluginPrefix}"
+    # Qt's setup hook expects the mkspecs there
+    "-DQT5_MKSPECS_INSTALL_DIR=${placeholder "out"}/mkspecs"
+  ];
 
   meta = with lib; {
     description = "Core libraries of Maliit and server";
