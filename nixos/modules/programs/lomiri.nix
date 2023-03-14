@@ -32,6 +32,9 @@ in {
         # not having its desktop file for Xwayland available causes any X11 application to crash the session
         qtmir
         lomiri-system-settings
+        morph-browser
+        maliit-framework
+        lomiri-keyboard
 
         # Required/Expected user services
         libayatana-common
@@ -82,8 +85,12 @@ in {
     environment.pathsToLink = [
       # Required for installed Ayatana indicators to show up in Lomiri
       "/share/ayatana"
-      # I think it reads this from installed applications to figure out how to open dispatched URIs
-      "/share/lomiri-url-dispatcher"
+      # Registers how to open dispatched URIs
+      "/share/lomiri-url-dispatcher/urls"
+      # ?
+      "/share/content-hub/peers"
+      # Try to get maliit stuff working
+      "/share/maliit/plugins"
     ];
 
     # TODO is this really the way to do this, can't we reuse upstream's files?
