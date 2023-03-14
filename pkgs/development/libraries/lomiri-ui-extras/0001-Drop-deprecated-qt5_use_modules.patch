@@ -1,0 +1,61 @@
+From bbe30a4366abafcd2acc92e96d28bb0086157bab Mon Sep 17 00:00:00 2001
+From: Puna2608 <opna2608@protonmail.com>
+Date: Tue, 14 Mar 2023 15:29:54 +0100
+Subject: [PATCH] Drop deprecated qt5_use_modules
+
+---
+ .../Lomiri/Components/Extras/PamAuthentication/CMakeLists.txt | 4 +++-
+ modules/Lomiri/Components/Extras/plugin/CMakeLists.txt        | 4 +++-
+ tests/unittests/CMakeLists.txt                                | 2 +-
+ 3 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/modules/Lomiri/Components/Extras/PamAuthentication/CMakeLists.txt b/modules/Lomiri/Components/Extras/PamAuthentication/CMakeLists.txt
+index d161d16..ad2470b 100644
+--- a/modules/Lomiri/Components/Extras/PamAuthentication/CMakeLists.txt
++++ b/modules/Lomiri/Components/Extras/PamAuthentication/CMakeLists.txt
+@@ -17,9 +17,11 @@ add_library(PamAuthentication MODULE
+     ${pamauthentication_SRCS}
+ )
+ 
++find_package(Qt5DBus REQUIRED)
++
+ target_link_libraries(PamAuthentication pam)
+ 
+-qt5_use_modules(PamAuthentication Gui Qml Quick Widgets DBus)
++target_link_libraries(PamAuthentication Qt5::Gui Qt5::Qml Qt5::Quick Qt5::Widgets Qt5::DBus)
+ 
+ # Copy the plugin, the qmldir file and other assets to the build dir for running in QtCreator
+ if(NOT "${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
+diff --git a/modules/Lomiri/Components/Extras/plugin/CMakeLists.txt b/modules/Lomiri/Components/Extras/plugin/CMakeLists.txt
+index 3546ba0..f9f874c 100644
+--- a/modules/Lomiri/Components/Extras/plugin/CMakeLists.txt
++++ b/modules/Lomiri/Components/Extras/plugin/CMakeLists.txt
+@@ -27,9 +27,11 @@ include_directories(
+     ${CMAKE_BINARY_DIR}
+ )
+ 
++find_package(Qt5Xml REQUIRED)
++
+ add_library(lomiri-ui-extras-plugin SHARED ${PLUGIN_SRC} ${PLUGIN_HDRS}
+             ${EXAMPLE_PLUGIN_SRC} ${PHOTO_EDITOR_PLUGIN_SRC} ${TABS_BAR_PLUGIN_SRC})
+-qt5_use_modules(lomiri-ui-extras-plugin Core Qml Quick Xml Widgets)
++target_link_libraries(lomiri-ui-extras-plugin Qt5::Core Qt5::Qml Qt5::Quick Qt5::Xml Qt5::Widgets)
+ target_link_libraries(lomiri-ui-extras-plugin
+     ${EXIV2_LIBRARIES}
+     )
+diff --git a/tests/unittests/CMakeLists.txt b/tests/unittests/CMakeLists.txt
+index cf5af78..8f8b172 100644
+--- a/tests/unittests/CMakeLists.txt
++++ b/tests/unittests/CMakeLists.txt
+@@ -14,7 +14,7 @@ macro(generate_tests)
+             ${plugin-dir}/photoeditor/photo-image-provider.cpp
+             ${sampledata_rc_srcs}
+             )
+-        qt5_use_modules(${test} Core Qml Quick Test)
++        target_link_libraries(${test} Qt5::Core Qt5::Qml Qt5::Quick Qt5::Test)
+         target_link_libraries(${test}
+             ${TPL_QT5_LIBRARIES}
+             lomiri-ui-extras-plugin
+-- 
+2.39.2
+

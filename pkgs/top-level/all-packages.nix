@@ -39253,6 +39253,8 @@ with pkgs;
 
   lomiri-action-api = libsForQt5.callPackage ../development/libraries/lomiri-action-api { };
 
+  lomiri-ui-extras = libsForQt5.callPackage ../development/libraries/lomiri-ui-extras { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
