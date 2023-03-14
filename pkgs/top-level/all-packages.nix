@@ -39251,6 +39251,8 @@ with pkgs;
 
   lomiri-keyboard = libsForQt5.callPackage ../development/libraries/lomiri-keyboard { };
 
+  lomiri-action-api = libsForQt5.callPackage ../development/libraries/lomiri-action-api { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };

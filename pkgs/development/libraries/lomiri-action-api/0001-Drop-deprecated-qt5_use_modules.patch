@@ -1,0 +1,100 @@
+From db67c86da12cc60356bdc3c651fc1e96011a6d6b Mon Sep 17 00:00:00 2001
+From: Puna2608 <opna2608@protonmail.com>
+Date: Tue, 14 Mar 2023 14:35:46 +0100
+Subject: [PATCH] Drop deprecated qt5_use_modules
+
+---
+ CMakeLists.txt                         | 1 +
+ examples/action-context/CMakeLists.txt | 2 +-
+ examples/mail-app/CMakeLists.txt       | 2 +-
+ examples/preview-action/CMakeLists.txt | 2 +-
+ qml/Lomiri/Action/CMakeLists.txt       | 2 +-
+ src/CMakeLists.txt                     | 2 +-
+ test/cpp/CMakeLists.txt                | 2 +-
+ 7 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e14b1b5..f312177 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -70,6 +70,7 @@ set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-z,defs")
+ add_custom_target(cppcheck COMMAND cppcheck --enable=all -q --error-exitcode=2
+                                        ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/tests)
+ find_package(Qt5Quick REQUIRED)
++find_package(Qt5Widgets REQUIRED)
+ 
+ include_directories(include)
+ add_subdirectory(src)
+diff --git a/examples/action-context/CMakeLists.txt b/examples/action-context/CMakeLists.txt
+index d9a7fbb..44aace4 100644
+--- a/examples/action-context/CMakeLists.txt
++++ b/examples/action-context/CMakeLists.txt
+@@ -4,5 +4,5 @@ set(EXAMPLE_SRCS
+ 
+ add_executable(action-context ${EXAMPLE_SRCS})
+ target_link_libraries(action-context lomiri-action-qt)
+-qt5_use_modules(action-context Core Widgets)
++target_link_libraries(action-context Qt5::Core Qt5::Widgets)
+ 
+diff --git a/examples/mail-app/CMakeLists.txt b/examples/mail-app/CMakeLists.txt
+index bb70446..e4df061 100644
+--- a/examples/mail-app/CMakeLists.txt
++++ b/examples/mail-app/CMakeLists.txt
+@@ -4,4 +4,4 @@ set(EXAMPLE_SRCS
+ 
+ add_executable(mail-app ${EXAMPLE_SRCS})
+ target_link_libraries(mail-app lomiri-action-qt)
+-qt5_use_modules(mail-app Core Widgets)
++target_link_libraries(mail-app Qt5::Core Qt5::Widgets)
+diff --git a/examples/preview-action/CMakeLists.txt b/examples/preview-action/CMakeLists.txt
+index 82aa47c..f16ea0c 100644
+--- a/examples/preview-action/CMakeLists.txt
++++ b/examples/preview-action/CMakeLists.txt
+@@ -4,5 +4,5 @@ set(EXAMPLE_SRCS
+ 
+ add_executable(preview-action ${EXAMPLE_SRCS})
+ target_link_libraries(preview-action lomiri-action-qt)
+-qt5_use_modules(preview-action Core Widgets)
++target_link_libraries(preview-action Qt5::Core Qt5::Widgets)
+ 
+diff --git a/qml/Lomiri/Action/CMakeLists.txt b/qml/Lomiri/Action/CMakeLists.txt
+index 7c916ad..13c78f0 100644
+--- a/qml/Lomiri/Action/CMakeLists.txt
++++ b/qml/Lomiri/Action/CMakeLists.txt
+@@ -16,7 +16,7 @@ ${CORE_SRCS}
+ )
+ target_link_libraries(lomiri-action-qml lomiri-action-qt)
+ 
+-qt5_use_modules(lomiri-action-qml Qml)
++target_link_libraries(lomiri-action-qml Qt5::Qml)
+ 
+ get_target_property(QMAKE_EXECUTABLE Qt5::qmake LOCATION)
+ exec_program(${QMAKE_EXECUTABLE} ARGS "-query QT_INSTALL_QML" OUTPUT_VARIABLE QT_IMPORTS_DIR)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 5c81aea..ef8b5d5 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -40,7 +40,7 @@ add_library(lomiri-action-qt SHARED
+ )
+ target_link_libraries (lomiri-action-qt ${HUD_LIBRARIES})
+ 
+-qt5_use_modules(lomiri-action-qt Core)
++target_link_libraries(lomiri-action-qt Qt5::Core)
+ 
+ install(
+   TARGETS lomiri-action-qt
+diff --git a/test/cpp/CMakeLists.txt b/test/cpp/CMakeLists.txt
+index 1521a04..a88f0eb 100644
+--- a/test/cpp/CMakeLists.txt
++++ b/test/cpp/CMakeLists.txt
+@@ -17,6 +17,6 @@ include_directories(${GIO_INCLUDE_DIRS})
+ 
+ add_executable(cpptest ${TEST_SRCS})
+ target_link_libraries(cpptest lomiri-action-qt ${GIO_LIBRARIES})
+-qt5_use_modules(cpptest Core Test)
++target_link_libraries(cpptest Qt5::Core Qt5::Test)
+ 
+ add_test(NAME cpp COMMAND ${testCommand})
+-- 
+2.39.2
+
