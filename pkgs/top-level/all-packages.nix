@@ -40034,6 +40034,8 @@ with pkgs;
 
   lomiri-ui-extras = libsForQt5.callPackage ../development/libraries/lomiri-ui-extras { };
 
+  morph-browser = libsForQt5.callPackage ../development/libraries/morph-browser { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
