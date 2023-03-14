@@ -30,9 +30,6 @@ stdenv.mkDerivation rec {
   };
 
   postPatch = ''
-    substituteInPlace src/plugin/plugin.pro config.pri \
-      --replace '$${MALIIT_PLUGINS_DIR}' "$out/lib/maliit" \
-      --replace '$${MALIIT_PLUGINS_DATA_DIR}' "$out/share/maliit/plugins"
     substituteInPlace po/po.pro \
       --replace '/usr' "$out"
   '';

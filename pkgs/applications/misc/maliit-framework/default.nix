@@ -47,6 +47,15 @@ mkDerivation rec {
     substituteInPlace common/maliit-framework.prf.in src/maliit-plugins.prf.in \
       --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_INCLUDEDIR@' '@CMAKE_INSTALL_FULL_INCLUDEDIR@' \
       --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@' '@CMAKE_INSTALL_FULL_LIBDIR@'
+
+    # Fix where maliit expects plugins
+    substituteInPlace src/maliit-defines.prf.in \
+      --replace '@CMAKE_INSTALL_FULL_LIBDIR@' '$$PREFIX/lib' \
+      --replace '@CMAKE_INSTALL_FULL_DATADIR@' '$$PREFIX/share'
+    substituteInPlace CMakeLists.txt \
+      --replace 'MALIIT_PLUGINS_DIR="''${CMAKE_INSTALL_FULL_LIBDIR}' 'MALIIT_PLUGINS_DIR="/run/current-system/sw/lib' \
+      --replace 'MALIIT_PLUGINS_DATA_DIR="''${CMAKE_INSTALL_FULL_DATADIR}' 'MALIIT_PLUGINS_DATA_DIR="/run/current-system/sw/share' \
+      --replace 'MALIIT_EXTENSIONS_DIR="''${CMAKE_INSTALL_FULL_DATADIR}' 'MALIIT_EXTENSIONS_DIR="/run/current-system/sw/share' \
   '';
 
   buildInputs = [
