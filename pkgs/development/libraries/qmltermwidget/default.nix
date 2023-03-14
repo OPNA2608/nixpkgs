@@ -1,34 +1,67 @@
-{ lib, stdenv, fetchFromGitHub, qtbase, qtquick1, qmake, qtmultimedia, utmp, fetchpatch }:
+{ lib
+, stdenv
+, fetchFromGitHub
+, fetchpatch
+, qtbase
+, qtquick1
+, qmake
+, qtmultimedia
+, utmp
+}:
 
 stdenv.mkDerivation {
-  version = "2018-11-24";
-  pname = "qmltermwidget-unstable";
+  pname = "qmltermwidget";
+  version = "unstable-2022-01-09";
 
   src = fetchFromGitHub {
-    repo = "qmltermwidget";
     owner = "Swordfish90";
-    rev = "48274c75660e28d44af7c195e79accdf1bd44963";
-    sha256 = "028nb1xp84jmakif5mmzx52q3rsjwckw27jdpahyaqw7j7i5znq6";
+    repo = "qmltermwidget";
+    rev = "63228027e1f97c24abb907550b22ee91836929c5";
+    hash = "sha256-aVaiRpkYvuyomdkQYAgjIfi6a3wG2a6hNH1CfkA2WKQ=";
   };
 
-  buildInputs = [ qtbase qtquick1 qtmultimedia ]
-                ++ lib.optional stdenv.isDarwin utmp;
-  nativeBuildInputs = [ qmake ];
-
   patches = [
+    # These 5 patches allow lomiri-terminal-app to use this version of qmltermwidget
+    # Remove when https://github.com/Swordfish90/qmltermwidget/pull/39 merged
     (fetchpatch {
-      name = "fix-missing-includes.patch";
-      url = "https://github.com/Swordfish90/qmltermwidget/pull/27/commits/485f8d6d841b607ba49e55a791f7f587e4e193bc.diff";
-      sha256 = "186s8pv3642vr4lxsds919h0y2vrkl61r7wqq9mc4a5zk5vprinj";
+      name = "0001-qmltermwidget-Expose-ColorSchemeManager-and-ColorScheme-to-QML.patch";
+      url = "https://github.com/Swordfish90/qmltermwidget/pull/39/commits/d8834e291bdc8613156d5883b5b3975fce9b4372.patch";
+      hash = "sha256-CCt66VR8QKn6EATWn4fQLW8P4i1QGbj1/hV4CQ28qhw=";
+    })
+    (fetchpatch {
+      name = "0002-qmltermwidget-Expose-QMLTermWidget-foreground-and-background-colors-to-QML.patch";
+      url = "https://github.com/Swordfish90/qmltermwidget/pull/39/commits/75a7a1ae11ff12516e7e53ea29662c1eb4d280d5.patch";
+      hash = "sha256-gWxKDrZMLyKQNhLjayQZ5u5fkF3ZYtMTlkQcHOWe+PE=";
+    })
+    (fetchpatch {
+      name = "0003-qmltermwidget-Make-QmlTermWidget-scrollbarCurrentValue-property-writable.patch";
+      url = "https://github.com/Swordfish90/qmltermwidget/pull/39/commits/b3210f8936dfc4645b5e49c52e02e4385befe742.patch";
+      hash = "sha256-n7oB68xk2CPDZRVACfytyv11638cn72/4QmF9FhhiLM=";
+    })
+    (fetchpatch {
+      name = "0004-qmltermwidget-Add-QMLTermWidget-methods-to-query-whether-clipboard-selection-are-set.patch";
+      url = "https://github.com/Swordfish90/qmltermwidget/pull/39/commits/eae6156cb7b857d07cb2699e0aed9901fe7ca0ed.patch";
+      hash = "sha256-tc2sZDwXB018roEGD0pBN3rmp0ggJWZlYzRbkKw9wUs=";
+    })
+    (fetchpatch {
+      name = "0005-qmltermwidget-Apply-color-scheme-if-changed.patch";
+      url = "https://github.com/Swordfish90/qmltermwidget/pull/39/commits/ffc6b2b2a20ca785f93300eca93c25c4b74ece17.patch";
+      hash = "sha256-ps4OmL9xAph4x7Zo3wvLNFcy+BDjaA+zmQghX2sW1dI=";
     })
   ];
 
+  nativeBuildInputs = [ qmake ];
+
+  buildInputs = [
+    qtbase
+    qtquick1
+    qtmultimedia
+  ] ++ lib.optional stdenv.isDarwin utmp;
+
   postPatch = ''
     substituteInPlace qmltermwidget.pro \
-      --replace '$$[QT_INSTALL_QML]' "/$qtQmlPrefix/"
+      --replace '$$[QT_INSTALL_QML]' '$$PREFIX/${qtbase.qtQmlPrefix}/'
   '';
-
-  installFlags = [ "INSTALL_ROOT=$(out)" ];
 
   dontWrapQtApps = true;
 
