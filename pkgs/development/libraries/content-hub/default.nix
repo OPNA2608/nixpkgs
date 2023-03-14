@@ -1,6 +1,7 @@
 # TODO
 # - tests
 # - meta
+# - docs
 # - cleanup that qmlplugindump stuff
 { stdenv
 , lib
@@ -41,6 +42,8 @@ stdenv.mkDerivation rec {
     substituteInPlace import/Lomiri/Content/CMakeLists.txt \
       --replace 'qt5/qml' 'qt-${qtbase.version}/qml' \
       --replace 'qmlplugindump -qt=qt5' 'qmlplugindump'
+    substituteInPlace src/com/lomiri/content/service/com.lomiri.content.dbus.Service.service \
+      --replace '/usr' '${placeholder "out"}'
   '';
 
   strictDeps = true;
