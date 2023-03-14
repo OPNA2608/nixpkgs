@@ -18,6 +18,7 @@
 , qtquickcontrols2
 , qtsystems
 , qtwebengine
+, qtwayland
 , wrapQtAppsHook
 }:
 
@@ -53,6 +54,8 @@ stdenv.mkDerivation rec {
     qtbase
     qtdeclarative
     qtwebengine
+
+    qtwayland # when launched via l-u-d
 
     # QML
     lomiri-action-api
