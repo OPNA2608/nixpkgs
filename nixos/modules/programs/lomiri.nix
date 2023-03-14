@@ -35,6 +35,7 @@ in {
         morph-browser
         maliit-framework
         lomiri-keyboard
+        lomiri-terminal-app
 
         # Required/Expected user services
         libayatana-common
