@@ -39152,11 +39152,6 @@ with pkgs;
 
   # lomiri start
 
-  # system-settings depends on older accountsservice version with specific patches
-  # expression mostly copied from https://github.com/NixOS/nixpkgs/commit/755be7ef793cd29394d821e72656ac0276ea1c9b
-  # https://gitlab.com/ubports/development/core/lomiri-system-settings/-/issues/65
-  accountsservice_0_6_42 = callPackage ../development/libraries/accountsservice/0.6.42.nix { };
-
   cmake-extras = libsForQt5.callPackage ../development/libraries/cmake-extras { };
 
   dbus-test-runner = callPackage ../development/libraries/dbus-test-runner { };

@@ -22,7 +22,7 @@
 , intltool
 , libqtdbustest
 , libqtdbusmock
-, accountsservice_0_6_42
+, accountsservice
 , gsettings-qt
 , gnome-desktop
 , gtk3
@@ -75,6 +75,13 @@ stdenv.mkDerivation rec {
       url = "https://gitlab.com/ubports/development/core/lomiri-system-settings/-/commit/8698bf41f21456a866baa52849a7fd200470e1c9.patch";
       hash = "sha256-cEldfwQl2Uuk80Myaf9w4aOmHGDphK20I7GrhuotNrU=";
     })
+    # Make it work with accountsservice without Ubuntu-specific changes
+    # https://gitlab.com/ubports/development/core/lomiri-system-settings/-/issues/341
+    (fetchpatch {
+      name = "2001-lomiri-system-settings-disable-current-language-switching.patch";
+      url = "https://sources.debian.org/data/main/l/lomiri-system-settings/1.0.1-2/debian/patches/2001_disable-current-language-switching.patch";
+      hash = "sha256-ZOFYwxS8s6+qMFw8xDCBv3nLBOBm86m9d/VhbpOjamY=";
+    })
   ];
 
   postPatch = ''
@@ -99,7 +106,7 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [
-    accountsservice_0_6_42 # https://gitlab.com/ubports/development/core/lomiri-system-settings/-/issues/341
+    accountsservice
     cmake-extras
     glib
     geonames
