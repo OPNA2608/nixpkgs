@@ -33,9 +33,14 @@ in {
         qtmir
         lomiri-system-settings
         morph-browser
+        lomiri-terminal-app
+
+        # TODO OSK does not work yet
+        # lomiri-keyboard is a plugin for maliit-framework, which still seems incapable of loading any plugins at all.
+        # maliit-framework's maliit-server hardcodes a plugin name & location to load, and needs the plugin's glib schema.
+        # It (maliit-server or the plugin?) also has a hardcoded path to hunspell dictionaries for text prediction
         maliit-framework
         lomiri-keyboard
-        lomiri-terminal-app
 
         # Required/Expected user services
         libayatana-common
@@ -69,6 +74,11 @@ in {
       repowerd
     ];
 
+    fonts.fonts = with pkgs; [
+      # Applications tend to default to Ubuntu font
+      ubuntu_font_family
+    ];
+
     # Copy-pasted
     # TODO are all of these needed? just nice-have's? convenience?
     hardware.opengl.enable = lib.mkDefault true;
@@ -95,11 +105,12 @@ in {
     ];
 
     # TODO is this really the way to do this, can't we reuse upstream's files?
-    # Shadows ayatana-indicators.target from libayatana-common, brings up required indicator services
+    # Shadows ayatana-indicators.target from libayatana-common, brings up desired indicator services
     systemd.user.targets."ayatana-indicators" = {
       description = "Target representing the lifecycle of the Ayatana Indicators. Each indicator should be bound to it in its individual service file.";
       partOf = [ "graphical-session.target" ];
       wants = lib.lists.forEach indicator-services (indicator: "${indicator.pname}.service");
+      before = lib.lists.forEach indicator-services (indicator: "${indicator.pname}.service");
     };
   };
 
