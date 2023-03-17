@@ -89,8 +89,9 @@ stdenv.mkDerivation rec {
       --replace '/qt5/qml' '/qt-${qtbase.version}/qml' \
       --replace "\''${CMAKE_INSTALL_PREFIX}/\''${LIBDIR}" "\''${CMAKE_INSTALL_LIBDIR}"
 
+    # prefix must stay replaceable, plugins rely on this
     substituteInPlace lib/LomiriSystemSettings/LomiriSystemSettings.pc.in \
-      --replace "\''${prefix}/@LIBDIR@" '@CMAKE_INSTALL_FULL_LIBDIR@'
+      --replace "\''${prefix}/@LIBDIR@" "\''${prefix}/lib"
   '';
 
   strictDeps = true;
