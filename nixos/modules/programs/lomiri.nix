@@ -34,6 +34,7 @@ in {
         lomiri-system-settings
         morph-browser
         lomiri-terminal-app
+        address-book-app
 
         # TODO OSK does not work yet
         # lomiri-keyboard is a plugin for maliit-framework, which still seems incapable of loading any plugins at all.
@@ -55,6 +56,7 @@ in {
         telepathy-mission-control
         repowerd
         content-hub
+        buteo-syncfw
 
         # Used(?) themes
         ubuntu-themes

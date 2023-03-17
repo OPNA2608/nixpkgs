@@ -1,0 +1,133 @@
+From 51de2f702cf7c0aeef32984ef16f95a1079f2872 Mon Sep 17 00:00:00 2001
+From: Puna2608 <opna2608@protonmail.com>
+Date: Fri, 17 Mar 2023 18:39:07 +0100
+Subject: [PATCH] Drop deprecated qt5_use_modules
+
+---
+ CMakeLists.txt                                                  | 1 +
+ src/daemon/CMakeLists.txt                                       | 2 +-
+ src/lib/Lomiri/OnlineAccounts.2/CMakeLists.txt                  | 2 +-
+ src/lib/OnlineAccounts/CMakeLists.txt                           | 2 +-
+ src/lib/OnlineAccountsDaemon/CMakeLists.txt                     | 2 +-
+ tests/daemon/functional_tests/CMakeLists.txt                    | 2 +-
+ tests/lib/OnlineAccounts/functional_tests/CMakeLists.txt        | 2 +-
+ tests/lib/OnlineAccounts/tst_authentication_data/CMakeLists.txt | 2 +-
+ tests/lib/qml_module/CMakeLists.txt                             | 2 +-
+ 9 files changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c62c91b..7a95ebc 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -16,6 +16,7 @@ include(FindPkgConfig)
+ 
+ find_package(Qt5Core REQUIRED)
+ find_package(Qt5DBus REQUIRED)
++find_package(Qt5Qml REQUIRED)
+ pkg_check_modules(APPARMOR libapparmor REQUIRED)
+ 
+ set(CMAKE_AUTOMOC ON)
+diff --git a/src/daemon/CMakeLists.txt b/src/daemon/CMakeLists.txt
+index 5a2b091..8f4b750 100644
+--- a/src/daemon/CMakeLists.txt
++++ b/src/daemon/CMakeLists.txt
+@@ -10,7 +10,7 @@ add_executable(${ACCOUNTD}
+     inactivity_timer.cpp
+     main.cpp
+ )
+-qt5_use_modules(${ACCOUNTD} DBus)
++target_link_libraries(${ACCOUNTD} Qt5::DBus)
+ target_link_libraries(${ACCOUNTD}
+     OnlineAccountsDaemon
+ )
+diff --git a/src/lib/Lomiri/OnlineAccounts.2/CMakeLists.txt b/src/lib/Lomiri/OnlineAccounts.2/CMakeLists.txt
+index b57ce70..9f694dd 100644
+--- a/src/lib/Lomiri/OnlineAccounts.2/CMakeLists.txt
++++ b/src/lib/Lomiri/OnlineAccounts.2/CMakeLists.txt
+@@ -22,7 +22,7 @@ target_link_libraries(${PLUGIN}
+     OnlineAccountsQt
+ )
+ 
+-qt5_use_modules(${PLUGIN} Core Qml)
++target_link_libraries(${PLUGIN} Qt5::Core Qt5::Qml)
+ set_target_properties(${PLUGIN} PROPERTIES AUTOMOC TRUE)
+ 
+ file(GLOB QML_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.qml qmldir *.js)
+diff --git a/src/lib/OnlineAccounts/CMakeLists.txt b/src/lib/OnlineAccounts/CMakeLists.txt
+index a0aba31..0868bf3 100644
+--- a/src/lib/OnlineAccounts/CMakeLists.txt
++++ b/src/lib/OnlineAccounts/CMakeLists.txt
+@@ -29,7 +29,7 @@ set_target_properties(${CLIENT_LIB} PROPERTIES
+     SOVERSION 1
+ )
+ 
+-qt5_use_modules(${CLIENT_LIB} DBus)
++target_link_libraries(${CLIENT_LIB} Qt5::DBus)
+ set_target_properties(${CLIENT_LIB} PROPERTIES AUTOMOC TRUE)
+ 
+ # Library install
+diff --git a/src/lib/OnlineAccountsDaemon/CMakeLists.txt b/src/lib/OnlineAccountsDaemon/CMakeLists.txt
+index 6838cb4..36ebf09 100644
+--- a/src/lib/OnlineAccountsDaemon/CMakeLists.txt
++++ b/src/lib/OnlineAccountsDaemon/CMakeLists.txt
+@@ -32,7 +32,7 @@ add_library(${ACCOUNTD_LIB} SHARED
+ #    VERSION 1.0.0
+ #    SOVERSION 1
+ #)
+-qt5_use_modules(${ACCOUNTD_LIB} DBus)
++target_link_libraries(${ACCOUNTD_LIB} Qt5::DBus)
+ target_link_libraries(${ACCOUNTD_LIB}
+     ${ACCOUNTSQT_LDFLAGS}
+     ${APPARMOR_LDFLAGS}
+diff --git a/tests/daemon/functional_tests/CMakeLists.txt b/tests/daemon/functional_tests/CMakeLists.txt
+index 6683ad8..6f2671a 100644
+--- a/tests/daemon/functional_tests/CMakeLists.txt
++++ b/tests/daemon/functional_tests/CMakeLists.txt
+@@ -38,7 +38,7 @@ target_link_libraries(${TEST}
+     ${QTDBUSTEST_LIBRARIES}
+ )
+ 
+-qt5_use_modules(${TEST} Core DBus Test)
++target_link_libraries(${TEST} Qt5::Core Qt5::DBus Qt5::Test)
+ 
+ set_target_properties(${TEST} PROPERTIES AUTOMOC TRUE)
+ add_test(${TEST} ${XVFB_COMMAND} ${CMAKE_CURRENT_BINARY_DIR}/${TEST})
+diff --git a/tests/lib/OnlineAccounts/functional_tests/CMakeLists.txt b/tests/lib/OnlineAccounts/functional_tests/CMakeLists.txt
+index aa462dd..42523e6 100644
+--- a/tests/lib/OnlineAccounts/functional_tests/CMakeLists.txt
++++ b/tests/lib/OnlineAccounts/functional_tests/CMakeLists.txt
+@@ -21,6 +21,6 @@ target_link_libraries(${TEST}
+     ${QTDBUSTEST_LIBRARIES}
+ )
+ 
+-qt5_use_modules(${TEST} Core Test)
++target_link_libraries(${TEST} Qt5::Core Qt5::Test)
+ add_test(${TEST} ${CMAKE_CURRENT_BINARY_DIR}/${TEST})
+ add_dependencies(check ${TEST})
+diff --git a/tests/lib/OnlineAccounts/tst_authentication_data/CMakeLists.txt b/tests/lib/OnlineAccounts/tst_authentication_data/CMakeLists.txt
+index 3db2cf0..1e81020 100644
+--- a/tests/lib/OnlineAccounts/tst_authentication_data/CMakeLists.txt
++++ b/tests/lib/OnlineAccounts/tst_authentication_data/CMakeLists.txt
+@@ -9,6 +9,6 @@ include_directories(
+     ${OnlineAccountsQt_SOURCE_DIR}
+     ${OnlineAccountsDaemon_SOURCE_DIR}/..
+ )
+-qt5_use_modules(${TEST} Core DBus Test)
++target_link_libraries(${TEST} Qt5::Core Qt5::DBus Qt5::Test)
+ add_test(${TEST} ${CMAKE_CURRENT_BINARY_DIR}/${TEST})
+ add_dependencies(check ${TEST})
+diff --git a/tests/lib/qml_module/CMakeLists.txt b/tests/lib/qml_module/CMakeLists.txt
+index 9e204d7..7b66e93 100644
+--- a/tests/lib/qml_module/CMakeLists.txt
++++ b/tests/lib/qml_module/CMakeLists.txt
+@@ -23,6 +23,6 @@ add_definitions(
+     -DTEST_QML_IMPORT_PATH="${OnlineAccountsQML_BINARY_DIR}/../.."
+ )
+ 
+-qt5_use_modules(${TEST} Core DBus Qml Test)
++target_link_libraries(${TEST} Qt5::Core Qt5::DBus Qt5::Qml Qt5::Test)
+ add_test(${TEST} ${CMAKE_CURRENT_BINARY_DIR}/${TEST})
+ add_dependencies(check ${TEST})
+-- 
+2.39.2
+

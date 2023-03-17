@@ -39254,6 +39254,36 @@ with pkgs;
 
   lomiri-terminal-app = libsForQt5.callPackage ../development/libraries/lomiri-terminal-app { };
 
+  libcal = callPackage ../development/libraries/libcal { };
+
+  mce-dev = callPackage ../development/libraries/mce-dev { };
+
+  libngf = callPackage ../development/libraries/libngf { };
+
+  libdsme = callPackage ../development/libraries/libdsme { };
+
+  dsme = callPackage ../development/libraries/dsme { };
+
+  libiphb = callPackage ../development/libraries/libiphb { };
+
+  usb_moded = callPackage ../development/libraries/usb_moded { };
+
+  mce = callPackage ../development/libraries/mce { };
+
+  libmce-qt = libsForQt5.callPackage ../development/libraries/libmce-qt { };
+
+  buteo-syncfw = libsForQt5.callPackage ../development/libraries/buteo-syncfw { };
+
+  buteo-syncfw-qml = libsForQt5.callPackage ../development/libraries/buteo-syncfw-qml { };
+
+  lomiri-system-settings-online-accounts = libsForQt5.callPackage ../development/libraries/lomiri-system-settings-online-accounts { };
+
+  lomiri-online-accounts = libsForQt5.callPackage ../development/libraries/lomiri-online-accounts { };
+
+  accounts-qml-module = libsForQt5.callPackage ../development/libraries/accounts-qml-module { };
+
+  address-book-app = libsForQt5.callPackage ../development/libraries/address-book-app { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
