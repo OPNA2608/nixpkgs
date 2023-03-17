@@ -32,6 +32,8 @@ stdenv.mkDerivation rec {
   postPatch = ''
     substituteInPlace po/po.pro \
       --replace '/usr' "$out"
+    substituteInPlace src/imports/Lomiri/Keyboard/Keyboard.pro \
+      --replace '$$[QT_INSTALL_QML]' "$out/$qtQmlPrefix"
   '';
 
   strictDeps = true;
