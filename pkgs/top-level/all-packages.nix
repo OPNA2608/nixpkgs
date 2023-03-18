@@ -39290,6 +39290,8 @@ with pkgs;
 
   sync-monitor = libsForQt5.callPackage ../development/libraries/sync-monitor { };
 
+  lomiri-calendar-app = libsForQt5.callPackage ../development/libraries/lomiri-calendar-app { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
