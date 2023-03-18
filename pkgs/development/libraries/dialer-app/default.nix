@@ -51,6 +51,15 @@ stdenv.mkDerivation rec {
       --replace 'Lomiri.OnlineAccounts 0.1' 'SSO.OnlineAccounts 0.1'
   '';
 
+  preConfigure = ''
+    # Cannot add flags with spaces to cmakeFlags
+    # - deprecated-declarations: Qt 5.15 deprecations
+    # - nonnull: with GCC 11, report upstream!
+    cmakeFlagsArray+=(
+      '-DCMAKE_CXX_FLAGS=-Wno-error=deprecated-declarations -Wno-error=nonnull'
+    )
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -84,8 +93,6 @@ stdenv.mkDerivation rec {
   cmakeFlags = [
     "-DENABLE_TESTS=${lib.boolToString doCheck}"
     "-DCLICK_MODE=OFF"
-    # Qt 5.15 deprecations
-    "-DCMAKE_CXX_FLAGS=-Wno-error=deprecated-declarations"
   ];
 
   # TODO
