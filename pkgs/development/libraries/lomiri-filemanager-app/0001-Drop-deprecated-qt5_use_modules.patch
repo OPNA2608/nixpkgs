@@ -1,0 +1,84 @@
+From 81eb81d0935a50c7db0ea929690deed60edb4573 Mon Sep 17 00:00:00 2001
+From: Puna2608 <opna2608@protonmail.com>
+Date: Sat, 18 Mar 2023 20:10:29 +0100
+Subject: [PATCH] Drop deprecated qt5_use_modules
+
+---
+ src/app/CMakeLists.txt                    | 6 +++++-
+ src/plugin/CMakeLists.txt                 | 1 +
+ src/plugin/archives/CMakeLists.txt        | 2 +-
+ src/plugin/folderlistmodel/CMakeLists.txt | 2 +-
+ src/plugin/placesmodel/CMakeLists.txt     | 2 +-
+ 5 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/src/app/CMakeLists.txt b/src/app/CMakeLists.txt
+index dc22cc94..7923c8e0 100644
+--- a/src/app/CMakeLists.txt
++++ b/src/app/CMakeLists.txt
+@@ -11,7 +11,11 @@ set(filemanager_SRCS
+ 
+ add_executable(lomiri-filemanager-app ${filemanager_SRCS})
+ 
+-qt5_use_modules(lomiri-filemanager-app Gui Qml Quick)
++find_package(Qt5Gui REQUIRED)
++find_package(Qt5Qml REQUIRED)
++find_package(Qt5Quick REQUIRED)
++
++target_link_libraries(lomiri-filemanager-app Qt5::Gui Qt5::Qml Qt5::Quick)
+ target_link_libraries(lomiri-filemanager-app stdc++)
+ 
+ if(NOT "${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
+diff --git a/src/plugin/CMakeLists.txt b/src/plugin/CMakeLists.txt
+index c9410f80..6fd1c5a6 100644
+--- a/src/plugin/CMakeLists.txt
++++ b/src/plugin/CMakeLists.txt
+@@ -6,6 +6,7 @@ find_package(Qt5Core)
+ find_package(Qt5Qml)
+ find_package(Qt5Quick)
+ find_package(Qt5Widgets)
++find_package(Qt5Gui)
+ 
+ add_subdirectory(folderlistmodel)
+ add_subdirectory(placesmodel)
+diff --git a/src/plugin/archives/CMakeLists.txt b/src/plugin/archives/CMakeLists.txt
+index cd36fb5f..0fc6743f 100644
+--- a/src/plugin/archives/CMakeLists.txt
++++ b/src/plugin/archives/CMakeLists.txt
+@@ -15,7 +15,7 @@ add_library(Archives MODULE
+     ${archives_SRCS}
+ )
+ 
+-qt5_use_modules(Archives Gui Qml Quick Widgets)
++target_link_libraries(Archives Qt5::Gui Qt5::Qml Qt5::Quick Qt5::Widgets)
+ 
+ # Copy the plugin, the qmldir file and other assets to the build dir for running in QtCreator
+ if(NOT "${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
+diff --git a/src/plugin/folderlistmodel/CMakeLists.txt b/src/plugin/folderlistmodel/CMakeLists.txt
+index 6432d1e8..9c642983 100644
+--- a/src/plugin/folderlistmodel/CMakeLists.txt
++++ b/src/plugin/folderlistmodel/CMakeLists.txt
+@@ -103,7 +103,7 @@ add_library(folderlistmodel MODULE
+     ${folderlistmodel_SRCS}
+ )
+ 
+-qt5_use_modules(folderlistmodel Gui Qml Quick Widgets)
++target_link_libraries(folderlistmodel Qt5::Gui Qt5::Qml Qt5::Quick Qt5::Widgets)
+ 
+ ## samba requires libsmbclient
+ find_path(SAMBA_INCLUDE_DIR 
+diff --git a/src/plugin/placesmodel/CMakeLists.txt b/src/plugin/placesmodel/CMakeLists.txt
+index 952baba2..5afafdcf 100644
+--- a/src/plugin/placesmodel/CMakeLists.txt
++++ b/src/plugin/placesmodel/CMakeLists.txt
+@@ -17,7 +17,7 @@ add_library(PlacesModel MODULE
+     ${placesmodel_SRCS}
+ )
+ 
+-qt5_use_modules(PlacesModel Gui Qml Quick Widgets)
++target_link_libraries(PlacesModel Qt5::Gui Qt5::Qml Qt5::Quick Qt5::Widgets)
+ 
+ # Copy the plugin, the qmldir file and other assets to the build dir for running in QtCreator
+ if(NOT "${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
+-- 
+2.39.2
+

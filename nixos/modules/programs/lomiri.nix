@@ -38,6 +38,7 @@ in {
         messaging-app
         dialer-app
         lomiri-calendar-app
+        lomiri-filemanager-app
 
         # TODO OSK does not work yet
         # lomiri-keyboard is a plugin for maliit-framework, which still seems incapable of loading any plugins at all.
