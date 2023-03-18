@@ -44,6 +44,10 @@ stdenv.mkDerivation rec {
       --replace 'qmlplugindump -qt=qt5' 'qmlplugindump'
     substituteInPlace src/com/lomiri/content/service/com.lomiri.content.dbus.Service.service \
       --replace '/usr' '${placeholder "out"}'
+
+    # Look for peer files from installed applications
+    substituteInPlace src/com/lomiri/content/service/registry-updater.cpp \
+      --replace '/usr' '/run/current-system/sw'
   '';
 
   strictDeps = true;
