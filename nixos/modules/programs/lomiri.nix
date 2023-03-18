@@ -59,6 +59,7 @@ in {
         repowerd
         content-hub
         buteo-syncfw
+        sync-monitor
 
         # Used(?) themes
         ubuntu-themes

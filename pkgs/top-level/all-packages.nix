@@ -39288,6 +39288,8 @@ with pkgs;
 
   dialer-app = libsForQt5.callPackage ../development/libraries/dialer-app { };
 
+  sync-monitor = libsForQt5.callPackage ../development/libraries/sync-monitor { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
