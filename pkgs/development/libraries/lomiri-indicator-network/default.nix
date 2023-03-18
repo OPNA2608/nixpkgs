@@ -1,6 +1,7 @@
 { stdenv
 , lib
 , fetchFromGitLab
+, fetchpatch
 , cmake
 , gettext
 , pkg-config
@@ -33,6 +34,16 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-JrxJsdLd35coEJ0nYcYtPRQONLfKciNmBbLqXrEaOX0=";
   };
+
+  patches = [
+    # Fix pkg-config file
+    # Remove when version > 1.0.0
+    (fetchpatch {
+      name = "0001-lomiri-indicator-network-Fix-pkg-config-file-for-liblomiri-connectivity-qt1.patch";
+      url = "https://gitlab.com/ubports/development/core/lomiri-indicator-network/-/commit/a67ac8e1a1b96f4dcad01dd4c1685fed9831eaa3.patch";
+      hash = "sha256-D3AhEJus0MysmfMg7eWFNI20Z5cTeHwiFTP0OuoQook=";
+    })
+  ];
 
   postPatch = ''
     substituteInPlace data/CMakeLists.txt \
