@@ -40,7 +40,7 @@ stdenv.mkDerivation rec {
 
   postPatch = ''
     substituteInPlace tests/CMakeLists.txt \
-      --replace 'python3 -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())"' 'echo "${placeholder "out"}/${python3.sitePackages}/messaging_app"'
+      --replace 'python3 -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())"' 'echo "${placeholder "out"}/${python3.sitePackages}/dialer_app"'
     substituteInPlace src/dialer-app.desktop.in.in \
       --replace 'Exec=dialer-app' 'Exec=${placeholder "out"}/bin/dialer-app'
     substituteInPlace config.h.in \
