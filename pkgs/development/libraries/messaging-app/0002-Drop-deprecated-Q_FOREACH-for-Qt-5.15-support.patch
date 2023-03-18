@@ -1,0 +1,71 @@
+From 9b8c8d7b8f2285d8f032857d067781f150a44f72 Mon Sep 17 00:00:00 2001
+From: Puna2608 <opna2608@protonmail.com>
+Date: Sat, 18 Mar 2023 00:49:51 +0100
+Subject: [PATCH 2/2] Drop deprecated Q_FOREACH for Qt 5.15 support
+
+---
+ src/messagingapplication.cpp   | 6 +++---
+ src/stickers-history-model.cpp | 2 +-
+ src/stickers-pack-model.cpp    | 2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/messagingapplication.cpp b/src/messagingapplication.cpp
+index f365eed3..acb1e8f2 100644
+--- a/src/messagingapplication.cpp
++++ b/src/messagingapplication.cpp
+@@ -275,7 +275,7 @@ void MessagingApplication::parseArgument(const QString &arg)
+         properties["participantIds"] = QStringList() << value;
+     }
+     QUrlQuery query(url);
+-    Q_FOREACH(const Pair &item, query.queryItems(QUrl::FullyDecoded)) {
++    for(const Pair &item : query.queryItems(QUrl::FullyDecoded)) {
+         if (item.first == "text") {
+             properties["text"] = item.second;
+         }
+@@ -348,7 +348,7 @@ inline QObject *findRecursiveChild(QQuickItem *object, const QString &objectName
+     }
+ 
+     // check the direct children first
+-    Q_FOREACH(QQuickItem *child, object->childItems()) {
++    for(QQuickItem *child : object->childItems()) {
+         if (child->objectName() == objectName) {
+             if (property.isEmpty()) {
+                 return child;
+@@ -359,7 +359,7 @@ inline QObject *findRecursiveChild(QQuickItem *object, const QString &objectName
+     }
+ 
+     // now check the grand-children
+-    Q_FOREACH(QQuickItem *child, object->childItems()) {
++    for(QQuickItem *child : object->childItems()) {
+         QObject *result = findRecursiveChild(child, objectName, property, value);
+         if (result) {
+             return result;
+diff --git a/src/stickers-history-model.cpp b/src/stickers-history-model.cpp
+index ebc92722..770f0875 100644
+--- a/src/stickers-history-model.cpp
++++ b/src/stickers-history-model.cpp
+@@ -310,7 +310,7 @@ QVariantMap StickersHistoryModel::get(int i) const
+ 
+     QModelIndex modelIndex = index(i, 0);
+     if (modelIndex.isValid()) {
+-        Q_FOREACH(int role, roles.keys()) {
++        for(int role : roles.keys()) {
+             QString roleName = QString::fromUtf8(roles.value(role));
+             item.insert(roleName, data(modelIndex, role));
+         }
+diff --git a/src/stickers-pack-model.cpp b/src/stickers-pack-model.cpp
+index 313df5b1..4b2a0ee1 100644
+--- a/src/stickers-pack-model.cpp
++++ b/src/stickers-pack-model.cpp
+@@ -116,7 +116,7 @@ QVariantMap StickersPackModel::get(int i) const
+ 
+     QModelIndex modelIndex = index(i, 0);
+     if (modelIndex.isValid()) {
+-        Q_FOREACH(int role, roles.keys()) {
++        for(int role : roles.keys()) {
+             QString roleName = QString::fromUtf8(roles.value(role));
+             item.insert(roleName, data(modelIndex, role));
+         }
+-- 
+2.39.2
+

@@ -35,6 +35,7 @@ in {
         morph-browser
         lomiri-terminal-app
         address-book-app
+        messaging-app
 
         # TODO OSK does not work yet
         # lomiri-keyboard is a plugin for maliit-framework, which still seems incapable of loading any plugins at all.

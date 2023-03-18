@@ -40063,6 +40063,8 @@ with pkgs;
 
   address-book-app = libsForQt5.callPackage ../development/libraries/address-book-app { };
 
+  messaging-app = libsForQt5.callPackage ../development/libraries/messaging-app { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };

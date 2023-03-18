@@ -1,0 +1,53 @@
+From 6d05a80038aa781a56819fa9866e82c6f48a4291 Mon Sep 17 00:00:00 2001
+From: Puna2608 <opna2608@protonmail.com>
+Date: Sat, 18 Mar 2023 00:30:47 +0100
+Subject: [PATCH 1/2] Drop deprecated qt5_use_modules
+
+---
+ CMakeLists.txt           | 2 ++
+ src/CMakeLists.txt       | 2 +-
+ tests/qml/CMakeLists.txt | 2 +-
+ 3 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 540fb6ea..435ea751 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -46,6 +46,8 @@ find_package(Qt5Qml)
+ find_package(Qt5Quick)
+ find_package(Qt5Test)
+ find_package(Qt5Versit)
++find_package(Qt5Multimedia)
++find_package(Qt5Sql)
+ 
+ include(qt5)
+ 
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index ceae2298..ce99b7fe 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -20,7 +20,7 @@ set(messaging_app_SRCS
+ add_executable(${MESSAGING_APP}
+     ${messaging_app_SRCS}
+     )
+-qt5_use_modules(${MESSAGING_APP} Core DBus Gui Multimedia Qml Quick Sql Versit)
++target_link_libraries(${MESSAGING_APP} Qt5::Core Qt5::DBus Qt5::Gui Qt5::Multimedia Qt5::Qml Qt5::Quick Qt5::Sql Qt5::Versit)
+ 
+ include_directories(
+     ${CMAKE_CURRENT_BINARY_DIR}
+diff --git a/tests/qml/CMakeLists.txt b/tests/qml/CMakeLists.txt
+index d946b986..4c34d234 100644
+--- a/tests/qml/CMakeLists.txt
++++ b/tests/qml/CMakeLists.txt
+@@ -27,7 +27,7 @@ set(SOURCES
+ )
+ 
+ add_executable(${TEST} ${SOURCES})
+-qt5_use_modules(${TEST} Core Multimedia Qml Quick QuickTest Sql)
++target_link_libraries(${TEST} Qt5::Core Qt5::Multimedia Qt5::Qml Qt5::Quick Qt5::QuickTest Qt5::Sql)
+ 
+ set(TEST_COMMAND ${XVFB_COMMAND} ${CMAKE_CURRENT_BINARY_DIR}/${TEST}
+                  -import ${CMAKE_BINARY_DIR}/src
+-- 
+2.39.2
+
