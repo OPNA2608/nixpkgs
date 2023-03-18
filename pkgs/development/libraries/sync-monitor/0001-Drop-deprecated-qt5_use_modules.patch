@@ -1,0 +1,103 @@
+From 38013d0c26c6b150e03d636d900f739960bd195e Mon Sep 17 00:00:00 2001
+From: Puna2608 <opna2608@protonmail.com>
+Date: Sat, 18 Mar 2023 14:39:40 +0100
+Subject: [PATCH] Drop deprecated qt5_use_modules
+
+---
+ 3rd_party/syncevolution-qt/CMakeLists.txt | 2 +-
+ CMakeLists.txt                            | 4 ++++
+ Lomiri/SyncMonitor/CMakeLists.txt         | 2 +-
+ authenticator/CMakeLists.txt              | 2 +-
+ src/CMakeLists.txt                        | 4 ++--
+ tests/unittest/CMakeLists.txt             | 2 +-
+ 6 files changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/3rd_party/syncevolution-qt/CMakeLists.txt b/3rd_party/syncevolution-qt/CMakeLists.txt
+index c32c9eb..a1782ed 100644
+--- a/3rd_party/syncevolution-qt/CMakeLists.txt
++++ b/3rd_party/syncevolution-qt/CMakeLists.txt
+@@ -11,4 +11,4 @@ add_library(${SYNCEVOLUTION_QT} STATIC
+     ${SYNCEVOLUTION_QT_SRC}
+ )
+ 
+-qt5_use_modules(${SYNCEVOLUTION_QT} Core DBus)
++target_link_libraries(${SYNCEVOLUTION_QT} Qt5::Core Qt5::DBus)
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index fde300e..fef297b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -9,6 +9,10 @@ find_package(Qt5Core REQUIRED)
+ find_package(Qt5DBus REQUIRED)
+ find_package(Qt5Network REQUIRED)
+ find_package(Qt5Organizer REQUIRED)
++find_package(Qt5Contacts REQUIRED)
++find_package(Qt5Gui REQUIRED)
++find_package(Qt5Qml REQUIRED)
++find_package(Qt5Quick REQUIRED)
+ add_definitions(-DQT_NO_KEYWORDS)
+ 
+ find_package(GMock REQUIRED)
+diff --git a/Lomiri/SyncMonitor/CMakeLists.txt b/Lomiri/SyncMonitor/CMakeLists.txt
+index 68f7c68..ac48f2b 100644
+--- a/Lomiri/SyncMonitor/CMakeLists.txt
++++ b/Lomiri/SyncMonitor/CMakeLists.txt
+@@ -10,7 +10,7 @@ set(SYNC_MONITOR_QML_FILES
+ )
+ 
+ add_library(syncmonitor-qml SHARED ${SYNC_MONITOR_QML_SRC})
+-qt5_use_modules(syncmonitor-qml Core Qml DBus)
++target_link_libraries(syncmonitor-qml Qt5::Core Qt5::Qml Qt5::DBus)
+ 
+ set(QT_INSTALL_QML "${CMAKE_INSTALL_LIBDIR}/qt5/qml")
+ 
+diff --git a/authenticator/CMakeLists.txt b/authenticator/CMakeLists.txt
+index fd39bab..596ceda 100644
+--- a/authenticator/CMakeLists.txt
++++ b/authenticator/CMakeLists.txt
+@@ -15,7 +15,7 @@ add_executable(${SYNC_MONITOR_HELPER_BIN}
+     ${SYNC_MONITOR_HELPER_RC}
+ )
+ 
+-qt5_use_modules(${SYNC_MONITOR_HELPER_BIN} Core DBus Gui Quick)
++target_link_libraries(${SYNC_MONITOR_HELPER_BIN} Qt5::Core Qt5::DBus Qt5::Gui Qt5::Quick)
+ 
+ set(SYNC_MONITOR_HELPER_QMLS
+     main.qml
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index eda4927..457fa84 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -47,7 +47,7 @@ target_link_libraries(${SYNQ_LIB}
+     syncevolution-qt
+ )
+ 
+-qt5_use_modules(${SYNQ_LIB} Core DBus Organizer Contacts Network)
++target_link_libraries(${SYNQ_LIB} Qt5::Core Qt5::DBus Qt5::Organizer Qt5::Contacts Qt5::Network)
+ 
+ set(SYNQ_BIN_SRC
+     main.cpp
+@@ -61,7 +61,7 @@ target_link_libraries(${SYNQ_BIN}
+     ${SYNQ_LIB}
+ )
+ 
+-qt5_use_modules(${SYNQ_BIN} Core )
++target_link_libraries(${SYNQ_BIN} Qt5::Core )
+ 
+ include_directories(
+     ${CMAKE_SOURCE_DIR}
+diff --git a/tests/unittest/CMakeLists.txt b/tests/unittest/CMakeLists.txt
+index 97c9726..dade6eb 100644
+--- a/tests/unittest/CMakeLists.txt
++++ b/tests/unittest/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ macro(declare_test TESTNAME)
+     add_executable(${TESTNAME}
+                    ${ARGN})
+-    qt5_use_modules(${TESTNAME} Core Test Contacts)
++    target_link_libraries(${TESTNAME} Qt5::Core Qt5::Test Qt5::Contacts)
+ 
+     target_link_libraries(${TESTNAME}
+                           ${ACCOUNTS_LIBRARIES}
+-- 
+2.39.2
+
