@@ -40071,6 +40071,8 @@ with pkgs;
 
   lomiri-calendar-app = libsForQt5.callPackage ../development/libraries/lomiri-calendar-app { };
 
+  lomiri-filemanager-app = libsForQt5.callPackage ../development/libraries/lomiri-filemanager-app { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
