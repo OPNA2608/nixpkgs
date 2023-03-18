@@ -4,15 +4,19 @@
 { stdenv
 , lib
 , fetchFromGitLab
+, accounts-qml-module
 , address-book-app
 , buteo-syncfw-qml
 , cmake
+, content-hub
 , gettext
 , gsettings-qt
+, history-service
 , libnotify
 , libqofono
 , lomiri-ui-toolkit
 , lomiri-system-settings-online-accounts
+, lomiri-thumbnailer
 , pkg-config
 , python3
 , qtbase
@@ -20,6 +24,7 @@
 , qtgraphicaleffects
 , qtmultimedia
 , qtpim
+, telephony-service
 , wrapQtAppsHook
 }:
 
@@ -46,6 +51,10 @@ stdenv.mkDerivation rec {
       --replace 'Exec=messaging-app' 'Exec=${placeholder "out"}/bin/messaging-app'
     substituteInPlace config.h.in \
       --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@' '@CMAKE_INSTALL_FULL_BINDIR@'
+
+    # This was recently renamed upstream, name here is from a weird in-between phase?
+    substituteInPlace src/qml/OnlineAccountsHelper.qml \
+      --replace 'Lomiri.OnlineAccounts 0.1' 'SSO.OnlineAccounts 0.1'
   '';
 
   strictDeps = true;
@@ -64,14 +73,19 @@ stdenv.mkDerivation rec {
     qtpim
 
     # QML
+    accounts-qml-module
     address-book-app
     buteo-syncfw-qml
+    content-hub
     gsettings-qt
+    history-service
     libqofono
     lomiri-ui-toolkit
     lomiri-system-settings-online-accounts
+    lomiri-thumbnailer
     qtfeedback
     qtgraphicaleffects
+    telephony-service
   ];
 
   cmakeFlags = [
