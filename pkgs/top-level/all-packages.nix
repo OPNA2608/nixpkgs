@@ -39286,6 +39286,8 @@ with pkgs;
 
   messaging-app = libsForQt5.callPackage ../development/libraries/messaging-app { };
 
+  dialer-app = libsForQt5.callPackage ../development/libraries/dialer-app { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
