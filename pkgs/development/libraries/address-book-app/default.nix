@@ -7,6 +7,7 @@
 , accounts-qml-module
 , buteo-syncfw-qml
 , cmake
+, content-hub
 , gsettings-qt
 , pkg-config
 , libqofono
@@ -20,6 +21,7 @@
 , qtpim
 , qtquickcontrols2
 , qtsystems
+, telephony-service
 , wrapQtAppsHook
 }:
 
@@ -60,6 +62,7 @@ stdenv.mkDerivation rec {
     # QML
     accounts-qml-module
     buteo-syncfw-qml
+    content-hub
     gsettings-qt
     libqofono
     lomiri-keyboard
@@ -69,6 +72,7 @@ stdenv.mkDerivation rec {
     qtgraphicaleffects
     qtquickcontrols2
     qtsystems
+    telephony-service
   ];
 
   cmakeFlags = [
