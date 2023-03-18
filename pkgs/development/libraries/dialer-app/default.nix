@@ -4,9 +4,11 @@
 { stdenv
 , lib
 , fetchFromGitLab
+, accounts-qml-module
 , address-book-app
 , buteo-syncfw-qml
 , cmake
+, content-hub
 , gettext
 , gsettings-qt
 , history-service
@@ -43,6 +45,10 @@ stdenv.mkDerivation rec {
       --replace 'Exec=dialer-app' 'Exec=${placeholder "out"}/bin/dialer-app'
     substituteInPlace config.h.in \
       --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@' '@CMAKE_INSTALL_FULL_BINDIR@'
+
+    # This was recently renamed upstream, name here is from a weird in-between phase?
+    substituteInPlace src/qml/SettingsPage/OnlineAccountsHelper.qml \
+      --replace 'Lomiri.OnlineAccounts 0.1' 'SSO.OnlineAccounts 0.1'
   '';
 
   strictDeps = true;
@@ -60,8 +66,10 @@ stdenv.mkDerivation rec {
     qtpim
 
     # QML
+    accounts-qml-module
     address-book-app
     buteo-syncfw-qml
+    content-hub
     gsettings-qt
     history-service
     libqofono
