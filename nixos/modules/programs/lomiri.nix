@@ -119,6 +119,18 @@ in {
       wants = lib.lists.forEach indicator-services (indicator: "${indicator.pname}.service");
       before = lib.lists.forEach indicator-services (indicator: "${indicator.pname}.service");
     };
+
+    # Unconditionally run service that collects system-installed URL handlers before l-u-d
+    # TODO also run user-installed one?
+    systemd.user.services."lomiri-url-dispatcher-update-system-dir" = {
+      description = "Lomiri URL dispatcher system directory updater";
+      wantedBy = [ "lomiri-url-dispatcher.service" ];
+      before = [ "lomiri-url-dispatcher.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.lomiri-url-dispatcher}/libexec/lomiri-url-dispatcher/lomiri-update-directory /run/current-system/sw/share/lomiri-url-dispatcher/urls/";
+      };
+    };
   };
 
   meta.maintainers = with lib.maintainers; [ OPNA2608 ];
