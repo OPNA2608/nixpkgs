@@ -1,0 +1,84 @@
+From 4998e643eb64498a02b7ab79cccd901f73e53b15 Mon Sep 17 00:00:00 2001
+From: Puna2608 <opna2608@protonmail.com>
+Date: Sun, 26 Mar 2023 05:03:29 +0200
+Subject: [PATCH] Find plugins via envvar
+
+---
+ src/main.cpp | 47 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
+
+diff --git a/src/main.cpp b/src/main.cpp
+index 64441da3..f6dc70fb 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -23,6 +23,7 @@
+ #include "plugin-manager.h"
+ #include "utils.h"
+ 
++#include <QDebug>
+ #include <QByteArray>
+ #include <QApplication>
+ #include <QProcessEnvironment>
+@@ -34,6 +35,31 @@
+ #include <QtQml/QQmlDebuggingEnabler>
+ static QQmlDebuggingEnabler debuggingEnabler(false);
+ 
++// Taken from qtdeclarative's
++static QStringList parseEnvPath(const QString &envImportPath)
++{
++    if (QDir::listSeparator() == u':') {
++        // Double colons are interpreted as separator + resource path.
++        QStringList paths = envImportPath.split(u':');
++        bool wasEmpty = false;
++        for (auto it = paths.begin(); it != paths.end();) {
++            if (it->isEmpty()) {
++                wasEmpty = true;
++                it = paths.erase(it);
++            } else {
++                if (wasEmpty) {
++                    it->prepend(u':');
++                    wasEmpty = false;
++                }
++                ++it;
++            }
++        }
++        return paths;
++    } else {
++        return envImportPath.split(QDir::listSeparator(), Qt::SkipEmptyParts);
++    }
++}
++
+ using namespace LomiriSystemSettings;
+ 
+ int main(int argc, char **argv)
+@@ -78,6 +104,27 @@ int main(int argc, char **argv)
+     qmlRegisterType<LomiriSystemSettings::PluginManager>("SystemSettings", 1, 0, "PluginManager");
+     view.engine()->rootContext()->setContextProperty("Utilities", &utils);
+     view.setResizeMode(QQuickView::SizeRootObjectToView);
++
++    qInfo() << "[Nix] Checking for NIX_LSS_PLUGIN_PRIVATE_MODULE_DIR";
++    if (environment.contains(QLatin1String("NIX_LSS_PLUGIN_PRIVATE_MODULE_DIR"))) {
++        qInfo() << "[Nix] Found NIX_LSS_PLUGIN_PRIVATE_MODULE_DIR";
++        const QStringList nixPrivateModuleDirs = parseEnvPath (environment.value(QLatin1String("NIX_LSS_PLUGIN_PRIVATE_MODULE_DIR")));
++        for (int i = nixPrivateModuleDirs.size() - 1; i >= 0; --i) {
++            qInfo() << "[Nix] Adding import path " << nixPrivateModuleDirs.at(i);
++            view.engine()->addImportPath(mountPoint + nixPrivateModuleDirs.at(i));
++        }
++    }
++
++    qInfo() << "[Nix] Checking for NIX_LSS_PLUGIN_QML_DIR";
++    if (environment.contains(QLatin1String("NIX_LSS_PLUGIN_QML_DIR"))) {
++        qInfo() << "[Nix] Found NIX_LSS_PLUGIN_QML_DIR";
++        const QStringList nixPluginQmlDirs = parseEnvPath (environment.value(QLatin1String("NIX_LSS_PLUGIN_QML_DIR")));
++        for (int i = nixPluginQmlDirs.size() - 1; i >= 0; --i) {
++            qInfo() << "[Nix] Adding import path " << nixPluginQmlDirs.at(i);
++            view.engine()->addImportPath(mountPoint + nixPluginQmlDirs.at(i));
++        }
++    }
++
+     view.engine()->addImportPath(mountPoint + PLUGIN_PRIVATE_MODULE_DIR);
+     view.engine()->addImportPath(mountPoint + PLUGIN_QML_DIR);
+     view.rootContext()->setContextProperty("defaultPlugin", defaultPlugin);
+-- 
+2.39.2
+

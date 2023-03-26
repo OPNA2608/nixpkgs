@@ -39176,7 +39176,8 @@ with pkgs;
 
   lomiri-settings-components = libsForQt5.callPackage ../development/libraries/lomiri-settings-components { };
 
-  lomiri-system-settings = libsForQt5.callPackage ../development/libraries/lomiri-system-settings { };
+  lomiri-system-settings-unwrapped = libsForQt5.callPackage ../development/libraries/lomiri-system-settings { };
+  lomiri-system-settings = libsForQt5.callPackage ../development/libraries/lomiri-system-settings/wrapper.nix { };
 
   lomiri-ui-toolkit = libsForQt5.callPackage ../development/libraries/lomiri-ui-toolkit { };
 
@@ -39293,6 +39294,10 @@ with pkgs;
   lomiri-calendar-app = libsForQt5.callPackage ../development/libraries/lomiri-calendar-app { };
 
   lomiri-filemanager-app = libsForQt5.callPackage ../development/libraries/lomiri-filemanager-app { };
+
+  lomiri-system-settings-security-privacy = libsForQt5.callPackage ../development/libraries/lomiri-system-settings-security-privacy { };
+
+  trust-store = libsForQt5.callPackage ../development/libraries/trust-store { };
 
   # lomiri end
 
