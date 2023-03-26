@@ -54,8 +54,8 @@ stdenv.mkDerivation rec {
   };
 
   patches = [
-    # Introduce a custom envvar to find plugins with
-    ./Find-plugins-via-envvar.patch
+    # Introduce custom envvars to find plugins and their i18n with
+    ./Find-plugins-and-i18n-via-envvar.patch
 
     # Fix tests on newer python-dbusmock
     # https://gitlab.com/ubports/development/core/lomiri-system-settings/-/merge_requests/354
