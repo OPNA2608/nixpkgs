@@ -1,0 +1,131 @@
+From e6b163f8151a25364dd128d70b63de6465b0896d Mon Sep 17 00:00:00 2001
+From: Puna2608 <opna2608@protonmail.com>
+Date: Sun, 26 Mar 2023 22:31:36 +0200
+Subject: [PATCH] Find plugins and i18n via envvars
+
+---
+ src/main.cpp   | 29 ++++++++++++++++++++++++++---
+ src/plugin.cpp | 36 ++++++++++++++++++++++++++++++++++--
+ 2 files changed, 60 insertions(+), 5 deletions(-)
+
+diff --git a/src/main.cpp b/src/main.cpp
+index 64441da3..019e4017 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -23,6 +23,7 @@
+ #include "plugin-manager.h"
+ #include "utils.h"
+ 
++#include <QDebug>
+ #include <QByteArray>
+ #include <QApplication>
+ #include <QProcessEnvironment>
+@@ -78,12 +79,34 @@ int main(int argc, char **argv)
+     qmlRegisterType<LomiriSystemSettings::PluginManager>("SystemSettings", 1, 0, "PluginManager");
+     view.engine()->rootContext()->setContextProperty("Utilities", &utils);
+     view.setResizeMode(QQuickView::SizeRootObjectToView);
+-    view.engine()->addImportPath(mountPoint + PLUGIN_PRIVATE_MODULE_DIR);
+-    view.engine()->addImportPath(mountPoint + PLUGIN_QML_DIR);
++
++    QString pluginPrivateModuleDir = PLUGIN_PRIVATE_MODULE_DIR;
++    qInfo() << "[Nix] Checking for NIX_LSS_PLUGIN_PRIVATE_MODULE_DIR";
++    if (environment.contains(QLatin1String("NIX_LSS_PLUGIN_PRIVATE_MODULE_DIR"))) {
++        pluginPrivateModuleDir = environment.value(QLatin1String("NIX_LSS_PLUGIN_PRIVATE_MODULE_DIR"));
++        qInfo() << "[Nix] Found NIX_LSS_PLUGIN_PRIVATE_MODULE_DIR: " << pluginPrivateModuleDir;
++    }
++
++    QString pluginQmlDir = PLUGIN_QML_DIR;
++    qInfo() << "[Nix] Checking for NIX_LSS_PLUGIN_QML_DIR";
++    if (environment.contains(QLatin1String("NIX_LSS_PLUGIN_QML_DIR"))) {
++        pluginQmlDir = environment.value(QLatin1String("NIX_LSS_PLUGIN_QML_DIR"));
++        qInfo() << "[Nix] Found NIX_LSS_PLUGIN_QML_DIR: " << pluginQmlDir;
++    }
++
++    QString i18nDirectory = I18N_DIRECTORY;
++    qInfo() << "[Nix] Checking for NIX_LSS_I18N_DIRECTORY";
++    if (environment.contains(QLatin1String("NIX_LSS_I18N_DIRECTORY"))) {
++        i18nDirectory = environment.value(QLatin1String("NIX_LSS_I18N_DIRECTORY"));
++        qInfo() << "[Nix] Found NIX_LSS_I18N_DIRECTORY: " << i18nDirectory;
++    }
++
++    view.engine()->addImportPath(mountPoint + pluginPrivateModuleDir);
++    view.engine()->addImportPath(mountPoint + pluginQmlDir);
+     view.rootContext()->setContextProperty("defaultPlugin", defaultPlugin);
+     view.rootContext()->setContextProperty("mountPoint", mountPoint);
+     view.rootContext()->setContextProperty("isSnap", isSnap);
+-    view.rootContext()->setContextProperty("i18nDirectory", mountPoint + I18N_DIRECTORY);
++    view.rootContext()->setContextProperty("i18nDirectory", mountPoint + i18nDirectory);
+     view.rootContext()->setContextProperty("pluginOptions", pluginOptions);
+     view.rootContext()->setContextProperty("view", &view);
+     view.setSource(QUrl("qrc:/qml/MainWindow.qml"));
+diff --git a/src/plugin.cpp b/src/plugin.cpp
+index 133821af..f3f233d5 100644
+--- a/src/plugin.cpp
++++ b/src/plugin.cpp
+@@ -21,6 +21,11 @@
+ #include "plugin.h"
+ #include "debug.h"
+ 
++#include <QDebug>
++#include <QProcessEnvironment>
++namespace C {
++#include <libintl.h>
++}
+ #include <QEventLoop>
+ #include <QDir>
+ #include <QFileInfo>
+@@ -38,7 +43,23 @@
+ 
+ using namespace LomiriSystemSettings;
+ 
+-static const QLatin1String pluginModuleDir{PLUGIN_MODULE_DIR};
++static const QLatin1String getPluginModuleDir(void) {
++    static bool dirDetermined = false;
++    static QString pluginModuleDir{PLUGIN_MODULE_DIR};
++
++    if (!dirDetermined) {
++      qInfo() << "[Nix] Checking for NIX_LSS_PLUGIN_MODULE_DIR";
++      QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
++      if (environment.contains(QLatin1String("NIX_LSS_PLUGIN_MODULE_DIR"))) {
++          pluginModuleDir = environment.value(QLatin1String("NIX_LSS_PLUGIN_MODULE_DIR"));
++          qInfo() << "[Nix] Found NIX_LSS_PLUGIN_MODULE_DIR: " << pluginModuleDir;
++      }
++      dirDetermined = true;
++    }
++
++    return QLatin1String(pluginModuleDir.toLatin1());
++}
++
+ static const QLatin1String pluginQmlDir{QML_DIR};
+ 
+ namespace LomiriSystemSettings {
+@@ -111,7 +132,7 @@ bool PluginPrivate::ensureLoaded() const
+         "";
+ 
+     QString name = QString("%1%2/lib%3.so")
+-        .arg(mountPoint).arg(pluginModuleDir).arg(plugin);
++        .arg(mountPoint).arg(getPluginModuleDir()).arg(plugin);
+ 
+     m_loader.setFileName(name);
+     if (Q_UNLIKELY(!m_loader.load())) {
+@@ -166,6 +187,17 @@ Plugin::Plugin(const QFileInfo &manifest, QObject *parent):
+     QObject(parent),
+     d_ptr(new PluginPrivate(this, manifest))
+ {
++    /*
++     * bind the plugin's locale files
++     * - manifest: <out>/share/lomiri-system-settings/<plugin>.settings
++     * - locales: <out>/share/locale
++     */
++    QDir pluginLocaleDir = manifest.absoluteDir();
++    pluginLocaleDir.cdUp();
++    pluginLocaleDir.cd("locale");
++    std::string pluginLocaleDirStr = pluginLocaleDir.absolutePath().toStdString();
++    std::string pluginTextdomain = this->translations().toStdString();
++    C::bindtextdomain(pluginTextdomain.c_str(), pluginLocaleDirStr.c_str());
+ }
+ 
+ Plugin::~Plugin()
+-- 
+2.39.2
+

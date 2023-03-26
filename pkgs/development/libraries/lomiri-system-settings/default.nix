@@ -54,8 +54,8 @@ stdenv.mkDerivation rec {
   };
 
   patches = [
-    # Introduce custom envvars to find plugins and their i18n with
-    ./Find-plugins-and-i18n-via-envvar.patch
+    # Introduce custom envvars checks to find plugins and their i18n
+    ./Find-plugins-and-i18n-via-envvars.patch
 
     # Fix tests on newer python-dbusmock
     # https://gitlab.com/ubports/development/core/lomiri-system-settings/-/merge_requests/354
@@ -88,6 +88,10 @@ stdenv.mkDerivation rec {
     # Decide which entries should be visible based on the current system
     substituteInPlace plugins/*/*.settings \
       --replace '/etc' '/run/current-system/sw/etc'
+
+    # Icon is named "unity-battery-80" in (current?) Suru theme
+    substituteInPlace plugins/battery/battery.settings \
+      --replace 'battery-080' 'unity-battery-080'
   '';
 
   strictDeps = true;
