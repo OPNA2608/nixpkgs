@@ -35,17 +35,6 @@
 , lomiri-settings-components
 , qtgraphicaleffects
 , python3
-, wrapQtAppsHook
-, qtfeedback
-, qmenumodel
-, qtsystems
-, lomiri-indicator-network
-, libqofono
-, wrapGAppsHook
-, lomiri-schemas
-, ayatana-indicator-datetime
-, content-hub
-, lomiri-keyboard
 }:
 
 let
@@ -54,7 +43,7 @@ let
   ]);
 in
 stdenv.mkDerivation rec {
-  pname = "lomiri-system-settings";
+  pname = "lomiri-system-settings-unwrapped";
   version = "1.0.1";
 
   src = fetchFromGitLab {
@@ -65,6 +54,9 @@ stdenv.mkDerivation rec {
   };
 
   patches = [
+    # Introduce a custom envvar to find plugins with
+    ./Find-plugins-via-envvar.patch
+
     # Fix tests on newer python-dbusmock
     # https://gitlab.com/ubports/development/core/lomiri-system-settings/-/merge_requests/354
     (fetchpatch {
@@ -92,9 +84,16 @@ stdenv.mkDerivation rec {
     # prefix must stay replaceable, plugins rely on this
     substituteInPlace lib/LomiriSystemSettings/LomiriSystemSettings.pc.in \
       --replace "\''${prefix}/@LIBDIR@" "\''${prefix}/lib"
+
+    # Decide which entries should be visible based on the current system
+    substituteInPlace plugins/*/*.settings \
+      --replace '/etc' '/run/current-system/sw/etc'
   '';
 
   strictDeps = true;
+
+  # Depends on plugins at runtime, plugins can depend on it at build time; wrapper handles runtime-only dependencies
+  dontWrapQtApps = true;
 
   nativeBuildInputs = [
     cmake
@@ -102,8 +101,6 @@ stdenv.mkDerivation rec {
     gettext
     glib # glib-compile-schemas
     intltool
-    wrapGAppsHook
-    wrapQtAppsHook
   ];
 
   buildInputs = [
@@ -123,20 +120,6 @@ stdenv.mkDerivation rec {
     upower
     lomiri-ui-toolkit
     lomiri-settings-components
-
-    # QML
-    qtfeedback # lomiri-ui-toolkit
-    qtgraphicaleffects # lomiri-ui-toolkit
-    qmenumodel
-    qtsystems
-    lomiri-indicator-network
-    libqofono
-
-    # Schemas
-    lomiri-schemas
-    ayatana-indicator-datetime
-    content-hub
-    lomiri-keyboard
   ];
 
   nativeCheckInputs = [
@@ -146,7 +129,7 @@ stdenv.mkDerivation rec {
   ];
 
   checkInputs = [
-    qtgraphicaleffects # tests-only?
+    qtgraphicaleffects
   ];
 
   cmakeFlags = [
@@ -175,13 +158,5 @@ stdenv.mkDerivation rec {
       make test
 
     runHook postCheck
-  '';
-
-  dontWrapGApps = true;
-
-  preFixup = ''
-    qtWrapperArgs+=(
-      "''${gappsWrapperArgs[@]}"
-    )
   '';
 }

@@ -5,7 +5,7 @@
 , json-glib
 , libapparmor
 , libnotify
-, lomiri-system-settings
+, lomiri-system-settings-unwrapped
 , pkg-config
 , qmake
 , qtbase
@@ -37,6 +37,13 @@ stdenv.mkDerivation rec {
     sed -i \
       -e '/include(doc\/doc.pri)/d' \
       client/client.pro
+
+    # This was recently renamed upstream, name here is from a weird in-between phase?
+    # Used in too many places
+    for qmlfile in $(find . -name '*.qml'); do
+      substituteInPlace $qmlfile \
+        --replace 'Lomiri.OnlineAccounts 0.1' 'SSO.OnlineAccounts 0.1'
+    done
   '';
 
   strictDeps = true;
@@ -52,7 +59,7 @@ stdenv.mkDerivation rec {
     json-glib
     libapparmor
     libnotify
-    lomiri-system-settings
+    lomiri-system-settings-unwrapped
     qtbase
     qtdeclarative
     signond

@@ -26,7 +26,7 @@
 , lomiri-indicator-network
 , lomiri-ui-toolkit
 , lomiri-settings-components
-, lomiri-system-settings
+, lomiri-system-settings-unwrapped
 , lomiri-schemas
 , lomiri-notifications
 , lomiri-thumbnailer
@@ -128,7 +128,7 @@ stdenv.mkDerivation rec {
     lomiri-download-manager
     lomiri-indicator-network
     lomiri-schemas
-    lomiri-system-settings
+    lomiri-system-settings-unwrapped
     lomiri-ui-toolkit
     mir
     pam
