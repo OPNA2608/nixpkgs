@@ -1,8 +1,6 @@
 # TODO
 # - cleanup imports
-# - plugins can access each others' QML files, which is a nightmare to manage when collecting paths and passing them via envvars.
-#   symlink all plugins' files into one derivation (symlinkJoin or lndir) instead
-#   - revise custom patch in unwrapped once done
+# - maybe do with symlinkJoin instead?
 # - meta
 { stdenvNoCC
 , lib
@@ -37,7 +35,7 @@
 , biometryd
 , accounts-qml-module
 , qtmultimedia
-#, lndir
+, lndir
 
 , lomiri-system-settings-unwrapped
 , lomiri-system-settings-online-accounts
@@ -45,13 +43,11 @@
 }:
 
 let
-  lssPlugins = [
+  lssAll = [
+    lomiri-system-settings-unwrapped
     lomiri-system-settings-online-accounts
     lomiri-system-settings-security-privacy
   ];
-  lssAll = [
-    lomiri-system-settings-unwrapped
-  ] ++ lssPlugins;
 in
 stdenvNoCC.mkDerivation rec {
   pname = "lomiri-system-settings";
@@ -65,7 +61,7 @@ stdenvNoCC.mkDerivation rec {
   strictDeps = true;
 
   nativeBuildInputs = [
-    #lndir
+    lndir
     wrapGAppsHook
     wrapQtAppsHook
   ];
@@ -112,31 +108,36 @@ stdenvNoCC.mkDerivation rec {
   fixupPhase = ''
     runHook preFixup
 
+    # XDG_DATA_DIRS so l-s-s can find all plugins' manifest files
+    # All the NIX_LSS_* variables override hardcoded paths pointing into unwrapped's prefix
     makeWrapper ${lomiri-system-settings-unwrapped}/bin/lomiri-system-settings $out/bin/lomiri-system-settings \
       "''${qtWrapperArgs[@]}" \
       "''${gappsWrapperArgs[@]}" \
-      --prefix XDG_DATA_DIRS : ${lib.strings.concatMapStringsSep ":" (plugin: "${plugin}/share") lssAll} \
-      --set NIX_LSS_PLUGIN_MODULE_DIR ${lib.strings.concatMapStringsSep ":" (plugin: "${plugin}/lib/lomiri-system-settings") lssAll} \
-      --set NIX_LSS_PLUGIN_PRIVATE_MODULE_DIR ${lib.strings.concatMapStringsSep ":" (plugin: "${plugin}/lib/lomiri-system-settings/private") lssPlugins} \
-      --set NIX_LSS_PLUGIN_QML_DIR ${lib.strings.concatMapStringsSep ":" (plugin: "${plugin}/share/lomiri-system-settings/qml-plugins") lssPlugins} #\
-      #--set NIX_LSS_I18N_DIRECTORY "$out/share/locale"
+      --prefix XDG_DATA_DIRS : "$out/share" \
+      --set NIX_LSS_PLUGIN_MODULE_DIR "$out/lib/lomiri-system-settings" \
+      --set NIX_LSS_PLUGIN_PRIVATE_MODULE_DIR "$out/lib/lomiri-system-settings/private" \
+      --set NIX_LSS_PLUGIN_QML_DIR "$out/share/lomiri-system-settings/qml-plugins" \
+      --set NIX_LSS_I18N_DIRECTORY "$out/share/locale"
 
-    # Installed Lomiri cares about this
-    mkdir $out/share
-    ln -s ${lomiri-system-settings-unwrapped}/share/lomiri-url-dispatcher $out/share/lomiri-url-dispatcher
+    # Installed Lomiri cares about l-u-d data
+    mkdir -p $out/share/lomiri-url-dispatcher
+    lndir -silent ${lomiri-system-settings-unwrapped}/share/lomiri-url-dispatcher $out/share/lomiri-url-dispatcher
 
-    # Hardcode to this wrapped one if not already, replace hardcoding to wrapped one just in case this ever changes
-    mkdir $out/share/applications
+    # Hardcode to wrapped one if not already, replace hardcoding to wrapped one just in case this ever changes
+    mkdir -p $out/share/applications
     cp ${lomiri-system-settings-unwrapped}/share/applications/* $out/share/applications
     substituteInPlace $out/share/applications/* \
       --replace '${lomiri-system-settings-unwrapped}/bin' "$out/bin" \
       --replace 'Exec=lomiri-system-settings' "Exec=$out/bin/lomiri-system-settings"
 
-    # Localisations only supported in single dir
-    #mkdir $out/share/locale
-    #for lssI18n in ${lib.strings.concatMapStringsSep " " (lssPlugin: "${lssPlugin}/share/locale") lssAll}; do
-    #  lndir $lssI18n $out/share/locale
-    #done
+    # Large parts of the application logic expect all plugins to live under the same prefix
+    # symlinking everything together is simpler than implementing proper handling of multiple prefixes
+    for requiredPath in lib/lomiri-system-settings share/lomiri-system-settings share/locale; do
+      mkdir -p $out/$requiredPath
+      for lssPrefix in ${lib.strings.concatStringsSep " " lssAll}; do
+        lndir -silent $lssPrefix/$requiredPath $out/$requiredPath
+      done
+    done
 
     runHook postFixup
   '';
