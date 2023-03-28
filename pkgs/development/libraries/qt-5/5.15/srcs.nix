@@ -34,6 +34,17 @@ lib.mapAttrs mk (lib.importJSON ./srcs-generated.json)
     version = "5.212.0-alpha4";
   };
 
+  # fetch.sh fails to find 5.15 branch of this?
+  qtpositioning = rec {
+    version = "5.15.2";
+    src = fetchFromGitHub {
+      owner = "qt";
+      repo = "qtpositioning";
+      rev = "v${version}";
+      hash = "sha256-L/P+yAQItm3taPpCNoOOm7PNdOFZiIwJJYflk6JDWvU=";
+    };
+  };
+
   catapult = fetchgit {
     url = "https://chromium.googlesource.com/catapult";
     rev = "5eedfe23148a234211ba477f76fc2ea2e8529189";
