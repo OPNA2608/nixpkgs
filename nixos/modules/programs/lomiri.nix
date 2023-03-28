@@ -39,6 +39,7 @@ in {
         dialer-app
         lomiri-calendar-app
         lomiri-filemanager-app
+        lomiri-camera-app
 
         # TODO OSK does not work yet
         # lomiri-keyboard is a plugin for maliit-framework, which still seems incapable of loading any plugins at all.
@@ -77,6 +78,7 @@ in {
     ];
     services.dbus.packages = with pkgs; [
       hfd-service
+      libusermetrics
       lomiri-download-manager
       repowerd
     ];
