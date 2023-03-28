@@ -7,6 +7,7 @@
 , cmake
 , exiv2
 , gettext
+, gst_all_1
 , libusermetrics
 , lomiri-action-api
 , lomiri-ui-toolkit
@@ -72,7 +73,11 @@ stdenv.mkDerivation rec {
     qtgraphicaleffects
     qtpositioning
     qtsensors
-  ];
+  ] ++ (with gst_all_1; [
+    # cannot create camera service, the 'camerabin' plugin is missing for GStreamer
+    gstreamer
+    gst-plugins-bad
+  ]);
 
   cmakeFlags = [
     "-DINSTALL_TESTS=OFF"
@@ -81,4 +86,10 @@ stdenv.mkDerivation rec {
 
   # TODO
   doCheck = false;
+
+  preFixup = ''
+    qtWrapperArgs+=(
+      --prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "$GST_PLUGIN_SYSTEM_PATH_1_0"
+    )
+  '';
 }
