@@ -40078,6 +40078,8 @@ with pkgs;
 
   trust-store = libsForQt5.callPackage ../development/libraries/trust-store { };
 
+  qzxing = libsForQt5.callPackage ../development/libraries/qzxing { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
