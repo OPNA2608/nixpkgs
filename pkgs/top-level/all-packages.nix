@@ -39301,6 +39301,8 @@ with pkgs;
 
   qzxing = libsForQt5.callPackage ../development/libraries/qzxing { };
 
+  lomiri-camera-app = libsForQt5.callPackage ../development/libraries/lomiri-camera-app { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
