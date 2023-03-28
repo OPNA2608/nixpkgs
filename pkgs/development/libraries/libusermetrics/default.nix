@@ -33,6 +33,10 @@ stdenv.mkDerivation rec {
   postPatch = ''
     substituteInPlace data/CMakeLists.txt \
       --replace '/etc' "$out/etc"
+
+    # Tries to query QMake for QT_INSTALL_QML variable, would return broken paths into /build/qtbase-<commit> even if qmake was available
+    substituteInPlace src/modules/UserMetrics/CMakeLists.txt \
+      --replace "\''${QT_IMPORTS_DIR}/UserMetrics" '${placeholder "out"}/${qtbase.qtQmlPrefix}/UserMetrics'
   '' + lib.optionalString (!doCheck) ''
     # Only needed by tests
     sed -i -e '/QTDBUSTEST/d' CMakeLists.txt
