@@ -43,4 +43,12 @@ stdenv.mkDerivation rec {
     "CONFIG+=qzxing_multimedia"
     "QMAKE_PKGCONFIG_PREFIX=${placeholder "out"}"
   ];
+
+  postInstall = ''
+    # Some packages try to use this without pkg-config
+    ln -s $out/include $out/include/qzxing
+    for qzxinglib in $out/lib/libQZXing.so*; do
+      ln -s $qzxinglib $(echo $qzxinglib | tr '[:upper:]' '[:lower:]')
+    done
+  '';
 }
