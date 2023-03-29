@@ -78,6 +78,9 @@ in {
     ];
     services.dbus.packages = with pkgs; [
       hfd-service
+      # TODO
+      # - /var/lib/usermetrics/usermetrics6.db
+      # - acts as user "usermetrics"
       libusermetrics
       lomiri-download-manager
       repowerd
