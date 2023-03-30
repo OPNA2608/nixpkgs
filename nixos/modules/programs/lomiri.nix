@@ -103,6 +103,7 @@ in {
     services.udisks2.enable = true;
     services.upower.enable = true;
     services.geoclue2.enable = true;
+    services.printing.enable = true;
     services.xserver.displayManager.defaultSession = lib.mkDefault "lomiri";
     services.xserver.displayManager.sessionPackages = with pkgs; [ lomiri-session ];
     services.xserver.updateDbusEnvironment = true;
