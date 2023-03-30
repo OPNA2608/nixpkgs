@@ -9,6 +9,7 @@ in {
   };
 
   config = let
+    # TODO Move indicators in separate module, they're independent of Lomiri
     indicator-services = with pkgs; [
       ayatana-indicator-application
       ayatana-indicator-bluetooth
@@ -101,6 +102,7 @@ in {
     services.accounts-daemon.enable = true;
     services.udisks2.enable = true;
     services.upower.enable = true;
+    services.geoclue2.enable = true;
     services.xserver.displayManager.defaultSession = lib.mkDefault "lomiri";
     services.xserver.displayManager.sessionPackages = with pkgs; [ lomiri-session ];
     services.xserver.updateDbusEnvironment = true;
