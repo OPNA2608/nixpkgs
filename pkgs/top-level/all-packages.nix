@@ -39305,6 +39305,8 @@ with pkgs;
 
   indicator-location = callPackage ../development/libraries/indicator-location { };
 
+  net-cpp = callPackage ../development/libraries/net-cpp { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
