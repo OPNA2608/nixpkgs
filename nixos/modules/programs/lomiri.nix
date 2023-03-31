@@ -22,6 +22,7 @@ in {
       ayatana-indicator-printers
       ayatana-indicator-session
       ayatana-indicator-sound
+      indicator-location
       lomiri-indicator-network
     ];
   in

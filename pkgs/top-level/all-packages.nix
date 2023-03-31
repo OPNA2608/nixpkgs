@@ -40082,6 +40082,8 @@ with pkgs;
 
   lomiri-camera-app = libsForQt5.callPackage ../development/libraries/lomiri-camera-app { };
 
+  indicator-location = callPackage ../development/libraries/indicator-location { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
