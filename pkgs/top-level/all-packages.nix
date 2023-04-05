@@ -39313,6 +39313,8 @@ with pkgs;
 
   lomiri-calculator-app = libsForQt5.callPackage ../development/libraries/lomiri-calculator-app { };
 
+  u1db-qt = libsForQt5.callPackage ../development/libraries/u1db-qt { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
