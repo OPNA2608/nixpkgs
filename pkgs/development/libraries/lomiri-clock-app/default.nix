@@ -40,10 +40,12 @@ stdenv.mkDerivation rec {
   postPatch = ''
     # First one is embedded into files so must be absolute, second one tries to make first one absolute
     # QT_IMPORTS_DIR returned by qmake -query is broken
+    # Splash broken when not building in click mode
     substituteInPlace CMakeLists.txt \
       --replace "\''${CMAKE_INSTALL_DATADIR}/\''${APP_HARDCODE}" "\''${CMAKE_INSTALL_FULL_DATADIR}/\''${APP_HARDCODE}" \
       --replace "\''${CMAKE_INSTALL_PREFIX}/\''${LOMIRI-CLOCK_APP_DIR}" "\''${LOMIRI-CLOCK_APP_DIR}" \
       --replace "\''${QT_IMPORTS_DIR}" '${placeholder "out"}/${qtbase.qtQmlPrefix}' \
+      --replace 'clock-app-splash.svg' "$out/share/lomiri-clock-app/clock-app-splash.svg" \
       --replace 'qmlscene' '${qtdeclarative.dev}/bin/qmlscene'
 
     # Broken path?
@@ -105,6 +107,9 @@ stdenv.mkDerivation rec {
     grep 'Exec=' $out/share/applications/lomiri-clock-app.desktop | cut -d'=' -f2- >> $out/bin/${pname}
     chmod +x $out/bin/${pname}
     sed -i -e 's|^Exec=.*$|Exec=${placeholder "out"}/bin/${pname}|' $out/share/applications/lomiri-clock-app.desktop
+
+    # Doesn't handle splash graphic when not building in click mode
+    install -Dm644 {../app,$out/share/lomiri-clock-app}/clock-app-splash.svg
   '';
 
   postFixup = ''
