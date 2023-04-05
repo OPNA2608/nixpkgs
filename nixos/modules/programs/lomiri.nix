@@ -65,6 +65,7 @@ in {
         content-hub
         buteo-syncfw
         sync-monitor
+        location-service
 
         # Used(?) themes
         ubuntu-themes
@@ -75,6 +76,7 @@ in {
     # Required/Expected system services
     systemd.packages = with pkgs; [
       hfd-service
+      location-service
       lomiri-download-manager
       repowerd
     ];
@@ -84,6 +86,7 @@ in {
       # - /var/lib/usermetrics/usermetrics6.db
       # - acts as user "usermetrics"
       libusermetrics
+      location-service
       lomiri-download-manager
       repowerd
     ];
@@ -140,6 +143,10 @@ in {
         ExecStart = "${pkgs.lomiri-url-dispatcher}/libexec/lomiri-url-dispatcher/lomiri-update-directory /run/current-system/sw/share/lomiri-url-dispatcher/urls/";
       };
     };
+
+    systemd.tmpfiles.rules = [
+      "d /var/lib/lomiri-location-service 0755 root root -"
+    ];
   };
 
   meta.maintainers = with lib.maintainers; [ OPNA2608 ];

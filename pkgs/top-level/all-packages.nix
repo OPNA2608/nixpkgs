@@ -39307,6 +39307,8 @@ with pkgs;
 
   net-cpp = callPackage ../development/libraries/net-cpp { };
 
+  location-service = libsForQt5.callPackage ../development/libraries/location-service { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
