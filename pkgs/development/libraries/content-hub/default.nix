@@ -45,8 +45,12 @@ stdenv.mkDerivation rec {
     substituteInPlace src/com/lomiri/content/service/com.lomiri.content.dbus.Service.service \
       --replace '/usr' '${placeholder "out"}'
 
-    # Look for peer files from installed applications
-    substituteInPlace src/com/lomiri/content/service/registry-updater.cpp \
+    # Look for peer files and themes in running system
+    # TODO the one in contenthubplugin.cpp overrides Qt's default theme search paths, why? Considerations for packaging & upstream
+    # - remove from file?
+    # - append to list?
+    # - append to fallbacks instead?
+    substituteInPlace src/com/lomiri/content/service/registry-updater.cpp import/Lomiri/Content/contenthubplugin.cpp \
       --replace '/usr' '/run/current-system/sw'
   '';
 
