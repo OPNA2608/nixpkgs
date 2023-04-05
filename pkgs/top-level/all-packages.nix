@@ -39315,6 +39315,8 @@ with pkgs;
 
   u1db-qt = libsForQt5.callPackage ../development/libraries/u1db-qt { };
 
+  lomiri-clock-app = libsForQt5.callPackage ../development/libraries/lomiri-clock-app { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
