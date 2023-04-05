@@ -12,6 +12,7 @@
 , gettext
 , glog
 , libapparmor
+, newt
 , pkg-config
 , process-cpp
 , properties-cpp
@@ -30,7 +31,10 @@ stdenv.mkDerivation rec {
     hash = "sha256-xzicLESsUuEV5dnk337mhvolQeVspU9jDst8l/g+YV8=";
   };
 
-  postPatch = lib.optionalString (!doCheck) ''
+  postPatch = ''
+    substituteInPlace src/core/trust/terminal_agent.h \
+      --replace '/bin/whiptail' '${lib.getBin newt}/bin/whiptail'
+  '' + lib.optionalString (!doCheck) ''
     sed -i -e '/add_subdirectory(tests)/d' CMakeLists.txt
   '';
 
@@ -48,6 +52,7 @@ stdenv.mkDerivation rec {
     dbus-cpp
     glog
     libapparmor
+    newt
     process-cpp
     properties-cpp # process-cpp
     qtbase
