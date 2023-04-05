@@ -39311,6 +39311,8 @@ with pkgs;
 
   qqc2-suru-style = libsForQt5.callPackage ../development/libraries/qqc2-suru-style { };
 
+  lomiri-calculator-app = libsForQt5.callPackage ../development/libraries/lomiri-calculator-app { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
