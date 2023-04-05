@@ -39317,6 +39317,8 @@ with pkgs;
 
   lomiri-clock-app = libsForQt5.callPackage ../development/libraries/lomiri-clock-app { };
 
+  lomiri-gallery-app = libsForQt5.callPackage ../development/libraries/lomiri-gallery-app { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };

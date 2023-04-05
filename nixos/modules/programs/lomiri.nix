@@ -44,6 +44,7 @@ in {
         lomiri-camera-app
         lomiri-calculator-app
         lomiri-clock-app
+        lomiri-gallery-app
 
         # TODO OSK does not work yet
         # lomiri-keyboard is a plugin for maliit-framework, which still seems incapable of loading any plugins at all.
