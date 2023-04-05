@@ -39309,6 +39309,8 @@ with pkgs;
 
   location-service = libsForQt5.callPackage ../development/libraries/location-service { };
 
+  qqc2-suru-style = libsForQt5.callPackage ../development/libraries/qqc2-suru-style { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
