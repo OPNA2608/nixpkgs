@@ -89,5 +89,8 @@ stdenv.mkDerivation rec {
   postInstall = ''
     # Splash not handled outside of click build
     install -Dm644 {../desktop,$out/share/lomiri-gallery-app}/lomiri-gallery-app-splash.svg
+
+    # Wrong (old?) name
+    mv $out/share/content-hub/peers/{,lomiri-}gallery-app
   '';
 }
