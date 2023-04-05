@@ -110,6 +110,9 @@ stdenv.mkDerivation rec {
 
     # Doesn't handle splash graphic when not building in click mode
     install -Dm644 {../app,$out/share/lomiri-clock-app}/clock-app-splash.svg
+
+    # Rename dispatcher so our custom binary is found (else it doesn't work, maybe another non-click problem?)
+    mv $out/share/lomiri-url-dispatcher/urls/{clock.ubports_clock,${pname}}.url-dispatcher
   '';
 
   postFixup = ''
