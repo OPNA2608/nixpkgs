@@ -39321,6 +39321,8 @@ with pkgs;
 
   mediascanner2 = libsForQt5.callPackage ../development/libraries/mediascanner2 { };
 
+  lomiri-music-app = libsForQt5.callPackage ../development/libraries/lomiri-music-app { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
