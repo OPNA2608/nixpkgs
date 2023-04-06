@@ -40098,6 +40098,8 @@ with pkgs;
 
   lomiri-gallery-app = libsForQt5.callPackage ../development/libraries/lomiri-gallery-app { };
 
+  mediascanner2 = libsForQt5.callPackage ../development/libraries/mediascanner2 { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
