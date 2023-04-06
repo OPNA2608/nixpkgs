@@ -69,6 +69,7 @@ in {
         buteo-syncfw
         sync-monitor
         location-service
+        mediascanner2 # possibly needs to be kicked off by graphical-session.target
 
         # Used(?) themes
         ubuntu-themes
