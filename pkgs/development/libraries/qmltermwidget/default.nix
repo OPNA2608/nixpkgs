@@ -65,6 +65,10 @@ stdenv.mkDerivation {
 
   dontWrapQtApps = true;
 
+  # Parallel installing makes build flakyon my machine
+  # Error copying /build/source/lib/color-schemes/historic/README.default.Schema to <out>/lib/qt-5.15.8/qml//QMLTermWidget/color-schemes/historic/README.default.Schema: Cannot create <out>/lib/qt-5.15.8/qml//QMLTermWidget/color-schemes/historic/README.default.Schema for output
+  enableParallelInstalling = false;
+
   meta = {
     description = "A QML port of qtermwidget";
     homepage = "https://github.com/Swordfish90/qmltermwidget";
