@@ -40102,6 +40102,8 @@ with pkgs;
 
   lomiri-music-app = libsForQt5.callPackage ../development/libraries/lomiri-music-app { };
 
+  mediaplayer-app = libsForQt5.callPackage ../development/libraries/mediaplayer-app { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
