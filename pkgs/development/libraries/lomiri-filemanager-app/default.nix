@@ -83,4 +83,9 @@ stdenv.mkDerivation rec {
 
   # TODO
   doCheck = false;
+
+  postInstall = ''
+    # Not automatically installed in non-click mode
+    install -Dm644 ../content-hub.json $out/share/content-hub/peers/lomiri-filemanager-app
+  '';
 }
