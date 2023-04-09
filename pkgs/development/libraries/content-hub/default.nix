@@ -38,6 +38,10 @@ stdenv.mkDerivation rec {
     hash = "sha256-OGHZCTtvBmq/oBHcyrw+e6yLSHwi/aM04ALcaZXXaNs=";
   };
 
+  patches = [
+    ./0001-Migrate-GetConnectionAppArmorSecurityContext-GetConnectionCredentials.patch
+  ];
+
   postPatch = ''
     substituteInPlace import/Lomiri/Content/CMakeLists.txt \
       --replace 'qt5/qml' 'qt-${qtbase.version}/qml' \
