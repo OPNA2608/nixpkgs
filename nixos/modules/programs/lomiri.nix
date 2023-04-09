@@ -153,6 +153,10 @@ in {
     systemd.tmpfiles.rules = [
       "d /var/lib/lomiri-location-service 0755 root root -"
     ];
+
+    # TODO content-hub cannot pass files between applications without asking AA for permissions. This might be a requirement?
+    # But currently, content-hub fails tpo pass files between applications even with AA enabled, so enforcing this anyway is pointless for now.
+    # security.apparmor.enable = true;
   };
 
   meta.maintainers = with lib.maintainers; [ OPNA2608 ];
