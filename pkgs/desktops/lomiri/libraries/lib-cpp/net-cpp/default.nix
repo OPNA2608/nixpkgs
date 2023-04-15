@@ -4,7 +4,7 @@
 # - meta
 { stdenv
 , lib
-, fetchFromGitLab
+, fetchFromUbports
 , fetchpatch
 , boost
 , cmake
@@ -15,9 +15,9 @@ stdenv.mkDerivation rec {
   pname = "net-cpp";
   version = "3.1.0";
 
-  src = fetchFromGitLab {
-    owner = "ubports";
-    repo = "development/core/lib-cpp/${pname}";
+  src = fetchFromUbports {
+    inherit pname;
+    group = "core/lib-cpp";
     rev = version;
     hash = "sha256-qXKuFLmtPjdqTcBIM07xbRe3DnP7AzieCy7Tbjtl0uc=";
   };
@@ -52,4 +52,12 @@ stdenv.mkDerivation rec {
 
   # TODO
   doCheck = false;
+
+  meta = with lib; {
+    description = "A simple yet beautiful networking API for C++11";
+    homepage = "https://gitlab.com/ubports/development/core/lib-cpp/net-cpp";
+    license = licenses.lgpl3Only;
+    platforms = platforms.all;
+    maintainers = teams.lomiri.members;
+  };
 }

@@ -1,6 +1,6 @@
 { stdenvNoCC
 , lib
-, fetchFromGitLab
+, fetchFromUbports
 , cmake
 , qtbase
 }:
@@ -9,9 +9,8 @@ stdenvNoCC.mkDerivation rec {
   pname = "cmake-extras";
   version = "unstable-2022-11-21";
 
-  src = fetchFromGitLab {
-    owner = "ubports";
-    repo = "development/core/${pname}";
+  src = fetchFromUbports {
+    inherit pname;
     rev = "99aab4514ee182cb7a94821b4b51e4d8cb9a82ef";
     hash = "sha256-axj5QxgDrHy0HiZkfrbm22hVvSCKkWFoQC8MdQMm9tg=";
   };
@@ -43,6 +42,6 @@ stdenvNoCC.mkDerivation rec {
     homepage = "https://gitlab.com/ubports/development/core/cmake-extras/";
     license = licenses.gpl3Only;
     platforms = platforms.all;
-    maintainers = with maintainers; [ OPNA2608 ];
+    maintainers = teams.lomiri.members;
   };
 }

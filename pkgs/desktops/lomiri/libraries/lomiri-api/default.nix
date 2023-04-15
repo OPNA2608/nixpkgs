@@ -1,6 +1,8 @@
+# TODO
+# - tests
 { stdenv
 , lib
-, fetchFromGitLab
+, fetchFromUbports
 , cmake
 , cmake-extras
 , pkg-config
@@ -16,9 +18,8 @@ stdenv.mkDerivation rec {
   pname = "lomiri-api";
   version = "0.2.0";
 
-  src = fetchFromGitLab {
-    owner = "ubports";
-    repo = "development/core/lomiri-api";
+  src = fetchFromUbports {
+    inherit pname;
     rev = version;
     hash = "sha256-84iM4N6vEn6nmZMTBsUOCtR0WkYfoowsJhhIlQoaq1c=";
   };
@@ -69,4 +70,12 @@ stdenv.mkDerivation rec {
 
   # Fails rn
   #doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  meta = with lib; {
+    description = "API for Lomiri shell integration";
+    homepage = "https://gitlab.com/ubports/development/core/lomiri-api";
+    license = licenses.lgpl3Only;
+    platforms = platforms.all;
+    maintainers = teams.lomiri.members;
+  };
 }

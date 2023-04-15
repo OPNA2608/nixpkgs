@@ -1,6 +1,6 @@
 { stdenv
 , lib
-, fetchFromGitLab
+, fetchFromUbports
 , cmake
 , docbook-xsl-nons
 , docbook_xml_dtd_45
@@ -18,9 +18,8 @@ stdenv.mkDerivation rec {
   pname = "geonames";
   version = "0.3.0";
 
-  src = fetchFromGitLab {
-    owner = "ubports";
-    repo = "development/core/${pname}";
+  src = fetchFromUbports {
+    inherit pname;
     rev = version;
     hash = "sha256-Mo7Khj2pgdJ9kT3npFXnh1WTSsY/B1egWTccbAXFNY8=";
   };
@@ -92,6 +91,6 @@ stdenv.mkDerivation rec {
     platforms = platforms.all;
     # https://gitlab.com/ubports/development/core/geonames/-/issues/1
     broken = !stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-    maintainers = with maintainers; [ OPNA2608 ];
+    maintainers = teams.lomiri.members;
   };
 }

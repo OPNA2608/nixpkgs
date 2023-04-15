@@ -1,6 +1,6 @@
 { stdenv
 , lib
-, fetchFromGitLab
+, fetchFromUbports
 , cmake
 , pkg-config
 , cmake-extras
@@ -12,9 +12,8 @@ stdenv.mkDerivation rec {
   pname = "deviceinfo";
   version = "0.1.1";
 
-  src = fetchFromGitLab {
-    owner = "ubports";
-    repo = "development/core/deviceinfo";
+  src = fetchFromUbports {
+    inherit pname;
     rev = version;
     hash = "sha256-LiMExXB3x8N/+hkAXzO2uytAjRGpQneJVTbPQBzonKk=";
   };
@@ -46,7 +45,7 @@ stdenv.mkDerivation rec {
     homepage = "https://gitlab.com/ubports/development/core/deviceinfo";
     license = licenses.gpl3Only;
     platforms = platforms.all; # ?
-    maintainers = with maintainers; [ OPNA2608 ];
+    maintainers = teams.lomiri.members;
     mainProgram = "device-info";
   };
 }

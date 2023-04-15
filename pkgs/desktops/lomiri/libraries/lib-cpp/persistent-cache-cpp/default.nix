@@ -1,6 +1,8 @@
+# TODO
+# - tests
 { stdenv
 , lib
-, fetchFromGitLab
+, fetchFromUbports
 , fetchpatch
 , cmake
 , cmake-extras
@@ -15,9 +17,9 @@ stdenv.mkDerivation rec {
   pname = "persistent-cache-cpp";
   version = "1.0.5";
 
-  src = fetchFromGitLab {
-    owner = "ubports";
-    repo = "development/core/lib-cpp/${pname}";
+  src = fetchFromUbports {
+    inherit pname;
+    group = "core/lib-cpp";
     rev = version;
     hash = "sha256-MOH8ardiTliTKrtRQ5eFRhbRtnC0Yq20WJYoo1tAn3E=";
   };
@@ -68,4 +70,16 @@ stdenv.mkDerivation rec {
 
   # TODO
   doCheck = false;
+
+  meta = with lib; {
+    description = "Cache of key-value pairs with persistent storage for C++ 11";
+    longDescription = ''
+       A persistent cache for arbitrary (possibly large amount of data, such as
+       image files) that is fast, scalable, and crash-proof.
+    '';
+    homepage = "https://gitlab.com/ubports/development/core/lib-cpp/persistent-cache-cpp";
+    license = licenses.lgpl3Only;
+    platforms = platforms.all;
+    maintainers = teams.lomiri.members;
+  };
 }

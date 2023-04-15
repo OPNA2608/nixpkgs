@@ -16310,8 +16310,6 @@ with pkgs;
 
   bupc = callPackage ../development/compilers/bupc { };
 
-  ubports-click = python3Packages.callPackage ../development/tools/click { };
-
   uasm = callPackage ../development/compilers/uasm { };
 
   urn = callPackage ../development/compilers/urn { };
@@ -36746,6 +36744,8 @@ with pkgs;
 
   gnustep = recurseIntoAttrs (callPackage ../desktops/gnustep { });
 
+  lomiri = recurseIntoAttrs (callPackage ../desktops/lomiri { });
+
   lumina = recurseIntoAttrs (callPackage ../desktops/lumina { });
 
   ### DESKTOPS/LXDE
@@ -39152,27 +39152,17 @@ with pkgs;
 
   # lomiri start
 
-  cmake-extras = libsForQt5.callPackage ../development/libraries/cmake-extras { };
-
   dbus-test-runner = callPackage ../development/libraries/dbus-test-runner { };
-
-  deviceinfo = callPackage ../development/libraries/deviceinfo { };
-
-  geonames = callPackage ../development/libraries/geonames { };
-
-  gmenuharness = libsForQt5.callPackage ../development/libraries/gmenuharness { };
 
   libqtdbusmock = libsForQt5.callPackage ../development/libraries/libqtdbusmock { };
 
-  libqtdbustest = libsForQt5.callPackage ../development/libraries/libqtdbustest { };
+  libqtdbustest = libsForQt5.callPackage ../development/libraries/libqtdbustest {
+    inherit (lomiri) cmake-extras;
+  };
 
-  libusermetrics = libsForQt5.callPackage ../development/libraries/libusermetrics { };
-
-  lomiri = libsForQt5.callPackage ../development/libraries/lomiri { };
+  #lomiri = libsForQt5.callPackage ../development/libraries/lomiri { };
 
   lomiri-app-launch = callPackage ../development/libraries/lomiri-app-launch { };
-
-  lomiri-api = libsForQt5.callPackage ../development/libraries/lomiri-api { };
 
   lomiri-settings-components = libsForQt5.callPackage ../development/libraries/lomiri-settings-components { };
 
@@ -39207,11 +39197,7 @@ with pkgs;
 
   telephony-service = libsForQt5.callPackage ../development/libraries/telephony-service { };
 
-  dbus-cpp = callPackage ../development/libraries/dbus-cpp { };
-
   biometryd = libsForQt5.callPackage ../development/libraries/biometryd { };
-
-  persistent-cache-cpp = callPackage ../development/libraries/persistent-cache-cpp { };
 
   hfd-service = libsForQt5.callPackage ../development/libraries/hfd-service { };
 
@@ -39304,8 +39290,6 @@ with pkgs;
   lomiri-camera-app = libsForQt5.callPackage ../development/libraries/lomiri-camera-app { };
 
   indicator-location = callPackage ../development/libraries/indicator-location { };
-
-  net-cpp = callPackage ../development/libraries/net-cpp { };
 
   location-service = libsForQt5.callPackage ../development/libraries/location-service { };
 

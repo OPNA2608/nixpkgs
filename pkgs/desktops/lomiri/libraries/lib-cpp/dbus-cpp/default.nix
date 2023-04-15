@@ -1,6 +1,6 @@
 { stdenv
 , lib
-, fetchFromGitLab
+, fetchFromUbports
 , boost
 , cmake
 , cmake-extras
@@ -16,9 +16,9 @@ stdenv.mkDerivation rec {
   pname = "dbus-cpp";
   version = "5.0.3";
 
-  src = fetchFromGitLab {
-    owner = "ubports";
-    repo = "development/core/lib-cpp/${pname}";
+  src = fetchFromUbports {
+    inherit pname;
+    group = "core/lib-cpp";
     rev = version;
     hash = "sha256-t8SzPRUuKeEchT8vAsITf8MwbgHA+mR5C9CnkdVyX7s=";
   };
@@ -53,7 +53,7 @@ stdenv.mkDerivation rec {
     homepage = "https://gitlab.com/ubports/development/core/lib-cpp/dbus-cpp";
     license = licenses.lgpl3Only;
     platforms = platforms.all;
-    maintainers = with maintainers; [ OPNA2608 ];
+    maintainers = teams.lomiri.members;
     mainProgram = "dbus-cppc";
   };
 }

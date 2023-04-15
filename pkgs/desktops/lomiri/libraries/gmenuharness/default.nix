@@ -1,6 +1,6 @@
 { stdenv
 , lib
-, fetchFromGitLab
+, fetchFromUbports
 , cmake
 , cmake-extras
 , dbus
@@ -16,9 +16,8 @@ stdenv.mkDerivation rec {
   pname = "gmenuharness";
   version = "0.1.4";
 
-  src = fetchFromGitLab {
-    owner = "ubports";
-    repo = "development/core/${pname}";
+  src = fetchFromUbports {
+    inherit pname;
     rev = version;
     hash = "sha256-MswB8cQvz3JvcJL2zj7szUOBzKRjxzJO7/x+87m7E7c=";
   };
@@ -67,6 +66,6 @@ stdenv.mkDerivation rec {
     homepage = "https://gitlab.com/ubports/development/core/gmenuharness";
     license = licenses.gpl3Only;
     platforms = platforms.all;
-    maintainers = with maintainers; [ OPNA2608 ];
+    maintainers = teams.lomiri.members;
   };
 }

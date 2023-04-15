@@ -1,6 +1,6 @@
 { stdenv
 , lib
-, fetchFromGitLab
+, fetchFromUbports
 , cmake
 , cmake-extras
 , dbus
@@ -23,9 +23,8 @@ stdenv.mkDerivation rec {
   pname = "libusermetrics";
   version = "1.3.0";
 
-  src = fetchFromGitLab {
-    owner = "ubports";
-    repo = "development/core/${pname}";
+  src = fetchFromUbports {
+    inherit pname;
     rev = version;
     hash = "sha256-yO9wZcXJBKt1HZ1GKoQ1flqYuwW9PlXiWLE3bl21PSQ=";
   };
@@ -100,7 +99,7 @@ stdenv.mkDerivation rec {
     homepage = "https://gitlab.com/ubports/development/core/libusermetrics";
     license = licenses.lgpl3Only;
     platforms = platforms.linux;
-    maintainers = with maintainers; [ OPNA2608 ];
+    maintainers = teams.lomiri.members;
     mainProgram = "usermetricsinput";
   };
 }

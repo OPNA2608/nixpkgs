@@ -79,6 +79,6 @@ stdenv.mkDerivation rec {
     homepage = "https://launchpad.net/libqtdbusmock";
     license = licenses.lgpl3Only;
     platforms = platforms.all;
-    maintainers = with maintainers; [ OPNA2608 ];
+    maintainers = teams.lomiri.members;
   };
 }

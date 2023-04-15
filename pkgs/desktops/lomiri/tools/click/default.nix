@@ -1,5 +1,5 @@
 { lib
-, fetchFromGitLab
+, fetchFromUbports
 , buildPythonApplication
 , autoreconfHook
 , debian
@@ -16,16 +16,15 @@
 , wrapGAppsHook
 }:
 
-buildPythonApplication {
+buildPythonApplication rec {
   pname = "click";
   version = "unstable-2023-02-22";
   format = "other";
 
-  src = fetchFromGitLab {
-    owner = "ubports";
-    repo = "development/core/click";
+  src = fetchFromUbports {
+    inherit pname;
     rev = "aaf2735e8e6cbeaf2e429c70136733513a81718a";
-    sha256 = "sha256-pNu995/w3tbz15QQVdVYBnWnAoZmqWj1DN/5PZZ0iZw=";
+    hash = "sha256-pNu995/w3tbz15QQVdVYBnWnAoZmqWj1DN/5PZZ0iZw=";
   };
 
   configureFlags = [
@@ -80,7 +79,7 @@ buildPythonApplication {
     description = "A tool to build click packages. Mainly used for Ubuntu Touch.";
     homepage = "https://gitlab.com/ubports/development/core/click";
     license = lib.licenses.gpl3Only;
-    maintainers = with lib.maintainers; [ ilyakooo0 OPNA2608 ];
+    maintainers = lib.teams.lomiri.members ++ (with lib.maintainers; [ ilyakooo0 ]);
     platforms = lib.platforms.linux;
   };
 }
