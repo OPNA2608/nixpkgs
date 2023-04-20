@@ -39152,19 +39152,15 @@ with pkgs;
 
   # lomiri start
 
-  dbus-test-runner = callPackage ../development/libraries/dbus-test-runner { };
+  dbus-test-runner = callPackage ../development/libraries/dbus-test-runner { }; # stays
 
-  libqtdbusmock = libsForQt5.callPackage ../development/libraries/libqtdbusmock { };
+  libqtdbusmock = libsForQt5.callPackage ../development/libraries/libqtdbusmock { }; # stays
 
-  libqtdbustest = libsForQt5.callPackage ../development/libraries/libqtdbustest {
+  libqtdbustest = libsForQt5.callPackage ../development/libraries/libqtdbustest { # stays
     inherit (lomiri) cmake-extras;
   };
 
-  #lomiri = libsForQt5.callPackage ../development/libraries/lomiri { };
-
-  lomiri-app-launch = callPackage ../development/libraries/lomiri-app-launch { };
-
-  lomiri-settings-components = libsForQt5.callPackage ../development/libraries/lomiri-settings-components { };
+  lomiri-settings-components = libsForQt5.callPackage ../development/libraries/lomiri-settings-components { }; # to be moved
 
   lomiri-system-settings-unwrapped = libsForQt5.callPackage ../development/libraries/lomiri-system-settings { };
   lomiri-system-settings = libsForQt5.callPackage ../development/libraries/lomiri-system-settings/wrapper.nix { };

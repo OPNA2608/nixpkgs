@@ -22,6 +22,34 @@ lib.makeScope libsForQt5.newScope (self: with self; {
       inherit rev hash;
     };
 
+  ### TO BE SORTED
+  # accounts-qml-module
+  # buteo-syncfw
+  # buteo-syncfw-qml
+  # dbus-test-runner
+  # dsme
+  # libcal
+  # libdsme
+  # libiphb
+  # libmce-qt
+  # libngf
+  # lomiri-keyboard
+  # lomiri-settings-components
+  # mce
+  # mce-dev
+  # qdjango
+  # qmenumodel
+  # qqc2-suru-style
+  # qzxing
+  # u1db-qt
+  # usb_moded
+  # xsct
+
+  ### DATA
+  # lomiri-schemas
+  # lomiri-sounds
+  # lomiri-wallpapers #TODO
+
   ### TOOLS
   click = python3Packages.callPackage ./tools/click {
     inherit fetchFromUbports;
@@ -35,7 +63,7 @@ lib.makeScope libsForQt5.newScope (self: with self; {
   deviceinfo = callPackage ./libraries/deviceinfo { };
   geonames = callPackage ./libraries/geonames { };
   libusermetrics = callPackage ./libraries/libusermetrics { };
-  lomiri-api = callPackage ./libraries/lomiri-api { };
+  # qtmir
 
   ### LIBRARIES / LIB-CPP
   dbus-cpp = callPackage ./libraries/lib-cpp/dbus-cpp { };
@@ -43,6 +71,16 @@ lib.makeScope libsForQt5.newScope (self: with self; {
   persistent-cache-cpp = callPackage ./libraries/lib-cpp/persistent-cache-cpp { };
   # process-cpp
   # properties-cpp
+
+  ### CORE
+  # lomiri
+  # lomiri-action-api
+  lomiri-api = callPackage ./core/lomiri-api { };
+  lomiri-app-launch = callPackage ./core/lomiri-app-launch { };
+  # lomiri-session
+  # lomiri-ui-extras
+  # lomiri-ui-toolkit
+  # lomiri-url-dispatcher
 
   ### AYATANA-INDICATORS
   # ayatana-indicator-messages
@@ -61,6 +99,7 @@ lib.makeScope libsForQt5.newScope (self: with self; {
   # lomiri-indicator-network
 
   ### SERVICES
+  # biometryd
   # content-hub
   # hfd-service
   # history-service
@@ -69,22 +108,24 @@ lib.makeScope libsForQt5.newScope (self: with self; {
   # lomiri-thumbnailer
   # mediascanner2
   # repowerd
+  # sync-monitor
   # telephony-service
+  # trust-store
 
   ### APPS
   # address-book-app
   # dialer-app
-  # messaging-app
   # lomiri-calculator-app
   # lomiri-camera-app
   # lomiri-clock-app
   # lomiri-gallery-app
   # lomiri-filemanager-app
   # lomiri-music-app
-  # lomiri-system-settings
-  # lomiri-system-settings-online-accounts
-  # lomiri-system-settings-security-privacy
+  lomiri-system-settings-unwrapped = callPackage ./apps/lomiri-system-settings { };
+  #   lomiri-system-settings-online-accounts
+  #   lomiri-system-settings-security-privacy
   # lomiri-terminal-app
   # mediaplayer-app
+  # messaging-app
   # morph-browser
 })
