@@ -29,13 +29,13 @@
 
 stdenv.mkDerivation rec {
   pname = "dialer-app";
-  version = "unstable-2023-03-02";
+  version = "unstable-2023-04-14";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/${pname}";
-    rev = "03256914d63992c890acb91c78304f0515861028";
-    hash = "sha256-HL4T5eMtPec840k53rh0o9AJzIiAkqhyLq2jAuEg69s=";
+    rev = "119c24f806a76b017609d9fa48fc5c362b78923f";
+    hash = "sha256-OEY/mjjvyF1eylJ/V3DeOvclFlIZJh0P/Ts40LJnRw8=";
   };
 
   postPatch = ''
@@ -53,10 +53,13 @@ stdenv.mkDerivation rec {
 
   preConfigure = ''
     # Cannot add flags with spaces to cmakeFlags
-    # - deprecated-declarations: Qt 5.15 deprecations
-    # - nonnull: with GCC 11, report upstream!
     cmakeFlagsArray+=(
-      '-DCMAKE_CXX_FLAGS=-Wno-error=deprecated-declarations -Wno-error=nonnull'
+      '-DCMAKE_CXX_FLAGS=${lib.strings.concatMapStringsSep " " (warning: "-Wno-error=${warning}") [
+        # with GCC 11
+        "nonnull"
+        # Qt 5.15 deprecations
+        "deprecated-declarations"
+      ]}'
     )
   '';
 
