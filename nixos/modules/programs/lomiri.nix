@@ -114,6 +114,13 @@ in {
     services.upower.enable = true;
     services.geoclue2.enable = true;
     services.printing.enable = true;
+    # TODO I think this should be on, but address-book-app crashes when it tries to use its galera engine
+    #services.gnome.evolution-data-server = {
+    #  enable = true;
+    #  plugins = with pkgs; [
+    #    address-book-service
+    #  ];
+    #};
     services.xserver.displayManager.defaultSession = lib.mkDefault "lomiri";
     services.xserver.displayManager.sessionPackages = with pkgs; [ lomiri-session ];
     services.xserver.updateDbusEnvironment = true;

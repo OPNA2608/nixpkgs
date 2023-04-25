@@ -40104,6 +40104,8 @@ with pkgs;
 
   mediaplayer-app = libsForQt5.callPackage ../development/libraries/mediaplayer-app { };
 
+  address-book-service = libsForQt5.callPackage ../development/libraries/address-book-service { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
