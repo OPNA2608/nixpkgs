@@ -31,8 +31,7 @@ in {
       systemPackages = with pkgs; [
         lomiri-session # Wrappers to properly launch the session
         lomiri
-        # not having its desktop file for Xwayland available causes any X11 application to crash the session
-        qtmir
+        qtmir # not having its desktop file for Xwayland available causes any X11 application to crash the session
         lomiri-system-settings
         morph-browser
         lomiri-terminal-app
@@ -47,6 +46,8 @@ in {
         lomiri-gallery-app
         lomiri-music-app
         mediaplayer-app
+
+        libusermetrics
 
         # TODO OSK does not work yet
         # lomiri-keyboard is a plugin for maliit-framework, which still seems incapable of loading any plugins at all.
@@ -73,9 +74,8 @@ in {
         location-service
         mediascanner2 # possibly needs to be kicked off by graphical-session.target
 
-        # Used(?) themes
         ubuntu-themes
-        vanilla-dmz
+        vanilla-dmz # TODO is this used in Lomiri?
       ] ++ indicator-services;
     };
 
@@ -88,9 +88,6 @@ in {
     ];
     services.dbus.packages = with pkgs; [
       hfd-service
-      # TODO
-      # - /var/lib/usermetrics/usermetrics6.db
-      # - acts as user "usermetrics"
       libusermetrics
       location-service
       lomiri-download-manager
@@ -159,10 +156,20 @@ in {
 
     systemd.tmpfiles.rules = [
       "d /var/lib/lomiri-location-service 0755 root root -"
+      "d /var/lib/usermetrics 0700 usermetrics usermetrics -"
     ];
 
+    users.users.usermetrics = {
+      group = "usermetrics";
+      home = "/var/lib/usermetrics";
+      createHome = true;
+      isSystemUser = true;
+    };
+
+    users.groups.usermetrics = { };
+
     # TODO content-hub cannot pass files between applications without asking AA for permissions. This might be a requirement?
-    # But currently, content-hub fails tpo pass files between applications even with AA enabled, so enforcing this anyway is pointless for now.
+    # But currently, content-hub fails to pass files between applications even with AA enabled, so enforcing this anyway is pointless for now.
     # security.apparmor.enable = true;
   };
 

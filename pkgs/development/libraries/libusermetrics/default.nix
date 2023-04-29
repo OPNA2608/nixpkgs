@@ -17,6 +17,7 @@
 , qtbase
 , qtdeclarative
 , qtxmlpatterns
+, wrapQtAppsHook
 }:
 
 stdenv.mkDerivation rec {
@@ -49,6 +50,7 @@ stdenv.mkDerivation rec {
     doxygen
     intltool
     pkg-config
+    wrapQtAppsHook
   ];
 
   buildInputs = [
@@ -59,6 +61,9 @@ stdenv.mkDerivation rec {
     ubports-click
     qdjango
     qtxmlpatterns
+
+    # Plugin
+    qtbase
   ];
 
   nativeCheckInputs = [
@@ -68,11 +73,8 @@ stdenv.mkDerivation rec {
   checkInputs = [
     gtest
     libqtdbustest
-    qtbase
     qtdeclarative
   ];
-
-  dontWrapQtApps = true;
 
   cmakeFlags = [
     "-DGSETTINGS_LOCALINSTALL=ON"
