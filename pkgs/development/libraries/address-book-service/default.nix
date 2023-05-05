@@ -43,6 +43,11 @@ stdenv.mkDerivation rec {
     substituteInPlace systemd/CMakeLists.txt \
       --replace 'pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir)' \
         'execute_process(COMMAND pkg-config --define-variable=prefix=${placeholder "out"} --variable systemduserunitdir systemd OUTPUT_VARIABLE SYSTEMD_USER_UNIT_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)'
+
+    # contacts plugin missing libphonenumber link. without it plugin fails to load, qtpim stores & dereferences a NULL engine and address-book-app segfaults
+    sed -i \
+      -e '/target_link_libraries(''${QCONTACTS_BACKEND}/a ''${LibPhoneNumber_LIBRARIES}' \
+      contacts/CMakeLists.txt
   '';
 
   strictDeps = true;

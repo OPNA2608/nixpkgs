@@ -5,6 +5,7 @@
 , lib
 , fetchFromGitLab
 , accounts-qml-module
+, address-book-service
 , buteo-syncfw-qml
 , cmake
 , content-hub
@@ -58,6 +59,9 @@ stdenv.mkDerivation rec {
     qtbase
     qtdeclarative
     qtpim
+
+    # Plugin
+    address-book-service
 
     # QML
     accounts-qml-module
