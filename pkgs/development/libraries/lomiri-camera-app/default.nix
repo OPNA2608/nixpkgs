@@ -14,8 +14,6 @@
 , pkg-config
 , qtbase
 , qtdeclarative
-, qtfeedback
-, qtgraphicaleffects
 , qtmultimedia
 , qtpositioning
 , qtquickcontrols2
@@ -70,8 +68,6 @@ stdenv.mkDerivation rec {
     libusermetrics
     lomiri-action-api
     lomiri-ui-toolkit
-    qtfeedback
-    qtgraphicaleffects
     qtpositioning
     qtsensors
   ] ++ (with gst_all_1; [

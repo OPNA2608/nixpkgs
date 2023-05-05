@@ -12,8 +12,6 @@
 , lomiri-system-settings-online-accounts
 , qtbase
 , qtdeclarative
-, qtfeedback
-, qtgraphicaleffects
 , qtpim
 , sync-monitor
 , wrapQtAppsHook
@@ -58,8 +56,6 @@ stdenv.mkDerivation rec {
     lomiri-indicator-network
     lomiri-ui-toolkit
     lomiri-system-settings-online-accounts
-    qtfeedback
-    qtgraphicaleffects
     qtpim
     sync-monitor
   ];

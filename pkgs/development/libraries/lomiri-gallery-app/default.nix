@@ -17,8 +17,6 @@
 , qqc2-suru-style
 , qtbase
 , qtdeclarative
-, qtfeedback
-, qtgraphicaleffects
 , qtmultimedia
 , wrapQtAppsHook
 }:
@@ -69,8 +67,6 @@ stdenv.mkDerivation rec {
     lomiri-ui-extras
     lomiri-ui-toolkit
     qqc2-suru-style
-    qtfeedback
-    qtgraphicaleffects
     qtmultimedia
   ];
 

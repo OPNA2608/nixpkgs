@@ -57,12 +57,15 @@ stdenv.mkDerivation rec {
     glib
     qtbase
     qtdeclarative
-    qtfeedback
-    qtgraphicaleffects
     qtpim
     qtquickcontrols2
     qtsystems
     lttng-ust
+  ];
+
+  propagatedBuildInputs = [
+    qtfeedback
+    qtgraphicaleffects
   ];
 
   dontWrapQtApps = true;

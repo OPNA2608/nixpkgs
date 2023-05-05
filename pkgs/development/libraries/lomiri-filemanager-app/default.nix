@@ -15,8 +15,6 @@
 , python3
 , qtbase
 , qtdeclarative
-, qtfeedback
-, qtgraphicaleffects
 , samba
 , wrapQtAppsHook
 }:
@@ -72,8 +70,6 @@ stdenv.mkDerivation rec {
     lomiri-thumbnailer
     lomiri-ui-extras
     lomiri-ui-toolkit
-    qtfeedback
-    qtgraphicaleffects
   ];
 
   cmakeFlags = [

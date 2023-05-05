@@ -11,8 +11,6 @@
 , qqc2-suru-style
 , qtbase
 , qtdeclarative
-, qtfeedback
-, qtgraphicaleffects
 , qtwayland
 , wrapQtAppsHook
 }:
@@ -58,7 +56,6 @@ stdenv.mkDerivation rec {
     lomiri-ui-toolkit
     qqc2-suru-style
     qtdeclarative
-    qtgraphicaleffects
 
     # Plugin
     qtwayland # Executable is a wrapper around qmlscene, need to explicitly pull this in

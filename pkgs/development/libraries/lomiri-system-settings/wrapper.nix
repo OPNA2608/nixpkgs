@@ -18,10 +18,8 @@
 , dbus
 , lomiri-ui-toolkit
 , lomiri-settings-components
-, qtgraphicaleffects
 , python3
 , wrapQtAppsHook
-, qtfeedback
 , qmenumodel
 , qtsystems
 , lomiri-indicator-network
@@ -83,8 +81,6 @@ stdenvNoCC.mkDerivation rec {
     lomiri-system-settings-unwrapped
 
     # QML
-    qtfeedback # lomiri-ui-toolkit
-    qtgraphicaleffects # lomiri-ui-toolkit
     qmenumodel
     qtsystems
     lomiri-indicator-network

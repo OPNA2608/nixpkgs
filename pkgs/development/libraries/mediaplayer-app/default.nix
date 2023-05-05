@@ -11,8 +11,6 @@
 , pkg-config
 , qtbase
 , qtdeclarative
-, qtfeedback
-, qtgraphicaleffects
 , qtmultimedia
 , qtxmlpatterns
 , wrapQtAppsHook
@@ -55,8 +53,6 @@ stdenv.mkDerivation rec {
     lomiri-action-api
     lomiri-ui-toolkit
     qtdeclarative
-    qtfeedback
-    qtgraphicaleffects
     qtxmlpatterns
   ];
 

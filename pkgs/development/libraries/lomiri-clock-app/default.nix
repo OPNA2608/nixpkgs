@@ -16,8 +16,6 @@
 , pkg-config
 , qtbase
 , qtdeclarative
-, qtfeedback
-, qtgraphicaleffects
 , qtmultimedia
 , qtpositioning
 , qtsystems
@@ -80,8 +78,6 @@ stdenv.mkDerivation rec {
     libusermetrics
     lomiri-ui-toolkit
     qtdeclarative
-    qtfeedback
-    qtgraphicaleffects
     qtmultimedia
     qtpositioning
     qtsystems

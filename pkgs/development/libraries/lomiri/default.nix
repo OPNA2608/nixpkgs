@@ -12,7 +12,6 @@
 , wrapQtAppsHook
 , qtbase
 , qtdeclarative
-, qtfeedback
 , qtmir
 , qtsvg
 , lomiri-api
@@ -50,7 +49,6 @@
 , glm
 , boost
 , wrapGAppsHook
-, qtgraphicaleffects
 , qtmultimedia
 , nixos-artwork
 , nixos-icons
@@ -137,7 +135,6 @@ stdenv.mkDerivation rec {
     qmenumodel
     qtbase
     qtdeclarative
-    qtgraphicaleffects
     qtmir
     qtsvg
 
@@ -147,7 +144,6 @@ stdenv.mkDerivation rec {
     lomiri-notifications
     lomiri-settings-components
     lomiri-thumbnailer
-    qtfeedback
     qtmultimedia
     telephony-service
   ];

@@ -14,7 +14,6 @@
 , pkg-config
 , qtbase
 , qtdeclarative
-, qtgraphicaleffects
 , qtquickcontrols2
 , qtsystems
 , qtwebengine
@@ -61,7 +60,6 @@ stdenv.mkDerivation rec {
     lomiri-action-api
     lomiri-ui-extras
     lomiri-ui-toolkit
-    qtgraphicaleffects
     qtquickcontrols2
     qtsystems
   ];

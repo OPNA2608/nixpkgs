@@ -17,8 +17,6 @@
 , lomiri-ui-toolkit
 , qtbase
 , qtdeclarative
-, qtfeedback
-, qtgraphicaleffects
 , qtpim
 , qtquickcontrols2
 , qtsystems
@@ -72,8 +70,6 @@ stdenv.mkDerivation rec {
     lomiri-keyboard
     lomiri-system-settings-online-accounts
     lomiri-ui-toolkit
-    qtfeedback
-    qtgraphicaleffects
     qtquickcontrols2
     qtsystems
     telephony-service

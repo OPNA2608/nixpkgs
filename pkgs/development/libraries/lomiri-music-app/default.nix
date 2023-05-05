@@ -9,8 +9,6 @@
 , mediascanner2
 , pkg-config
 , qtdeclarative
-, qtfeedback
-, qtgraphicaleffects
 , qtmultimedia
 , qtsystems
 , runtimeShell
@@ -62,8 +60,6 @@ stdenv.mkDerivation rec {
     lomiri-ui-toolkit
     mediascanner2
     qtdeclarative
-    qtfeedback
-    qtgraphicaleffects
     qtmultimedia
     qtsystems
   ];

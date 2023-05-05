@@ -19,8 +19,6 @@
 , python3
 , qtbase
 , qtdeclarative
-, qtfeedback
-, qtgraphicaleffects
 , qtpim
 , qtsystems
 , telephony-service
@@ -87,8 +85,6 @@ stdenv.mkDerivation rec {
     libqofono
     lomiri-ui-toolkit
     lomiri-system-settings-online-accounts
-    qtfeedback
-    qtgraphicaleffects
     qtsystems
     telephony-service
   ];

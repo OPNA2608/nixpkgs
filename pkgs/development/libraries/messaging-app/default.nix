@@ -20,8 +20,6 @@
 , pkg-config
 , python3
 , qtbase
-, qtfeedback
-, qtgraphicaleffects
 , qtmultimedia
 , qtpim
 , telephony-service
@@ -83,8 +81,6 @@ stdenv.mkDerivation rec {
     lomiri-ui-toolkit
     lomiri-system-settings-online-accounts
     lomiri-thumbnailer
-    qtfeedback
-    qtgraphicaleffects
     telephony-service
   ];
 

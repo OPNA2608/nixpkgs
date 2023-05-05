@@ -12,8 +12,6 @@
 , qmltermwidget
 , qtbase
 , qtdeclarative
-, qtfeedback
-, qtgraphicaleffects
 , qtsystems
 , wrapQtAppsHook
 }:
@@ -59,8 +57,6 @@ stdenv.mkDerivation rec {
     gsettings-qt
     lomiri-ui-extras
     lomiri-ui-toolkit
-    qtfeedback
-    qtgraphicaleffects
     qtsystems
   ];
 
