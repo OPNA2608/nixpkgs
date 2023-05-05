@@ -74,6 +74,7 @@ in {
         location-service
         mediascanner2 # possibly needs to be kicked off by graphical-session.target
 
+        lomiri-sounds
         ubuntu-themes
         vanilla-dmz # TODO is this used in Lomiri?
       ] ++ indicator-services;
@@ -124,12 +125,14 @@ in {
     environment.pathsToLink = [
       # Required for installed Ayatana indicators to show up in Lomiri
       "/share/ayatana"
-      # Registers how to open dispatched URIs
-      "/share/lomiri-url-dispatcher/urls"
-      # ?
+      # Registers which applications may send data to which other applications
       "/share/content-hub/peers"
+      # Registers which applications handle dispatched URLs
+      "/share/lomiri-url-dispatcher/urls"
       # Try to get maliit stuff working
       "/share/maliit/plugins"
+      # Data
+      "/share/sounds"
     ];
 
     # TODO is this really the way to do this, can't we reuse upstream's files?
