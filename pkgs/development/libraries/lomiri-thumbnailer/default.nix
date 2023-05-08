@@ -1,3 +1,6 @@
+# TODO
+# - tests
+# - meta
 { stdenv
 , lib
 , fetchFromGitLab
@@ -58,8 +61,6 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     boost
-    gst_all_1.gstreamer
-    gst_all_1.gst-plugins-base
     gdk-pixbuf
     libapparmor
     libexif
@@ -71,7 +72,12 @@ stdenv.mkDerivation rec {
 
     # persistent-cache-cpp
     leveldb
-  ];
+  ] ++ (with gst_all_1; [
+    gstreamer
+    gst-plugins-base
+    gst-plugins-good
+    gst-plugins-bad
+  ]);
 
   checkInputs = [
     gtest
