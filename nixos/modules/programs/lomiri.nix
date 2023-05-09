@@ -75,6 +75,7 @@ in {
         mediascanner2 # possibly needs to be kicked off by graphical-session.target
 
         lomiri-sounds
+        lomiri-wallpapers
         ubuntu-themes
         vanilla-dmz # TODO is this used in Lomiri?
       ] ++ indicator-services;
@@ -133,6 +134,7 @@ in {
       "/share/maliit/plugins"
       # Data
       "/share/sounds"
+      "/share/wallpapers"
     ];
 
     # TODO is this really the way to do this, can't we reuse upstream's files?

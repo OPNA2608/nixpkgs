@@ -40106,6 +40106,8 @@ with pkgs;
 
   address-book-service = libsForQt5.callPackage ../development/libraries/address-book-service { };
 
+  lomiri-wallpapers = callPackage ../development/libraries/lomiri-wallpapers { };
+
   # lomiri end
 
   ufiformat = callPackage ../tools/system/ufiformat { };
