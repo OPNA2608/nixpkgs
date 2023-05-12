@@ -1,7 +1,10 @@
+# TODO
+# - meta
 { stdenv
 , lib
 , fetchFromGitLab
 , cmake
+, cmake-extras
 , pkg-config
 , boost
 , dbus
@@ -44,6 +47,7 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     boost
+    cmake-extras
     dbus
     dbus-cpp
     libapparmor
@@ -67,10 +71,9 @@ stdenv.mkDerivation rec {
   ];
 
   preBuild = ''
-    # Generating plugins.qmltypes
+    # Generating plugins.qmltypes (also used in checkPhase?)
     export QT_PLUGIN_PATH=${lib.getBin qtbase}/lib/qt-${qtbase.version}/plugins
   '';
 
-  # TODO
-  doCheck = false;
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 }
