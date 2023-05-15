@@ -5,11 +5,15 @@
 { stdenv
 , lib
 , fetchFromGitLab
-, qmake
+, dbus-test-runner
+, dpkg
+, gdb
+, glib
+, lttng-ust
 , perl
 , pkg-config
 , python3
-, glib
+, qmake
 , qtbase
 , qtdeclarative
 , qtfeedback
@@ -17,10 +21,15 @@
 , qtpim
 , qtquickcontrols2
 , qtsystems
-, lttng-ust
 , wrapQtAppsHook
+, xvfb-run
 }:
 
+let
+  listToQtVar = list: suffix: lib.strings.concatMapStringsSep ":" (drv: "${lib.getBin drv}/${suffix}") list;
+  qtPluginPaths = listToQtVar [ qtbase qtpim ] qtbase.qtPluginPrefix;
+  qtQmlPaths = listToQtVar [ qtdeclarative qtfeedback qtgraphicaleffects ] qtbase.qtQmlPrefix;
+in
 stdenv.mkDerivation rec {
   pname = "lomiri-ui-toolkit";
   version = "1.3.5010";
@@ -33,7 +42,7 @@ stdenv.mkDerivation rec {
   };
 
   postPatch = ''
-    patchShebangs documentation/docs.sh
+    patchShebangs documentation/docs.sh tests/
 
     substituteInPlace tests/tests.pro \
       --replace "\''$\''$PYTHONDIR" "$out/${python3.sitePackages}"
@@ -68,22 +77,41 @@ stdenv.mkDerivation rec {
     qtgraphicaleffects
   ];
 
+  nativeCheckInputs = [
+    dbus-test-runner
+    dpkg # `dpkg-architecture -qDEB_HOST_ARCH` responds decides how tests are run
+    gdb
+    xvfb-run
+  ];
+
   dontWrapQtApps = true;
 
   qmakeFlags = [
     "CONFIG+=no_docs"
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  checkPhase = ''
+    runHook preCheck
+
+    # Test checks for correct qmlplugindump output
+    # Imports itself, needs its dependencies
+    env QT_PLUGIN_PATH=${qtPluginPaths} QML2_IMPORT_PATH=${qtQmlPaths} tests/xvfb.sh make check ''${enableParallelChecking:+-j''${NIX_BUILD_CORES}}
+
+    runHook postCheck
+  '';
+
   preInstall = ''
     # wrapper script calls qmlplugindump, crashes due to lack of minimal platform plugin
     # Could not find the Qt platform plugin "minimal" in ""
     # Available platform plugins are: wayland-egl, wayland, wayland-xcomposite-egl, wayland-xcomposite-glx.
-    export QT_PLUGIN_PATH=${lib.getBin qtbase}/lib/qt-${qtbase.version}/plugins
+    export QT_PLUGIN_PATH=${qtPluginPaths}
 
     # Qt-generated wrapper script lacks QML paths to dependencies
     for qmlModule in Components PerformanceMetrics Test; do
       substituteInPlace src/imports/$qmlModule/wrapper.sh \
-        --replace 'QML2_IMPORT_PATH=' 'QML2_IMPORT_PATH=${lib.getBin qtquickcontrols2}/lib/qt-${qtbase.version}/qml:${lib.getBin qtgraphicaleffects}/lib/qt-${qtbase.version}/qml:${lib.getBin qtfeedback}/lib/qt-${qtbase.version}/qml:'
+        --replace 'QML2_IMPORT_PATH=' 'QML2_IMPORT_PATH=${qtQmlPaths}:'
     done
   '';
 
