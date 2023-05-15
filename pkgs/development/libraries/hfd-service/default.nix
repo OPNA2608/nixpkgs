@@ -50,4 +50,12 @@ stdenv.mkDerivation rec {
   ];
 
   dontWrapQtApps = true;
+
+  meta = with lib; {
+    description = "DBus-activated service thatmanages human feedback devices such as LEDs and vibrators on mobile devices";
+    homepage = "https://gitlab.com/ubports/development/core/hfd-service";
+    license = licenses.lgpl3Only;
+    platforms = platforms.linux;
+    maintainers = with maintainers; [ OPNA2608 ];
+  };
 }
