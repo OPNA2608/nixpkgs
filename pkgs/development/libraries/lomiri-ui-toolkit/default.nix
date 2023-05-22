@@ -1,7 +1,10 @@
 # TODO
 # - tests
-# - meta
 # - check if there's a better solution for all the patching
+# - "localisation through gettext" is broken
+#   - if multiple QML modules from different packages use this API and get used in the same application,
+#     the textdomain will be wrong for at least 1 of them
+#   - lomiri-system-settings has an awkward workaround, but we should try to fix this in here instead
 { stdenv
 , lib
 , fetchFromGitLab
@@ -21,6 +24,7 @@
 , qtpim
 , qtquickcontrols2
 , qtsystems
+, ubuntu-themes
 , wrapQtAppsHook
 , xvfb-run
 }:
@@ -52,6 +56,9 @@ stdenv.mkDerivation rec {
         --replace "\''$\''$[QT_INSTALL_PREFIX]" "$out" \
         --replace "\''$\''$[QT_INSTALL_LIBS]" "$out/lib"
     done
+
+    substituteInPlace tests/unit/visual/tst_visual.cpp \
+      --replace '/usr/share' '${ubuntu-themes}/share'
   '';
 
   nativeBuildInputs = [
@@ -79,7 +86,7 @@ stdenv.mkDerivation rec {
 
   nativeCheckInputs = [
     dbus-test-runner
-    dpkg # `dpkg-architecture -qDEB_HOST_ARCH` responds decides how tests are run
+    dpkg # `dpkg-architecture -qDEB_HOST_ARCH` response decides how tests are run
     gdb
     xvfb-run
   ];
@@ -87,17 +94,29 @@ stdenv.mkDerivation rec {
   dontWrapQtApps = true;
 
   qmakeFlags = [
+    # docs require Qt's qdoc, which we don't have(?)
     "CONFIG+=no_docs"
   ];
 
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  # TODO the checks need to import its QML modules, but they seem to override the envvars that would allow us to satisfy its QML dependencies, leading to import errors?
+  doCheck = false;
 
   checkPhase = ''
     runHook preCheck
 
     # Test checks for correct qmlplugindump output
     # Imports itself, needs its dependencies
-    env QT_PLUGIN_PATH=${qtPluginPaths} QML2_IMPORT_PATH=${qtQmlPaths} tests/xvfb.sh make check ''${enableParallelChecking:+-j''${NIX_BUILD_CORES}}
+    export QT_PLUGIN_PATH=${qtPluginPaths}
+    export QML_IMPORT_PATH=${qtQmlPaths}
+    export QML2_IMPORT_PATH=${qtQmlPaths}
+    export XDG_DATA_DIRS=${ubuntu-themes}/share
+
+    tests/xvfb.sh make check ''${enableParallelChecking:+-j''${NIX_BUILD_CORES}}
+
+    unset XDG_DATA_DIRS
+    unset QML2_IMPORT_PATH
+    unset QML_IMPORT_PATH
+    unset QT_PLUGIN_PATH
 
     runHook postCheck
   '';
@@ -123,4 +142,24 @@ stdenv.mkDerivation rec {
         --replace "libdir=${qtbase.out}" 'libdir=''${prefix}/lib'
     done
   '';
+
+  meta = with lib; {
+    description = "QML components to ease the creation of beautiful applications in QML";
+    longDescription = ''
+      This project consists of a set of QML components to ease the creation of beautiful applications in QML for Lomiri.
+
+      QML alone lacks built-in components for basic widgets like Button, Slider, Scrollbar, etc, meaning a developer has to build them from scratch.
+      This toolkit aims to stop this duplication of work, supplying beautiful components ready-made and with a clear and consistent API.
+
+      These components are fully themeable so the look and feel can be easily customized. Resolution independence technology is built in so UIs are scaled
+      to best suit the display.
+
+      Other features:
+        - localisation through gettext
+    '';
+    homepage = "https://gitlab.com/ubports/development/core/lomiri-ui-toolkit";
+    license = with licenses; [ gpl3Only cc-by-sa-30 ];
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
