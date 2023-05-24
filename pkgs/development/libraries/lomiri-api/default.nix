@@ -3,10 +3,13 @@
 , fetchFromGitLab
 , cmake
 , cmake-extras
-, pkg-config
+, dbus
+, doxygen
 , glib
+, graphviz
 , gtest
 , libqtdbustest
+, pkg-config
 , qtbase
 , qtdeclarative
 , python3
@@ -42,13 +45,15 @@ stdenv.mkDerivation rec {
     # not without hacks of their own anyway
     # Also, must have the Qt5 version in it, otherwise wrappers won't pick these up
     substituteInPlace CMakeLists.txt \
-      --replace 'SHELL_PLUGINDIR ''${CMAKE_INSTALL_LIBDIR}/lomiri/qml' 'SHELL_PLUGINDIR lib/qt-${qtbase.version}/qml'
+      --replace 'SHELL_PLUGINDIR ''${CMAKE_INSTALL_LIBDIR}/lomiri/qml' 'SHELL_PLUGINDIR ${qtbase.qtQmlPrefix}'
   '';
 
   strictDeps = true;
 
   nativeBuildInputs = [
     cmake
+    doxygen
+    graphviz
     pkg-config
   ];
 
@@ -62,11 +67,30 @@ stdenv.mkDerivation rec {
   ];
 
   nativeCheckInputs = [
+    dbus
     python3
   ];
 
   dontWrapQtApps = true;
 
-  # Fails rn
-  #doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  preBuild = ''
+    # Makes fontconfig produce less noise in logs
+    export HOME=$TMPDIR
+  '';
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  preCheck = ''
+    # needs minimal plugin and QtTest QML
+    export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
+    export QML2_IMPORT_PATH=${lib.getBin qtdeclarative}/${qtbase.qtQmlPrefix}
+  '';
+
+  meta = with lib; {
+    description = "Lomiri API Library for integrating with the Lomiri shell";
+    homepage = "https://gitlab.com/ubports/development/core/lomiri-api";
+    license = with licenses; [ lgpl3Only gpl3Only ];
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
