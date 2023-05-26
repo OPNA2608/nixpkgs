@@ -1,13 +1,10 @@
-# TODO
-# - tests
-# - meta
-# - use qtbase variable for plugin/qml path
 { stdenv
 , lib
 , fetchFromGitLab
 , cmake
-, pkg-config
 , cmake-extras
+, pkg-config
+, python3
 , qtbase
 , qtdeclarative
 }:
@@ -23,6 +20,17 @@ stdenv.mkDerivation rec {
     hash = "sha256-Ybg+qyecvhPUDoIoq+0194u57imx7SxDMEmufGN22jM=";
   };
 
+  postPatch = ''
+    patchShebangs tests/imports/check_imports.py
+
+    substituteInPlace CMakeLists.txt \
+      --replace "\''${CMAKE_INSTALL_LIBDIR}/qt5/qml" '${placeholder "out"}/${qtbase.qtQmlPrefix}'
+  '' + lib.optionalString (!doCheck) ''
+    sed -i \
+      -e '/add_subdirectory(tests)/d' \
+      CMakeLists.txt
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -36,9 +44,19 @@ stdenv.mkDerivation rec {
     qtdeclarative
   ];
 
+  nativeCheckInputs = [
+    python3
+  ];
+
   dontWrapQtApps = true;
 
-  postInstall = ''
-    mv $out/lib/{qt5,qt-${qtbase.version}}
-  '';
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  meta = with lib; {
+    description = "QML settings components for the Lomiri Desktop Environment";
+    homepage = "https://gitlab.com/ubports/development/core/lomiri-settings-components";
+    license = licenses.lgpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
