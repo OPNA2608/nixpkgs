@@ -1,3 +1,5 @@
+# TODO
+# - two pythons
 { stdenv
 , lib
 , fetchFromGitLab
@@ -94,4 +96,17 @@ stdenv.mkDerivation rec {
 
   # Tests work with an sqlite db, cannot handle >1 test at the same time
   enableParallelChecking = false;
+
+  meta = with lib; {
+    description = "Lomiri operating environment service for requesting URLs to be opened";
+    longDescription = ''
+       Allows applications to request a URL to be opened and handled by another
+       process without seeing the list of other applications on the system or
+       starting them inside its own Application Confinement.
+    '';
+    homepage = "https://gitlab.com/ubports/development/core/lomiri-url-dispatcher";
+    license = with licenses; [ lgpl3Only gpl3Only ];
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
