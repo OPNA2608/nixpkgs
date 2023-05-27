@@ -4,18 +4,21 @@
 { stdenv
 , lib
 , fetchFromGitLab
-, cmake
-, pkg-config
 , boost
+, cmake
 , cmake-extras
+, dbus
+, doxygen
 , glog
+, graphviz
 , gtest
 , lomiri-api
+, pkg-config
+, python3
 , qtbase
 , qtdeclarative
-, dbus-test-runner
-, xvfb-run
 , wrapQtAppsHook
+, xvfb-run
 }:
 
 stdenv.mkDerivation rec {
@@ -42,18 +45,24 @@ stdenv.mkDerivation rec {
       --replace '/usr/bin' '${placeholder "out"}/bin'
 
     substituteInPlace CMakeLists.txt \
-      --replace 'qt5/qml' 'qt-${qtbase.version}/qml'
+      --replace "\''${CMAKE_INSTALL_LIBDIR}/qt5/qml" "\''${CMAKE_INSTALL_PREFIX}/${qtbase.qtQmlPrefix}"
 
     # Deprecation warnings on Qt 5.15
     # https://gitlab.com/ubports/development/core/lomiri-download-manager/-/issues/1
     substituteInPlace CMakeLists.txt \
       --replace "-Werror" ""
+  '' + lib.optionalString (!doCheck) ''
+    sed -i \
+      -e '/add_subdirectory(tests)/d' \
+      CMakeLists.txt
   '';
 
   strictDeps = true;
 
   nativeBuildInputs = [
     cmake
+    doxygen
+    graphviz
     pkg-config
     wrapQtAppsHook
   ];
@@ -62,14 +71,39 @@ stdenv.mkDerivation rec {
     boost
     cmake-extras
     glog
-    gtest
     lomiri-api
     qtbase
     qtdeclarative
   ];
 
   nativeCheckInputs = [
-    dbus-test-runner
+    dbus
+    python3
     xvfb-run
   ];
+
+  checkInputs = [
+    gtest
+  ];
+
+  makeTargets = [
+    "all"
+    "doc"
+  ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  preCheck = ''
+    export HOME=$TMPDIR # temp files in home
+    export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix} # minimal platform & sqlite driver
+    export QT_QPA_PLATFORM=minimal # don't use xcb
+  '';
+
+  meta = with lib; {
+    description = "Performs uploads and downloads from a centralized location.";
+    homepage = "https://gitlab.com/ubports/development/core/lomiri-download-manager";
+    license = licenses.lgpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
