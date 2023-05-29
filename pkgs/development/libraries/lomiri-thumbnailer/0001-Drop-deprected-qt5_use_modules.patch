@@ -1,0 +1,207 @@
+diff '--color=auto' -ur a/tests/art_extractor/CMakeLists.txt b/tests/art_extractor/CMakeLists.txt
+--- a/tests/art_extractor/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/art_extractor/CMakeLists.txt	2023-05-28 16:22:22.253435727 +0200
+@@ -1,7 +1,6 @@
+ add_executable(art_extractor_test
+     art_extractor_test.cpp
+ )
+-qt5_use_modules(art_extractor_test Test)
+ target_link_libraries(art_extractor_test
+     Qt5::Test
+     thumbnailer-static
+diff '--color=auto' -ur a/tests/check_access/CMakeLists.txt b/tests/check_access/CMakeLists.txt
+--- a/tests/check_access/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/check_access/CMakeLists.txt	2023-05-28 16:23:59.785345765 +0200
+@@ -1,4 +1,3 @@
+ add_executable(check_access_test check_access_test.cpp)
+-qt5_use_modules(check_access_test Network)
+ target_link_libraries(check_access_test thumbnailer-static Qt5::Network gtest)
+ add_test(check_access check_access_test)
+diff '--color=auto' -ur a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+--- a/tests/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/CMakeLists.txt	2023-05-28 16:21:02.487873621 +0200
+@@ -6,6 +6,10 @@
+ find_package(GMock)
+ set(CMAKE_CXX_FLAGS ${old_cxx_flags})
+ 
++find_package(Qt5Test REQUIRED)
++find_package(Qt5QuickTest REQUIRED)
++find_package(Qt5Network REQUIRED)
++
+ set(TESTDATADIR ${CMAKE_CURRENT_SOURCE_DIR}/media)
+ 
+ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+diff '--color=auto' -ur a/tests/dbus/CMakeLists.txt b/tests/dbus/CMakeLists.txt
+--- a/tests/dbus/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/dbus/CMakeLists.txt	2023-05-28 16:22:16.347320066 +0200
+@@ -1,5 +1,4 @@
+ add_executable(dbus_test dbus_test.cpp)
+-qt5_use_modules(dbus_test Network DBus Test)
+ target_link_libraries(dbus_test
+     thumbnailer-static
+     testutils
+diff '--color=auto' -ur a/tests/download/CMakeLists.txt b/tests/download/CMakeLists.txt
+--- a/tests/download/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/download/CMakeLists.txt	2023-05-28 16:08:22.553594210 +0200
+@@ -1,5 +1,4 @@
+ add_executable(download_test download_test.cpp)
+-qt5_use_modules(download_test Core Network Test)
+ target_link_libraries(download_test
+     thumbnailer-static
+     testutils
+diff '--color=auto' -ur a/tests/file_io/CMakeLists.txt b/tests/file_io/CMakeLists.txt
+--- a/tests/file_io/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/file_io/CMakeLists.txt	2023-05-28 16:23:53.939231277 +0200
+@@ -1,4 +1,3 @@
+ add_executable(file_io_test file_io_test.cpp)
+-qt5_use_modules(file_io_test Network)
+ target_link_libraries(file_io_test Qt5::Network thumbnailer-static gtest)
+ add_test(file_io file_io_test)
+diff '--color=auto' -ur a/tests/file_lock/CMakeLists.txt b/tests/file_lock/CMakeLists.txt
+--- a/tests/file_lock/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/file_lock/CMakeLists.txt	2023-05-28 16:23:14.344455867 +0200
+@@ -1,5 +1,4 @@
+ add_executable(file_lock_test file_lock_test.cpp)
+-qt5_use_modules(file_lock_test Network)
+ target_link_libraries(file_lock_test Qt5::Network thumbnailer-static gtest)
+ add_test(file_lock file_lock_test)
+ 
+diff '--color=auto' -ur a/tests/image/CMakeLists.txt b/tests/image/CMakeLists.txt
+--- a/tests/image/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/image/CMakeLists.txt	2023-05-28 16:23:09.956369931 +0200
+@@ -1,4 +1,3 @@
+ add_executable(image_test image_test.cpp)
+-qt5_use_modules(image_test Network)
+ target_link_libraries(image_test thumbnailer-static Qt5::Network gtest gtest_main)
+ add_test(image image_test)
+diff '--color=auto' -ur a/tests/image-provider/CMakeLists.txt b/tests/image-provider/CMakeLists.txt
+--- a/tests/image-provider/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/image-provider/CMakeLists.txt	2023-05-28 16:23:49.333141073 +0200
+@@ -1,7 +1,6 @@
+ include_directories(${CMAKE_SOURCE_DIR}/plugins/Lomiri/Thumbnailer.0.1)
+ 
+ add_executable(image-provider_test image-provider_test.cpp)
+-qt5_use_modules(image-provider_test Quick Test)
+ target_link_libraries(image-provider_test
+   thumbnailer-qml-static
+   testutils
+diff '--color=auto' -ur a/tests/liblomiri-thumbnailer-qt/CMakeLists.txt b/tests/liblomiri-thumbnailer-qt/CMakeLists.txt
+--- a/tests/liblomiri-thumbnailer-qt/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/liblomiri-thumbnailer-qt/CMakeLists.txt	2023-05-28 16:22:08.853173300 +0200
+@@ -1,7 +1,6 @@
+ add_executable(liblomiri-thumbnailer-qt_test liblomiri-thumbnailer-qt_test.cpp)
+ set_target_properties(liblomiri-thumbnailer-qt_test PROPERTIES AUTOMOC TRUE)
+ 
+-qt5_use_modules(liblomiri-thumbnailer-qt_test DBus Gui Test Network)
+ target_link_libraries(liblomiri-thumbnailer-qt_test
+     lomiri-thumbnailer-qt
+     Qt5::DBus
+diff '--color=auto' -ur a/tests/qml/CMakeLists.txt b/tests/qml/CMakeLists.txt
+--- a/tests/qml/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/qml/CMakeLists.txt	2023-05-28 16:23:43.343023767 +0200
+@@ -1,5 +1,4 @@
+ add_executable(qml_test qml_test.cpp)
+-qt5_use_modules(qml_test Qml DBus QuickTest Test)
+ target_link_libraries(qml_test
+     testutils
+     Qt5::Qml
+diff '--color=auto' -ur a/tests/recovery/CMakeLists.txt b/tests/recovery/CMakeLists.txt
+--- a/tests/recovery/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/recovery/CMakeLists.txt	2023-05-28 16:22:55.622089211 +0200
+@@ -1,4 +1,3 @@
+ add_executable(recovery_test recovery_test.cpp MockCache.cpp)
+-qt5_use_modules(recovery_test Network Core)
+ target_link_libraries(recovery_test Qt5::Core thumbnailer-static gtest gmock)
+ add_test(recovery recovery_test)
+diff '--color=auto' -ur a/tests/safe_strerror/CMakeLists.txt b/tests/safe_strerror/CMakeLists.txt
+--- a/tests/safe_strerror/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/safe_strerror/CMakeLists.txt	2023-05-28 16:22:01.483028966 +0200
+@@ -1,4 +1,3 @@
+ add_executable(safe_strerror_test safe_strerror_test.cpp)
+-qt5_use_modules(safe_strerror_test Network)
+ target_link_libraries(safe_strerror_test thumbnailer-static Qt5::Network gtest gtest_main)
+ add_test(safe_strerror safe_strerror_test)
+diff '--color=auto' -ur a/tests/settings/CMakeLists.txt b/tests/settings/CMakeLists.txt
+--- a/tests/settings/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/settings/CMakeLists.txt	2023-05-28 16:22:46.787916199 +0200
+@@ -1,4 +1,3 @@
+ add_executable(settings_test settings_test.cpp)
+-qt5_use_modules(settings_test Network Core) # for QTemporaryDir
+ target_link_libraries(settings_test thumbnailer-static Qt5::Network Qt5::Core gtest)
+ add_test(settings settings_test)
+diff '--color=auto' -ur a/tests/slow-vs-thumb/CMakeLists.txt b/tests/slow-vs-thumb/CMakeLists.txt
+--- a/tests/slow-vs-thumb/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/slow-vs-thumb/CMakeLists.txt	2023-05-28 16:21:47.178748835 +0200
+@@ -1,7 +1,6 @@
+ add_executable(slow-vs-thumb_test
+     slow-vs-thumb_test.cpp
+ )
+-qt5_use_modules(slow-vs-thumb_test Network Test)
+ target_link_libraries(slow-vs-thumb_test
+     thumbnailer-static
+     testutils
+diff '--color=auto' -ur a/tests/stress/CMakeLists.txt b/tests/stress/CMakeLists.txt
+--- a/tests/stress/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/stress/CMakeLists.txt	2023-05-28 16:21:38.852585777 +0200
+@@ -1,6 +1,5 @@
+ add_executable(stress_test stress_test.cpp)
+ set_target_properties(stress_test PROPERTIES AUTOMOC TRUE)
+-qt5_use_modules(stress_test Quick Network DBus Test)
+ target_link_libraries(stress_test
+     lomiri-thumbnailer-qt
+     testutils
+diff '--color=auto' -ur a/tests/thumbnailer/CMakeLists.txt b/tests/thumbnailer/CMakeLists.txt
+--- a/tests/thumbnailer/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/thumbnailer/CMakeLists.txt	2023-05-28 16:23:32.796817233 +0200
+@@ -2,7 +2,6 @@
+     thumbnailer_test.cpp
+     ${interface_files}
+ )
+-qt5_use_modules(thumbnailer_test DBus Network Test)
+ target_link_libraries(thumbnailer_test
+     Qt5::DBus
+     Qt5::Network
+diff '--color=auto' -ur a/tests/thumbnailer-admin/CMakeLists.txt b/tests/thumbnailer-admin/CMakeLists.txt
+--- a/tests/thumbnailer-admin/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/thumbnailer-admin/CMakeLists.txt	2023-05-28 16:24:29.505927790 +0200
+@@ -4,7 +4,6 @@
+ add_executable(thumbnailer-admin_test
+     thumbnailer-admin_test.cpp
+ )
+-qt5_use_modules(thumbnailer-admin_test Network Test)
+ target_link_libraries(thumbnailer-admin_test
+     gtest
+     thumbnailer-static
+diff '--color=auto' -ur a/tests/utils/CMakeLists.txt b/tests/utils/CMakeLists.txt
+--- a/tests/utils/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/utils/CMakeLists.txt	2023-05-28 16:22:40.837799674 +0200
+@@ -31,7 +31,6 @@
+     ${interface_files}
+     ${CMAKE_SOURCE_DIR}/src/service/stats.cpp
+ )
+-qt5_use_modules(testutils Core DBus Test)
+ target_link_libraries(testutils
+     Qt5::DBus Qt5::Core Qt5::Test ${QTDBUSTEST_DEPS_LIBRARIES} thumbnailer-static
+ )
+diff '--color=auto' -ur a/tests/version/CMakeLists.txt b/tests/version/CMakeLists.txt
+--- a/tests/version/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/version/CMakeLists.txt	2023-05-28 16:09:43.869061282 +0200
+@@ -1,7 +1,6 @@
+ add_executable(version_test
+     version_test.cpp
+ )
+-qt5_use_modules(version_test Test)
+ target_link_libraries(version_test
+     Qt5::Test
+     thumbnailer-static
+diff '--color=auto' -ur a/tests/vs-thumb/CMakeLists.txt b/tests/vs-thumb/CMakeLists.txt
+--- a/tests/vs-thumb/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/tests/vs-thumb/CMakeLists.txt	2023-05-28 16:24:23.247805236 +0200
+@@ -1,7 +1,6 @@
+ add_executable(vs-thumb_test
+   vs-thumb_test.cpp
+ )
+-qt5_use_modules(vs-thumb_test Core Network Test)
+ target_link_libraries(vs-thumb_test
+   vs-thumb-static
+   thumbnailer-static
