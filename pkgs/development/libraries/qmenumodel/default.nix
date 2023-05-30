@@ -24,12 +24,13 @@ stdenv.mkDerivation rec {
   };
 
   postPatch = ''
+    # TODO solve better, this breaks prefix substitution
     substituteInPlace libqmenumodel/src/qmenumodel.pc.in \
       --replace "\''${exec_prefix}/@CMAKE_INSTALL_LIBDIR@" '@CMAKE_INSTALL_FULL_LIBDIR@' \
       --replace "\''${prefix}/@CMAKE_INSTALL_INCLUDEDIR@" '@CMAKE_INSTALL_FULL_INCLUDEDIR@'
 
     substituteInPlace libqmenumodel/QMenuModel/CMakeLists.txt \
-      --replace "\''${CMAKE_INSTALL_LIBDIR}/qt5/qml" "\''${CMAKE_INSTALL_LIBDIR}/qt-${qtbase.version}/qml"
+      --replace "\''${CMAKE_INSTALL_LIBDIR}/qt5/qml" "\''${CMAKE_INSTALL_PREFIX}/${qtbase.qtQmlPrefix}"
   '' + lib.optionalString doCheck ''
     patchShebangs tests/{client,script}/*.py
   '';
@@ -68,7 +69,7 @@ stdenv.mkDerivation rec {
 
   preCheck = ''
     # Tests all need some Qt stuff
-    export QT_PLUGIN_PATH=${lib.getBin qtbase}/lib/qt-${qtbase.version}/plugins
+    export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
   '';
 
   meta = with lib; {
