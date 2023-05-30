@@ -1,17 +1,21 @@
 { stdenv
 , lib
 , fetchFromGitHub
+, fetchpatch
 # This should maybe be the lomiri-specific accountsservice?
 , accountsservice
 , cmake
 , cmake-extras
+, dbus-test-runner
 , docbook_xsl
 , docbook_xml_dtd_45
 , glib
 , gobject-introspection
+, gtest
 , gtk-doc
 , intltool
 , pkg-config
+, python3
 , systemd
 , vala
 , wrapGAppsHook
@@ -27,6 +31,17 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-7+Kq9LTGa87a6H3VNfWsaYicWKhTnK/G9tI/C8t8/8g=";
   };
+
+  patches = [
+    (fetchpatch {
+      url = "https://github.com/AyatanaIndicators/ayatana-indicator-messages/commit/720d830acdfdd836f4be8eeefae17f22c77459cf.patch";
+      hash = "sha256-iAjPqB3CNzdzVG7SuPevsNvDkzJewueCjMQbYEBEKak=";
+    })
+    (fetchpatch {
+      url = "https://github.com/AyatanaIndicators/ayatana-indicator-messages/commit/19b3d98bd069ad3a3b15cfa3a96af704fd1ab6dc.patch";
+      hash = "sha256-zacT31gbxUTmmQ1Z+aE5MMj1Dy+4bipsclRQEB4e5J0=";
+    })
+  ];
 
   postPatch = ''
     # Uses pkg_get_variable, cannot substitute prefix with that
@@ -61,15 +76,40 @@ stdenv.mkDerivation rec {
     systemd
   ];
 
+  nativeCheckInputs = [
+    (python3.withPackages (ps: with ps; [
+      pygobject3
+      python-dbusmock
+    ]))
+  ];
+
+  checkInputs = [
+    dbus-test-runner
+    gtest
+  ];
+
   cmakeFlags = [
     "-DGSETTINGS_LOCALINSTALL=ON"
     "-DGSETTINGS_COMPILE=ON"
+    "-DENABLE_TESTS=${lib.boolToString doCheck}"
   ];
 
   makeFlags = [
     # ld: ...: undefined reference to symbol 'qsort@@GLIBC_2.2.5'
     "LD=${stdenv.cc.targetPrefix}cc"
   ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  preCheck = ''
+    # test-client imports gir, whose solib entry points to final store location
+    install -Dm644 libmessaging-menu/libmessaging-menu.so.0.0.0 $out/lib/libmessaging-menu.so.0
+  '';
+
+  postCheck = ''
+    # remove the above solib-installation, let it be done properly
+    rm -r $out
+  '';
 
   preInstall = ''
     # gtkdoc-mkhtml generates images without write permissions, errors out during install
