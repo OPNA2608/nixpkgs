@@ -1,3 +1,5 @@
+# TODO
+# - tests
 { stdenv
 , lib
 , fetchFromGitLab
@@ -43,7 +45,9 @@ stdenv.mkDerivation rec {
     ./0001-Drop-deprecated-qt5_use_modules.patch
   ];
 
-  postPatch = ''
+  postPatch = let
+    dbusPrefix = "share/dbus-1/services";
+  in ''
     # Upstream's way of generating their schema doesn't work for us, don't quite understand why
     # (gdb) bt
     # #0  QSQLiteResult::prepare (this=0x4a4650, query=...) at qsql_sqlite.cpp:406
@@ -70,7 +74,7 @@ stdenv.mkDerivation rec {
 
     # Queries qmake for the QML installation path, which returns a reference to Qt5's build directory
     substituteInPlace CMakeLists.txt \
-      --replace "\''${QMAKE_EXECUTABLE} -query QT_INSTALL_QML" "echo $out/lib/qt-${qtbase.version}/qml"
+      --replace "\''${QMAKE_EXECUTABLE} -query QT_INSTALL_QML" "echo $out/${qtbase.qtQmlPrefix}"
 
     # Bad path concatenation
     substituteInPlace config.h.in \
@@ -78,9 +82,9 @@ stdenv.mkDerivation rec {
 
   '' + (if doCheck then ''
     substituteInPlace tests/common/dbus-services/CMakeLists.txt \
-      --replace "\''${DBUS_SERVICES_DIR}/org.freedesktop.Telepathy.MissionControl5.service" "${telepathy-mission-control}/share/dbus-1/services/org.freedesktop.Telepathy.MissionControl5.service" \
-      --replace "\''${DBUS_SERVICES_DIR}/org.freedesktop.Telepathy.AccountManager.service" "${telepathy-mission-control}/share/dbus-1/services/org.freedesktop.Telepathy.AccountManager.service" \
-      --replace "\''${DBUS_SERVICES_DIR}/ca.desrt.dconf.service" "${dconf}/share/dbus-1/services/ca.desrt.dconf.service"
+      --replace "\''${DBUS_SERVICES_DIR}/org.freedesktop.Telepathy.MissionControl5.service" "${telepathy-mission-control}/${dbusPrefix}/org.freedesktop.Telepathy.MissionControl5.service" \
+      --replace "\''${DBUS_SERVICES_DIR}/org.freedesktop.Telepathy.AccountManager.service" "${telepathy-mission-control}/${dbusPrefix}/org.freedesktop.Telepathy.AccountManager.service" \
+      --replace "\''${DBUS_SERVICES_DIR}/ca.desrt.dconf.service" "${dconf}/${dbusPrefix}/ca.desrt.dconf.service"
 
     substituteInPlace cmake/modules/GenerateTest.cmake \
       --replace '/usr/lib/dconf' '${lib.getLib dconf}/libexec' \
@@ -125,7 +129,7 @@ stdenv.mkDerivation rec {
   preBuild = ''
     # SQLiteDatabase is used on host to generate SQL schemas
     # Tests also need this to use SQLiteDatabase for verifying correct behaviour
-    export QT_PLUGIN_PATH=${lib.getBin qtbase}/lib/qt-${qtbase.version}/plugins
+    export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
   '';
 
   # ContactMatcherTest failures, mostly on QSignalSpy's not seeing some signals (Qt5.15 problem?)
