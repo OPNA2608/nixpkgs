@@ -49,10 +49,13 @@ stdenvNoCC.mkDerivation rec {
   ];
 
   postPatch = ''
+    # Don't require a C compiler
     substituteInPlace CMakeLists.txt \
       --replace 'project(lomiri-session VERSION ${version})' 'project(lomiri-session VERSION ${version} LANGUAGES NONE)'
+
     substituteInPlace desktop/dm-lomiri-session \
       --replace '/usr/lib' "$out/lib"
+
     substituteInPlace systemd/lomiri.service \
       --replace '/usr/bin/lomiri-session' "$out/bin/lomiri-session" \
       --replace '/usr/bin/dbus-update-activation-environment' '${lib.getBin dbus}/bin/dbus-update-activation-environment'
@@ -90,4 +93,12 @@ stdenvNoCC.mkDerivation rec {
     "lomiri"
     # "lomiri-touch"
   ];
+
+  meta = with lib; {
+    description = "Integrates Lomiri desktop/touch sessions into display / session managers";
+    homepage = "https://gitlab.com/ubports/development/core/lomiri-session";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
