@@ -3,6 +3,7 @@
 { stdenv
 , lib
 , fetchFromGitLab
+, fetchpatch
 , cmake
 , cmake-extras
 , pkg-config
@@ -44,17 +45,26 @@ stdenv.mkDerivation rec {
     hash = "sha256-9M0VOkhaX/pP3UfiA1ydOYmuowJvAUdCNyNvT18Jdks=";
   };
 
+  patches = [
+    # TODO test
+    # Hide Xwayland splash
+    (fetchpatch {
+      url = "https://gitlab.com/ubports/development/core/qtmir/-/commit/79012543c973e350e1f612c4193d693fdcc86f27.patch";
+      hash = "sha256-bnAQYtuY8JGJg4VnVpeVQ7mk3erxp3QQLApktMJq9yQ=";
+    })
+  ];
+
   postPatch = ''
     # get_target_property & _populate_Gui_plugin_properties don't work(?)
     # Fix QML install path
     sed -i \
       -e '/get_target_property(Qt5Gui_QPA_Plugin_Path/d' \
       -e '/_populate_Gui_plugin_properties/d' \
-      -e 's,''${CMAKE_INSTALL_PREFIX}/''${CMAKE_INSTALL_LIBDIR}/qt5/qml,''${CMAKE_INSTALL_FULL_LIBDIR}/qt-${qtbase.version}/qml,g' \
+      -e 's,''${CMAKE_INSTALL_PREFIX}/''${CMAKE_INSTALL_LIBDIR}/qt5/qml,''${CMAKE_INSTALL_PREFIX}/${qtbase.qtQmlPrefix},g' \
       CMakeLists.txt
 
     substituteInPlace src/platforms/mirserver/CMakeLists.txt \
-      --replace 'qt5/plugins' 'qt-${qtbase.version}/plugins'
+      --replace "\''${CMAKE_INSTALL_LIBDIR}/qt5/plugins" "\''${CMAKE_INSTALL_PREFIX}/${qtbase.qtPluginPrefix}
 
     substituteInPlace demos/paths.h.in \
       --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@' '@CMAKE_INSTALL_FULL_LIBDIR@' \
