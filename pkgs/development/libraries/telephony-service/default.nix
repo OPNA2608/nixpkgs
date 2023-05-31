@@ -11,6 +11,7 @@
 , history-service
 , libnotify
 , libphonenumber
+, libpulseaudio
 , libusermetrics
 , lomiri-ui-toolkit
 , lomiri-url-dispatcher
@@ -27,6 +28,9 @@
 , xvfb-run
 }:
 
+let
+  listToQtVar = list: suffix: lib.strings.concatMapStringsSep ":" (drv: "${lib.getBin drv}/${suffix}") list;
+in
 stdenv.mkDerivation rec {
   pname = "telephony-service";
   version = "0.5.1";
@@ -40,22 +44,29 @@ stdenv.mkDerivation rec {
 
   # TODO $out/bin/phone-gsettings-migration.py needs wrapping
 
-  postPatch = ''
+  postPatch = let
+    dbusPrefix = "share/dbus-1/services";
+  in ''
     # Queries qmake for the QML installation path, which returns a reference to Qt5's build directory
     # Same fix like in history-service, but someone un-negated the cross condition in this project
     substituteInPlace CMakeLists.txt \
       --replace 'if(CMAKE_CROSSCOMPILING)' 'if(NOT CMAKE_CROSSCOMPILING)' \
-      --replace "\''${QMAKE_EXECUTABLE} -query QT_INSTALL_QML" "echo $out/lib/qt-${qtbase.version}/qml"
+      --replace "\''${QMAKE_EXECUTABLE} -query QT_INSTALL_QML" "echo $out/${qtbase.qtQmlPrefix}"
 
     # Bad path concatenation
     substituteInPlace config.h.in handler/{com.lomiri.TelephonyServiceHandler,org.freedesktop.Telepathy.Client.TelephonyService*}.service.in \
       --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@' '@CMAKE_INSTALL_FULL_BINDIR@'
 
+    # Tests generate a required NotificationsInterface.h, but in a directory where it doesn't match the used #include line?
+    sed -i \
+      -e '/''${CMAKE_SOURCE_DIR}\/indicator/a ''${CMAKE_CURRENT_BINARY_DIR}/..' \
+      tests/indicator/CMakeLists.txt
+
   '' + (if doCheck then ''
     substituteInPlace tests/common/dbus-services/CMakeLists.txt \
-      --replace "\''${DBUS_SERVICES_DIR}/org.freedesktop.Telepathy.MissionControl5.service" "${telepathy-mission-control}/share/dbus-1/services/org.freedesktop.Telepathy.MissionControl5.service" \
-      --replace "\''${DBUS_SERVICES_DIR}/org.freedesktop.Telepathy.AccountManager.service" "${telepathy-mission-control}/share/dbus-1/services/org.freedesktop.Telepathy.AccountManager.service" \
-      --replace "\''${DBUS_SERVICES_DIR}/ca.desrt.dconf.service" "${dconf}/share/dbus-1/services/ca.desrt.dconf.service"
+      --replace "\''${DBUS_SERVICES_DIR}/org.freedesktop.Telepathy.MissionControl5.service" "${telepathy-mission-control}/${dbusPrefix}/org.freedesktop.Telepathy.MissionControl5.service" \
+      --replace "\''${DBUS_SERVICES_DIR}/org.freedesktop.Telepathy.AccountManager.service" "${telepathy-mission-control}/${dbusPrefix}/org.freedesktop.Telepathy.AccountManager.service" \
+      --replace "\''${DBUS_SERVICES_DIR}/ca.desrt.dconf.service" "${dconf}/${dbusPrefix}/ca.desrt.dconf.service"
 
     substituteInPlace cmake/modules/GenerateTest.cmake \
       --replace '/usr/lib/dconf' '${lib.getLib dconf}/libexec' \
@@ -77,6 +88,7 @@ stdenv.mkDerivation rec {
     history-service
     libnotify
     libphonenumber
+    libpulseaudio
     libusermetrics
     lomiri-url-dispatcher
     protobuf
@@ -104,7 +116,7 @@ stdenv.mkDerivation rec {
   ];
 
   # Somewhere in this, some include paths aren't being identified/passed properly
-  NIX_CFLAGS_COMPILE = toString ([
+  env.NIX_CFLAGS_COMPILE = toString ([
     "-I${lib.getDev telepathy-glib}/include/telepathy-1.0"
     "-I${lib.getDev dbus-glib}/include/dbus-1.0"
     "-I${lib.getDev dbus}/include/dbus-1.0"
@@ -114,10 +126,13 @@ stdenv.mkDerivation rec {
 
   dontWrapQtApps = true;
 
+  preBuild = "export VERBOSE=1";
+
   # - ContactUtils::sharedManager("memory") gives a QContactManager "invalid" (qtpim problem?)
   # - phone numbers don't format as expected
   # - many instances of QtTest QSignalSpy not seeing fired signals (count stays 0)
   doCheck = false;
+  #doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   # Ease with debugging
   enableParallelChecking = false;
@@ -125,8 +140,8 @@ stdenv.mkDerivation rec {
   checkPhase = ''
     runHook preCheck
 
-    export QT_PLUGIN_PATH=${lib.getBin qtbase}/lib/qt-${qtbase.version}/plugins
-    export QML2_IMPORT_PATH=${lib.getBin lomiri-ui-toolkit}/lib/qt-${qtbase.version}/qml
+    export QT_PLUGIN_PATH=${listToQtVar [ qtbase qtpim ] qtbase.qtPluginPrefix}
+    export QML2_IMPORT_PATH=${listToQtVar [ lomiri-ui-toolkit ] qtbase.qtQmlPrefix}
     export HOME=$PWD
     export XDG_RUNTIME_DIR=$PWD
 
