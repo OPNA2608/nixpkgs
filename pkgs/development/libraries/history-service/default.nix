@@ -143,7 +143,7 @@ stdenv.mkDerivation rec {
 
     export HOME=$PWD
     dbus-run-session --config-file=${dbus}/share/dbus-1/session.conf -- \
-      make test
+      make test ''${enableParallelChecking:+-j $NIX_BUILD_CORES}
 
     runHook postCheck
   '';
