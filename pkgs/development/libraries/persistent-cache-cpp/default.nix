@@ -2,13 +2,14 @@
 , lib
 , fetchFromGitLab
 , fetchpatch
+, boost
 , cmake
 , cmake-extras
-, pkg-config
-, boost
 , doxygen
 , gtest
 , leveldb
+, pkg-config
+, python3
 }:
 
 stdenv.mkDerivation rec {
@@ -39,11 +40,18 @@ stdenv.mkDerivation rec {
 
   postPatch = ''
     # Wrong concatenation
+    # TODO breaks prefix substitution
     substituteInPlace data/libpersistent-cache-cpp.pc.in \
       --replace "\''${prefix}/@CMAKE_INSTALL_LIBDIR@" '@CMAKE_INSTALL_FULL_LIBDIR@'
-  '' + lib.optionalString (!doCheck) ''
+
+    # Runs in parallel to other tests, limit to 1 thread
+    substituteInPlace tests/headers/compile_headers.py \
+      --replace 'multiprocessing.cpu_count()' '1'
+  '' + (if doCheck then ''
+    patchShebangs tests/{headers,whitespace}/*.py
+  '' else ''
     sed -i -e '/add_subdirectory(tests)/d' CMakeLists.txt
-  '';
+  '');
 
   nativeBuildInputs = [
     cmake
@@ -57,6 +65,10 @@ stdenv.mkDerivation rec {
     leveldb
   ];
 
+  nativeCheckInputs = [
+    python3
+  ];
+
   checkInputs = [
     gtest
   ];
@@ -66,6 +78,17 @@ stdenv.mkDerivation rec {
     "-DWerror=OFF"
   ];
 
-  # TODO
-  doCheck = false;
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  meta = with lib; {
+    description = "Cache of key-value pairs with persistent storage for C++ 11";
+    longDescription = ''
+      A persistent cache for arbitrary (possibly large amount of data, such as
+      image files) that is fast, scalable, and crash-proof.
+    '';
+    homepage = "https://gitlab.com/ubports/development/core/lib-cpp/persistent-cache-cpp";
+    license = licenses.lgpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.unix;
+  };
 }
