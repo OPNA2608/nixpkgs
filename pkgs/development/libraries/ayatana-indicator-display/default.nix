@@ -23,11 +23,6 @@
 , xsct
 }:
 
-let
-  pythonEnv = python3.withPackages (ps: with ps; [
-    python-dbusmock
-  ]);
-in
 stdenv.mkDerivation rec {
   pname = "ayatana-indicator-display";
   version = "22.9.4";
@@ -72,12 +67,12 @@ stdenv.mkDerivation rec {
     systemd
   ];
 
-  dontWrapQtApps = true;
-
   nativeCheckInputs = [
     cppcheck
     dbus
-    pythonEnv
+    (python3.withPackages (ps: with ps; [
+      python-dbusmock
+    ]))
     xsct
   ];
 
@@ -88,9 +83,11 @@ stdenv.mkDerivation rec {
     properties-cpp
   ];
 
+  dontWrapQtApps = true;
+
   cmakeFlags = [
-    "-DENABLE_LOMIRI_FEATURES=ON"
     "-DENABLE_TESTS=${lib.boolToString doCheck}"
+    "-DENABLE_LOMIRI_FEATURES=ON"
     "-DGSETTINGS_LOCALINSTALL=ON"
     "-DGSETTINGS_COMPILE=ON"
   ];
@@ -104,4 +101,16 @@ stdenv.mkDerivation rec {
   '';
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  meta = with lib; {
+    description = "Ayatana Indicator for Display configuration";
+    longDescription = ''
+      This Ayatana Indicator is designed to be placed on the right side of a
+      panel and give the user easy control for changing their display settings.
+    '';
+    homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-display";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
