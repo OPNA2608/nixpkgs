@@ -93,6 +93,9 @@ stdenv.mkDerivation rec {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
+  # xvfb tests are flaky on xvfb shutdown when parallelised
+  enableParallelChecking = false;
+
   preCheck = ''
     export HOME=$TMPDIR # temp files in home
     export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix} # minimal platform & sqlite driver
