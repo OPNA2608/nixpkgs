@@ -1,5 +1,3 @@
-# TODO
-# - meta
 { stdenv
 , lib
 , fetchFromGitLab
@@ -35,7 +33,7 @@ stdenv.mkDerivation rec {
       --replace '/etc' "\''${CMAKE_INSTALL_SYSCONFDIR}" \
       --replace '/lib' "\''${CMAKE_INSTALL_LIBDIR}"
     substituteInPlace src/biometry/qml/Biometryd/CMakeLists.txt \
-      --replace 'qt5/qml' 'qt-${qtbase.version}/qml'
+      --replace "\''${CMAKE_INSTALL_LIBDIR}/qt5/qml" "\''${CMAKE_INSTALL_PREFIX}/${qtbase.qtQmlPrefix}"
   '' + lib.optionalString (!doCheck) ''
     sed -i -e '/add_subdirectory(tests)/d' CMakeLists.txt
   '';
@@ -51,12 +49,12 @@ stdenv.mkDerivation rec {
     dbus
     dbus-cpp
     libapparmor
+    libelf
     process-cpp
     properties-cpp
-    sqlite
     qtbase
     qtdeclarative
-    libelf
+    sqlite
   ];
 
   checkInputs = [
@@ -76,4 +74,17 @@ stdenv.mkDerivation rec {
   '';
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  meta = with lib; {
+    description = "Mediates/multiplexes access to biometric devices";
+    longDescription = ''
+      biometryd mediates and multiplexes access to biometric devices present
+      on the system, enabling applications and system components to leverage
+      them for identification and verification of users.
+    '';
+    homepage = "https://gitlab.com/ubports/development/core/biometryd";
+    license = licenses.lgpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
