@@ -18,11 +18,6 @@
 , wrapGAppsHook
 }:
 
-let
-  pythonEnv = python3.withPackages (ps: with ps; [
-    python-dbusmock
-  ]);
-in
 stdenv.mkDerivation rec {
   pname = "ayatana-indicator-power";
   version = "22.9.4";
@@ -66,7 +61,9 @@ stdenv.mkDerivation rec {
 
   nativeCheckInputs = [
     dbus
-    pythonEnv
+    (python3.withPackages (ps: with ps; [
+      python-dbusmock
+    ]))
   ];
 
   checkInputs = [
@@ -75,11 +72,23 @@ stdenv.mkDerivation rec {
   ];
 
   cmakeFlags = [
-    "-DENABLE_LOMIRI_FEATURES=ON"
     "-DENABLE_TESTS=${lib.boolToString doCheck}"
+    "-DENABLE_LOMIRI_FEATURES=ON"
     "-DGSETTINGS_LOCALINSTALL=ON"
     "-DGSETTINGS_COMPILE=ON"
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  meta = with lib; {
+    description = "Ayatana Indicator showing power state";
+    longDescription = ''
+      This Ayatana Indicator displays current power management information and
+      gives the user a way to access power management preferences.
+    '';
+    homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-power";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
