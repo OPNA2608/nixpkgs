@@ -80,4 +80,20 @@ stdenv.mkDerivation rec {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  meta = with lib; {
+    description = "Ayatana Indicator showing session management, status and user switching";
+    longDescription = ''
+      This Ayatana Indicator is designed to be placed on the right side of a
+      panel and give the user easy control for
+      - changing their instant message status,
+      - switching to another user,
+      - starting a guest session, or
+      - controlling the status of their own session.
+    '';
+    homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-session";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
