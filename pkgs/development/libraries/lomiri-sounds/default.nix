@@ -24,4 +24,12 @@ stdenvNoCC.mkDerivation rec {
   nativeBuildInputs = [
     cmake
   ];
+
+  meta = with lib; {
+    description = "Notification and ringtone sound effects for Lomiri";
+    homepage = "https://gitlab.com/ubports/development/core/lomiri-sounds";
+    license = with licenses; [ cc-by-30 cc0 cc-by-sa-30 cc-by-40 ];
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.all;
+  };
 }
