@@ -1,16 +1,14 @@
-# TODO
-# - tests
-# - meta
-# - docs
-# - cleanup that qmlplugindump stuff
 { stdenv
 , lib
 , fetchFromGitLab
 , cmake
 , cmake-extras
+, dbus-test-runner
+, doxygen
 , gettext
 , glib
 , gsettings-qt
+, gtest
 , libapparmor
 , libnotify
 , lomiri-api
@@ -23,8 +21,9 @@
 , qtdeclarative
 , qtfeedback
 , qtgraphicaleffects
-, withDocumentation ? false
+, withDocumentation ? true
 , wrapGAppsHook
+, xvfb-run
 }:
 
 stdenv.mkDerivation rec {
@@ -44,7 +43,7 @@ stdenv.mkDerivation rec {
 
   postPatch = ''
     substituteInPlace import/Lomiri/Content/CMakeLists.txt \
-      --replace 'qt5/qml' 'qt-${qtbase.version}/qml' \
+      --replace "\''${CMAKE_INSTALL_LIBDIR}/qt5/qml" "\''${CMAKE_INSTALL_PREFIX}/${qtbase.qtQmlPrefix}" \
       --replace 'qmlplugindump -qt=qt5' 'qmlplugindump'
     substituteInPlace src/com/lomiri/content/service/com.lomiri.content.dbus.Service.service \
       --replace '/usr' '${placeholder "out"}'
@@ -66,6 +65,8 @@ stdenv.mkDerivation rec {
     pkg-config
     qtdeclarative # qmlplugindump
     wrapGAppsHook
+  ] ++ lib.optionals withDocumentation [
+    doxygen
   ];
 
   buildInputs = [
@@ -85,6 +86,15 @@ stdenv.mkDerivation rec {
     qtgraphicaleffects
   ];
 
+  nativeCheckInputs = [
+    dbus-test-runner
+    xvfb-run
+  ];
+
+  checkInputs = [
+    gtest
+  ];
+
   dontWrapQtApps = true;
 
   cmakeFlags = [
@@ -94,12 +104,28 @@ stdenv.mkDerivation rec {
     "-DENABLE_DOC=${lib.boolToString withDocumentation}"
   ];
 
-  preBuild = ''
+  preBuild = let
+    listToQtVar = list: suffix: lib.strings.concatMapStringsSep ":" (drv: "${lib.getBin drv}/${suffix}") list;
+  in ''
     # Executes qmlplugindump
-    export QT_PLUGIN_PATH=${lib.getBin qtbase}/lib/qt-${qtbase.version}/plugins
-    export QML2_IMPORT_PATH=${lib.getBin qtdeclarative}/lib/qt-${qtbase.version}/qml:${lib.getBin lomiri-ui-toolkit}/lib/qt-${qtbase.version}/qml:${lib.getBin qtfeedback}/lib/qt-${qtbase.version}/qml:${lib.getBin qtgraphicaleffects}/lib/qt-${qtbase.version}/qml
+    export QT_PLUGIN_PATH=${listToQtVar [ qtbase ] qtbase.qtPluginPrefix}
+    export QML2_IMPORT_PATH=${listToQtVar [ qtdeclarative lomiri-ui-toolkit qtfeedback qtgraphicaleffects ] qtbase.qtQmlPrefix}
   '';
 
-  # TODO
-  doCheck = false;
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  # Starts & talks to D-Bus services, breaks under parallelism
+  enableParallelChecking = false;
+
+  meta = with lib; {
+    description = "Content sharing/picking service";
+    longDescription = ''
+      content-hub is a mediation service to let applications share content between them,
+      even if they are not running at the same time.
+    '';
+    homepage = "https://gitlab.com/ubports/development/core/content-hub";
+    license = with licenses; [ gpl3Only lgpl3Only ];
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
