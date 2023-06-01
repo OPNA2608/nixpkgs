@@ -58,6 +58,13 @@ stdenv.mkDerivation rec {
     "-DGSETTINGS_COMPILE=ON"
   ];
 
-  # TODO
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  meta = with lib; {
+    description = "Common functions for Ayatana System Indicators";
+    homepage = "https://github.com/AyatanaIndicators/libayatana-common";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
