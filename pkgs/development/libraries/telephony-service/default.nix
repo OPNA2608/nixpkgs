@@ -7,6 +7,8 @@
 , dbus-glib
 , dbus-test-runner
 , dconf
+, gettext
+, glib
 , gnome
 , history-service
 , libnotify
@@ -15,8 +17,10 @@
 , libusermetrics
 , lomiri-ui-toolkit
 , lomiri-url-dispatcher
+, makeWrapper
 , pkg-config
 , protobuf
+, python3
 , qtbase
 , qtdeclarative
 , qtfeedback
@@ -28,9 +32,6 @@
 , xvfb-run
 }:
 
-let
-  listToQtVar = list: suffix: lib.strings.concatMapStringsSep ":" (drv: "${lib.getBin drv}/${suffix}") list;
-in
 stdenv.mkDerivation rec {
   pname = "telephony-service";
   version = "0.5.1";
@@ -41,8 +42,6 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-2hFB+0ySoyCRS0a5hXuiGc1HksLFpbJi65aBQ0ccYpA=";
   };
-
-  # TODO $out/bin/phone-gsettings-migration.py needs wrapping
 
   postPatch = let
     dbusPrefix = "share/dbus-1/services";
@@ -80,11 +79,16 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     cmake
     pkg-config
+    makeWrapper
   ];
 
   buildInputs = [
     ayatana-indicator-messages
     dbus-glib
+    dbus
+    dconf
+    gettext
+    glib
     history-service
     libnotify
     libphonenumber
@@ -92,6 +96,10 @@ stdenv.mkDerivation rec {
     libusermetrics
     lomiri-url-dispatcher
     protobuf
+    (python3.withPackages (ps: with ps; [
+      dbus-python
+      pygobject3
+    ]))
     qtbase
     qtdeclarative
     qtfeedback
@@ -99,6 +107,7 @@ stdenv.mkDerivation rec {
     qtpim
     telepathy
     telepathy-glib
+    telepathy-mission-control
   ];
 
   nativeCheckInputs = [
@@ -108,6 +117,8 @@ stdenv.mkDerivation rec {
     telepathy-mission-control
     xvfb-run
   ];
+
+  dontWrapQtApps = true;
 
   cmakeFlags = [
     # These rely on libphonenumber reformatting inputs to certain results
@@ -124,8 +135,6 @@ stdenv.mkDerivation rec {
     "-I${lib.getDev qtbase}/include/QtDBus"
   ]);
 
-  dontWrapQtApps = true;
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   # Starts & talks to D-Bus services, breaks with parallelism
@@ -133,7 +142,17 @@ stdenv.mkDerivation rec {
 
   preCheck = ''
     export QT_QPA_PLATFORM=minimal
-    export QT_PLUGIN_PATH=${listToQtVar [ qtbase qtpim ] qtbase.qtPluginPrefix}
+    export QT_PLUGIN_PATH=${lib.strings.concatMapStringsSep ":" (drv: "${lib.getBin drv}/${qtbase.qtPluginPrefix}") [ qtbase qtpim ]}
+  '';
+
+  postInstall = ''
+    patchShebangs $out/bin/phone-gsettings-migration.py
+    substituteInPlace $out/bin/ofono-setup \
+      --replace '/usr/bin/phone-gsettings-migration.py' "$out/bin/phone-gsettings-migration.py"
+
+    # Still missing getprop from libhybris
+    wrapProgram $out/bin/ofono-setup \
+      --prefix PATH : ${lib.makeBinPath [ dbus dconf gettext glib telepathy-mission-control ]}
   '';
 
   meta = with lib; {
