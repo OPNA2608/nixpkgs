@@ -26,11 +26,6 @@
 , wrapGAppsHook
 }:
 
-let
-  pythonEnv = python3.withPackages (ps: with ps; [
-    python-dbusmock
-  ]);
-in
 stdenv.mkDerivation rec {
   pname = "ayatana-indicator-datetime";
   version = "22.9.1";
@@ -83,7 +78,9 @@ stdenv.mkDerivation rec {
 
   nativeCheckInputs = [
     dbus
-    pythonEnv
+    (python3.withPackages (ps: with ps; [
+      python-dbusmock
+    ]))
   ];
 
   checkInputs = [
@@ -92,11 +89,23 @@ stdenv.mkDerivation rec {
   ];
 
   cmakeFlags = [
-    "-DENABLE_LOMIRI_FEATURES=ON"
     "-DENABLE_TESTS=${lib.boolToString doCheck}"
+    "-DENABLE_LOMIRI_FEATURES=ON"
     "-DGSETTINGS_LOCALINSTALL=ON"
     "-DGSETTINGS_COMPILE=ON"
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  meta = with lib; {
+    description = "Ayatana Indicator providing clock and calendar";
+    longDescription = ''
+      This Ayatana Indicator provides a combined calendar, clock, alarm and
+      event management tool.
+    '';
+    homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-datetime";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
