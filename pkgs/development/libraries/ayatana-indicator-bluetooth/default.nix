@@ -56,4 +56,16 @@ stdenv.mkDerivation rec {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  meta = with lib; {
+    description = "Ayatana system bluetooth indicator";
+    longDescription = ''
+      This Ayatana Indicator exposes bluetooth functionality via the system
+      indicator API and provides fast user controls for Bluetooth devices.
+    '';
+    homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-bluetooth";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
