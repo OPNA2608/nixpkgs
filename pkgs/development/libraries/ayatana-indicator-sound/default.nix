@@ -28,11 +28,6 @@
 , wrapGAppsHook
 }:
 
-let
-  pythonEnv = python3.withPackages (ps: with ps; [
-    python-dbusmock
-  ]);
-in
 stdenv.mkDerivation rec {
   pname = "ayatana-indicator-sound";
   version = "22.9.2";
@@ -84,7 +79,9 @@ stdenv.mkDerivation rec {
 
   nativeCheckInputs = [
     dbus
-    pythonEnv
+    (python3.withPackages (ps: with ps; [
+      python-dbusmock
+    ]))
   ];
 
   checkInputs = [
@@ -97,8 +94,8 @@ stdenv.mkDerivation rec {
   ];
 
   cmakeFlags = [
-    "-DENABLE_LOMIRI_FEATURES=ON"
     "-DENABLE_TESTS=${lib.boolToString doCheck}"
+    "-DENABLE_LOMIRI_FEATURES=ON"
     "-DGSETTINGS_LOCALINSTALL=ON"
     "-DGSETTINGS_COMPILE=ON"
   ];
@@ -106,4 +103,16 @@ stdenv.mkDerivation rec {
   dontWrapQtApps = true;
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  meta = with lib; {
+    description = "Ayatana Indicator for managing system sound";
+    longDescription = ''
+      Ayatana Indicator Sound that provides easy control of the PulseAudio
+      sound daemon.
+    '';
+    homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-sound";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
