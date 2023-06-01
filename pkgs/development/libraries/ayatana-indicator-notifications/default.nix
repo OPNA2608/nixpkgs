@@ -49,4 +49,19 @@ stdenv.mkDerivation rec {
     "-DGSETTINGS_LOCALINSTALL=ON"
     "-DGSETTINGS_COMPILE=ON"
   ];
+
+  meta = with lib; {
+    description = "Ayatana Indicator for viewing recent notifications";
+    longDescription = ''
+      An Ayatana Indicator applet to display recent notifications sent to a
+      notification daemon such as notify-osd.
+
+      Using dconf-editor, you can blacklist certain notifications, so that
+      they are not shown anymore by the notifications indicator.
+    '';
+    homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-notifications";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
