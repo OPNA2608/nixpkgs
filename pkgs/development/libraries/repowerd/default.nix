@@ -52,7 +52,7 @@ stdenv.mkDerivation rec {
   '';
 
   postPatch = ''
-    # Help tests access the test dbus session
+    # Help tests make a test dbus session
     substituteInPlace tests/adapter-tests/dbus_bus.cpp \
       --replace 'dbus-daemon --session' 'dbus-daemon --config-file=${dbus}/share/dbus-1/session.conf'
 
@@ -94,11 +94,14 @@ stdenv.mkDerivation rec {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  checkPhase = ''
-    runHook preCheck
-
-    dbus-run-session --config-file=${dbus}/share/dbus-1/session.conf -- make test
-
-    runHook postCheck
-  '';
+  meta = with lib; {
+    description = "Power daemon to monitor and control system power state";
+    longDescription = ''
+      This daemon monitors and controls system power states for Ubuntu phones and tablets.
+    '';
+    homepage = "https://gitlab.com/ubports/development/core/repowerd";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
