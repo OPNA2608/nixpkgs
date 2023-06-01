@@ -26,10 +26,10 @@ stdenv.mkDerivation rec {
   ];
 
   meta = with lib; {
+    description = "Set color temperature of screen";
     homepage = "https://github.com/faf0/sct";
-    description = "set color temperature of screen";
-    maintainers = with maintainers; [ OPNA2608 ];
     license = licenses.unlicense;
+    maintainers = with maintainers; [ OPNA2608 ];
     platforms = with platforms; linux ++ freebsd ++ openbsd;
   };
 }
