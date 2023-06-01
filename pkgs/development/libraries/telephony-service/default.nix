@@ -102,17 +102,17 @@ stdenv.mkDerivation rec {
   ];
 
   nativeCheckInputs = [
-    dbus
     dbus-test-runner
     dconf
     gnome.gnome-keyring
-    qtdeclarative
     telepathy-mission-control
     xvfb-run
   ];
 
-  checkInputs = [
-    lomiri-ui-toolkit
+  cmakeFlags = [
+    # These rely on libphonenumber reformatting inputs to certain results
+    # Seem to be broken for a small amount of numbers, maybe libphonenumber version change?
+    "-DSKIP_QML_TESTS=ON"
   ];
 
   # Somewhere in this, some include paths aren't being identified/passed properly
@@ -126,30 +126,14 @@ stdenv.mkDerivation rec {
 
   dontWrapQtApps = true;
 
-  preBuild = "export VERBOSE=1";
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  # - ContactUtils::sharedManager("memory") gives a QContactManager "invalid" (qtpim problem?)
-  # - phone numbers don't format as expected
-  # - many instances of QtTest QSignalSpy not seeing fired signals (count stays 0)
-  doCheck = false;
-  #doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-  # Ease with debugging
+  # Starts & talks to D-Bus services, breaks with parallelism
   enableParallelChecking = false;
 
-  checkPhase = ''
-    runHook preCheck
-
+  preCheck = ''
+    export QT_QPA_PLATFORM=minimal
     export QT_PLUGIN_PATH=${listToQtVar [ qtbase qtpim ] qtbase.qtPluginPrefix}
-    export QML2_IMPORT_PATH=${listToQtVar [ lomiri-ui-toolkit ] qtbase.qtQmlPrefix}
-    export HOME=$PWD
-    export XDG_RUNTIME_DIR=$PWD
-
-    xvfb-run -s '-screen 0 800x600x24' \
-      dbus-run-session --config-file=${dbus}/share/dbus-1/session.conf -- \
-        make test ''${enableParallelChecking:+-j $NIX_BUILD_CORES}
-
-    runHook postCheck
   '';
 
   meta = with lib; {
