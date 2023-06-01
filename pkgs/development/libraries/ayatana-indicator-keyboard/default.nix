@@ -63,4 +63,19 @@ stdenv.mkDerivation rec {
       --prefix LD_LIBRARY_PATH : "$out/lib"
     )
   '';
+
+  meta = with lib; {
+    description = "Ayatana Indicator Keyboard Applet";
+    longDescription = ''
+      A keyboard indicator, which should show as an
+      icon in the top panel of indicator-aware desktop environments.
+
+      It can be used to switch key layouts or languages, and helps the user
+      identifying which layouts are currently in use.
+    '';
+    homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-keyboard";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
