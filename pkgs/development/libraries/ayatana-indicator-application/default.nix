@@ -65,4 +65,12 @@ stdenv.mkDerivation rec {
     "-DGSETTINGS_LOCALINSTALL=ON"
     "-DGSETTINGS_COMPILE=ON"
   ];
+
+  meta = with lib; {
+    description = "Indicator to take menus from applications and place them in the panel";
+    homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-application";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
