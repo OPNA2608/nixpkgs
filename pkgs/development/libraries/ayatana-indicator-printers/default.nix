@@ -55,4 +55,16 @@ stdenv.mkDerivation rec {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  meta = with lib; {
+    description = "Ayatana Indicator showing active print jobs";
+    longDescription = ''
+      This Ayatana Indicator is designed to let you view and control active
+      print jobs.
+    '';
+    homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-printers";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
