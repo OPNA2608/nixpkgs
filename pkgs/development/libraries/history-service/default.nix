@@ -122,7 +122,7 @@ stdenv.mkDerivation rec {
   ];
 
   cmakeFlags = [
-    # Many deprecation warnings with Qt5.15
+    # Many deprecation warnings with Qt 5.15
     "-DENABLE_WERROR=OFF"
   ];
 
@@ -132,20 +132,14 @@ stdenv.mkDerivation rec {
     export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
   '';
 
-  # ContactMatcherTest failures, mostly on QSignalSpy's not seeing some signals (Qt5.15 problem?)
-  doCheck = false;
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  # Parallelism in tests seems to break things
+  # Starts & talks to D-Bus services, breaks with parallelism
   enableParallelChecking = false;
 
-  checkPhase = ''
-    runHook preCheck
-
+  preCheck = ''
+    export QT_PLUGIN_PATH=${lib.getBin qtpim}/${qtbase.qtPluginPrefix}:$QT_PLUGIN_PATH
     export HOME=$PWD
-    dbus-run-session --config-file=${dbus}/share/dbus-1/session.conf -- \
-      make test ''${enableParallelChecking:+-j $NIX_BUILD_CORES}
-
-    runHook postCheck
   '';
 
   meta = with lib; {
