@@ -1,10 +1,9 @@
-# TODO
-# - tests
-# - meta
 { stdenv
 , lib
 , fetchFromGitLab
 , cmake
+, dbus
+, dbus-test-runner
 , pkg-config
 , qmake
 , qtbase
@@ -44,6 +43,11 @@ stdenv.mkDerivation rec {
     qtdeclarative
   ];
 
+  nativeCheckInputs = [
+    dbus
+    dbus-test-runner
+  ];
+
   cmakeFlags = [
     "-DENABLE_TESTING=${lib.boolToString doCheck}"
     "-Duse_libhud2=OFF" # Use vendored libhud2, TODO package libhud2 separately
@@ -51,6 +55,18 @@ stdenv.mkDerivation rec {
 
   dontWrapQtApps = true;
 
-  # TODO
-  doCheck = false;
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  preCheck = ''
+    export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
+    export QML2_IMPORT_PATH=${lib.getBin qtdeclarative}/${qtbase.qtQmlPrefix}
+  '';
+
+  meta = with lib; {
+    description = "Lomiri Action Qt API";
+    homepage = "https://gitlab.com/ubports/development/core/lomiri-action-api";
+    license = licenses.lgpl3Only;
+    maintainers = with maintainers; [ OPNA2608 ];
+    platforms = platforms.linux;
+  };
 }
