@@ -3,7 +3,6 @@
 { stdenv
 , lib
 , fetchFromGitLab
-, fetchpatch
 , cmake
 , cmake-extras
 , pkg-config
@@ -44,15 +43,6 @@ stdenv.mkDerivation rec {
     rev = "bd21224b0fcd3edeaa56e5ccb90ac57a1785352d";
     hash = "sha256-9M0VOkhaX/pP3UfiA1ydOYmuowJvAUdCNyNvT18Jdks=";
   };
-
-  patches = [
-    # TODO test
-    # Hide Xwayland splash
-    (fetchpatch {
-      url = "https://gitlab.com/ubports/development/core/qtmir/-/commit/79012543c973e350e1f612c4193d693fdcc86f27.patch";
-      hash = "sha256-bnAQYtuY8JGJg4VnVpeVQ7mk3erxp3QQLApktMJq9yQ=";
-    })
-  ];
 
   postPatch = ''
     # get_target_property & _populate_Gui_plugin_properties don't work(?)
