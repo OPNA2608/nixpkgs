@@ -23,11 +23,12 @@ stdenvNoCC.mkDerivation rec {
 
     # Qt's wrappers expect this to contain the Qt version
     substituteInPlace src/QmlPlugins/QmlPluginsConfig.cmake \
-      --replace 'qt5/qml' 'qt-${qtbase.version}/qml'
+      --replace "\''${CMAKE_INSTALL_LIBDIR}/qt5/qml" "\''${CMAKE_INSTALL_PREFIX}/${qtbase.qtQmlPrefix}"
   '';
 
   strictDeps = true;
 
+  # Produces no binaries
   dontWrapQtApps = true;
 
   nativeBuildInputs = [
