@@ -36,6 +36,14 @@ stdenv.mkDerivation rec {
     sed -i \
       -e '/NO_DEFAULT_PATH/d' \
       tests/qml/CMakeLists.txt
+
+    # tst_busy_indicator runs into a codepath in lomiri-ui-toolkit's ShapeMaterial::ShapeMaterial that expects a working GL context to be initialised
+    # This doesn't seem to be the case in our sandboxed build environment (QOpenGLContext::currentContext() returns nullptr, QOpenGLContext::makeCurrent is never called according to gdb)
+    # lomiri-ui-toolkit doesn't check if currentContext() in this situation returns a valid pointer -> SIGSEGV
+    # Hint: to debug this, use breakpointHook. Regular interactive shells are too impure to hit this
+    sed -i \
+      -e '/declare_qml_test("tst_busy_indicator"/d' \
+      tests/qml/CMakeLists.txt
   '';
 
   strictDeps = true;
@@ -69,9 +77,7 @@ stdenv.mkDerivation rec {
     "-DENABLE_TESTS=${lib.boolToString doCheck}"
   ];
 
-  # QML tests work when run under nix-shell --pure / nix develop --ignore-environment, 1/3 consistently segfaults under nix-build
-  # I do not understand why, and I can not debug why. I want to cry.
-  doCheck = false;
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   # Parallelism breaks the QML tests, seemingly ripping away the xvfb-run-launched server under their feet
   enableParallelChecking = false;
@@ -79,7 +85,7 @@ stdenv.mkDerivation rec {
   preCheck = let
     qtToEnvvar = drvs: prefix: lib.strings.concatMapStringsSep ":" (drv: "${lib.getBin drv}/${prefix}") drvs;
   in ''
-    export QT_PLUGIN_PATH=${qtToEnvvar [ qtbase] qtbase.qtPluginPrefix}
+    export QT_PLUGIN_PATH=${qtToEnvvar [ qtbase ] qtbase.qtPluginPrefix}
     export QML2_IMPORT_PATH=${qtToEnvvar ([ qtdeclarative lomiri-ui-toolkit ] ++ lomiri-ui-toolkit.propagatedBuildInputs) qtbase.qtQmlPrefix}
     export HOME=$PWD
     export XDG_RUNTIME_DIR=$PWD
