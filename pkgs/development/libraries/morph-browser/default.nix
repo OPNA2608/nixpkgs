@@ -6,6 +6,7 @@
 , lib
 , fetchFromGitLab
 , cmake
+, content-hub
 , gettext
 , libapparmor
 , lomiri-action-api
@@ -57,6 +58,7 @@ stdenv.mkDerivation rec {
     qtwayland # when launched via l-u-d
 
     # QML
+    content-hub
     lomiri-action-api
     lomiri-ui-extras
     lomiri-ui-toolkit
