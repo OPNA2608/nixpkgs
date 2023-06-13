@@ -1,12 +1,12 @@
 { stdenv
 , lib
 , fetchFromGitHub
+, testers
 , doxygen
 , qmake
-, qtbase
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "qdjango";
   version = "unstable-2018-03-07";
 
@@ -17,22 +17,23 @@ stdenv.mkDerivation rec {
     hash = "sha256-5MfRfsIlv73VMvKMBCLviXFovyGH0On5ukLIEy7zwkk=";
   };
 
+  outputs = [ "out" "dev" "doc" ];
+
   postPatch = ''
     # HTML docs depend on regular docs
     substituteInPlace qdjango.pro \
       --replace 'dist.depends = docs' 'htmldocs.depends = docs'
   '';
 
-  postConfigure = ''
-    # This project provides Qt Tests (testlib, testcase) and wants to install them to qtbase's directory.
-    # This behaviour is caused by the QMake CONFIGs these tests are using to be registered as tests.
-    # Force recursive Makefile creation, manually patch qtbase paths out of the generated Makefiles.
-    make qmake_all
-    for makeFile in $(find tests -name Makefile); do
-      substituteInPlace $makeFile \
-        --replace '$(INSTALL_ROOT)${qtbase.dev}/tests/' '$(INSTALL_ROOT)${placeholder "out"}/tests/'
-    done
-  '';
+  qmakeFlags = [
+    # Uses Qt testing infrascructure via QMake CONFIG testcase,
+    # defaults to installing all testcase targets under Qt prefix
+    # https://github.com/qt/qtbase/blob/29400a683f96867133b28299c0d0bd6bcf40df35/mkspecs/features/testcase.prf#L110-L120
+    "CONFIG+=no_testcase_installs"
+
+    # Qmake-generated pkg-config files default to Qt prefix
+    "QMAKE_PKGCONFIG_PREFIX=${placeholder "out"}"
+  ];
 
   nativeBuildInputs = [
     doxygen
@@ -43,10 +44,7 @@ stdenv.mkDerivation rec {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  postInstall = ''
-    # Don't install the test binaries
-    rm -r $out/tests
-  '';
+  passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = with lib; {
     description = "Qt-based C++ web framework";
@@ -54,5 +52,9 @@ stdenv.mkDerivation rec {
     license = licenses.lgpl21Plus;
     platforms = platforms.all;
     maintainers = with maintainers; [ OPNA2608 ];
+    pkgConfigModules = [
+      "qdjango-db"
+      "qdjango-http"
+    ];
   };
-}
+})
