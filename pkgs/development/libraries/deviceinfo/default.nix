@@ -10,13 +10,13 @@
 
 stdenv.mkDerivation rec {
   pname = "deviceinfo";
-  version = "0.1.1";
+  version = "0.2.0";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/deviceinfo";
     rev = version;
-    hash = "sha256-LiMExXB3x8N/+hkAXzO2uytAjRGpQneJVTbPQBzonKk=";
+    hash = "sha256-oKuX9JbYWIjroKgA2Y+/oqPkC26DPy3e6yHFU8mmbxQ=";
   };
 
   strictDeps = true;
