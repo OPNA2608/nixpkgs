@@ -1,6 +1,7 @@
 { lib
 , stdenv
 , fetchFromGitHub
+, fetchpatch
 , cmake
 , glew
 , freeimage
@@ -15,17 +16,29 @@
 , makeWrapper
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "openxray";
-  version = "1144-december-2021-rc1";
+  version = "1747-january-2023-rc3";
 
   src = fetchFromGitHub {
     owner = "OpenXRay";
     repo = "xray-16";
-    rev = version;
+    rev = finalAttrs.version;
     fetchSubmodules = true;
-    sha256 = "07qj1lpp21g4p583gvz5h66y2q71ymbsz4g5nr6dcys0vm7ph88v";
+    hash = "sha256-ip9CruOWk5T/dBDMcn9aOHbYaaZ+7VJw9U5GayiE7AE=";
   };
+
+  patches = [
+    # Fix OpenGL shader lookup & linking
+    # Remove when in a tag
+    (fetchpatch {
+      name = "0001-openxray-Fix-resource-linking-again.patch";
+      url = "https://github.com/OpenXRay/xray-16/commit/88d2302b490ff62344c5ab4f8ba77260402cf4f4.patch";
+      hash = "sha256-JvOwnqTThYB41ndpGrW1jVUp7rcysCTHNCEyq1fTlrY=";
+    })
+  ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -65,4 +78,4 @@ stdenv.mkDerivation rec {
     maintainers = with maintainers; [ OPNA2608 ];
     platforms = [ "x86_64-linux" "i686-linux" ];
   };
-}
+})
