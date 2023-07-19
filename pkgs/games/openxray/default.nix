@@ -76,6 +76,6 @@ stdenv.mkDerivation (finalAttrs: {
       url = "https://github.com/OpenXRay/xray-16/blob/${version}/License.txt";
     };
     maintainers = with maintainers; [ OPNA2608 ];
-    platforms = [ "x86_64-linux" "i686-linux" ];
+    platforms = [ "x86_64-linux" "i686-linux" "aarch64-linux" ];
   };
 })
