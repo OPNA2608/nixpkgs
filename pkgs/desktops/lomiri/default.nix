@@ -26,6 +26,7 @@ let
     #### Services
     biometryd = callPackage ./services/biometryd { };
     hfd-service = callPackage ./services/hfd-service { };
+    lomiri-download-manager = callPackage ./services/lomiri-download-manager { };
   };
 in
   lib.makeScope libsForQt5.newScope packages
