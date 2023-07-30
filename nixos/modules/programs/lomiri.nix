@@ -135,6 +135,7 @@ in {
       # Data
       "/share/sounds"
       "/share/wallpapers"
+      "/share/locale" # lomiri-ui-toolkit picks up i18n from only 1 directory
     ];
 
     # TODO is this really the way to do this, can't we reuse upstream's files?

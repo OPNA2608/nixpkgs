@@ -44,6 +44,10 @@ stdenv.mkDerivation rec {
 
     substituteInPlace src/plugin/*/CMakeLists.txt \
       --replace "\''${QT_IMPORTS_DIR}" '${placeholder "out"}/${qtbase.qtQmlPrefix}'
+
+    sed -i \
+      -e '/applicationName:/a Binding {\n target: i18n\n property: "domain"\n value: "lomiri-filemanager-app"\n }' \
+      src/app/qml/filemanager.qml
   '' + lib.optionalString (!doCheck) ''
     sed -i \
       -e '/add_subdirectory(tests)/d' \
