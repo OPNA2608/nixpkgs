@@ -61,6 +61,9 @@ let tests = {
 
       konsole.pkg = p: p.plasma5Packages.konsole;
 
+      lomiri-terminal-app.pkg = p: p.lomiri.lomiri-terminal-app;
+      lomiri-terminal-app.kill = true; # crashes when closed normally, known problem: https://gitlab.com/ubports/development/apps/lomiri-terminal-app/-/issues/104
+
       lxterminal.pkg = p: p.lxterminal;
 
       mate-terminal.pkg = p: p.mate.mate-terminal;
