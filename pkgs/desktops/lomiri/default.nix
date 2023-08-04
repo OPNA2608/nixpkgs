@@ -21,6 +21,7 @@ let
     lomiri-app-launch = callPackage ./development/lomiri-app-launch { };
 
     #### QML / QML-related
+    lomiri-ui-extras = callPackage ./qml/lomiri-ui-extras { };
     lomiri-ui-toolkit = callPackage ./qml/lomiri-ui-toolkit { };
 
     #### Services
