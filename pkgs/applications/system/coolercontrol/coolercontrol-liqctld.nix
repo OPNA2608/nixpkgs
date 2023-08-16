@@ -36,5 +36,6 @@ python3.pkgs.buildPythonApplication {
 
   meta = meta // {
     description = "${meta.description} (Liquidctl Daemon)";
+    mainProgram = "coolercontrol-liqctld";
   };
 }

@@ -29,5 +29,6 @@ rustPlatform.buildRustPackage {
 
   meta = meta // {
     description = "${meta.description} (Main Daemon)";
+    mainProgram = "coolercontrold";
   };
 }

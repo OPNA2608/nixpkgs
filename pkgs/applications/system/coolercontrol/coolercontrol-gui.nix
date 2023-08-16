@@ -62,5 +62,6 @@ python3.pkgs.buildPythonApplication {
 
   meta = meta // {
     description = "${meta.description} (GUI)";
+    mainProgram = "coolercontrol";
   };
 }
