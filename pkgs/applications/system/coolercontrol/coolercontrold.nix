@@ -11,7 +11,7 @@
 rustPlatform.buildRustPackage {
   pname = "coolercontrold";
   inherit version src;
-  sourceRoot = "source/coolercontrold";
+  sourceRoot = "${src.name}/coolercontrold";
 
   cargoHash = "sha256-Zgm1ROgZ4Ph/fPdIYW3OqTj2BtZ4KT7TNqCx5K2ZkCc=";
 

@@ -9,7 +9,7 @@
 python3.pkgs.buildPythonApplication {
   pname = "coolercontrol-liqctld";
   inherit version src;
-  sourceRoot = "source/coolercontrol-liqctld";
+  sourceRoot = "${src.name}/coolercontrol-liqctld";
   format = "pyproject";
 
   pythonRelaxDeps = true;

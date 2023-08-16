@@ -14,7 +14,7 @@
 python3.pkgs.buildPythonApplication {
   pname = "coolercontrol";
   inherit version src;
-  sourceRoot = "source/coolercontrol-gui";
+  sourceRoot = "${src.name}/coolercontrol-gui";
   format = "pyproject";
 
   pythonRelaxDeps = true;
