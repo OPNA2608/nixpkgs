@@ -1,5 +1,6 @@
 { lib, stdenv, callPackage
-, withLinuxHeaders ? true
+, withLinuxHeaders ? stdenv.hostPlatform.isLinux
+, withHurdHeaders ? stdenv.hostPlatform.isHurd
 , profilingLibraries ? false
 , withGd ? false
 , withLibcrypt? false
@@ -16,7 +17,7 @@ let
 in
 
 (callPackage ./common.nix { inherit stdenv; } {
-  inherit withLinuxHeaders withGd profilingLibraries withLibcrypt;
+  inherit withLinuxHeaders withHurdHeaders withGd profilingLibraries withLibcrypt;
   pname = "glibc" + lib.optionalString withGd "-gd" + lib.optionalString (stdenv.cc.isGNU && libgcc==null) "-nolibgcc";
 }).overrideAttrs(previousAttrs: {
 
@@ -126,6 +127,11 @@ in
           # subdirectory, which Glibc provides itself.
           (cd $dev/include && \
            ln -sv $(ls -d $linuxHeaders/include/* | grep -v scsi\$) .)
+      elif test -n "$hurdHeaders"; then
+          # Include the Hurd kernel headers in Glibc, except the `scsi'
+          # subdirectory, which Glibc provides itself.
+          (cd $dev/include && \
+           ln -sv $(ls -d $hurdHeaders/include/* | grep -v scsi\$) .)
       fi
 
       # Fix for NIXOS-54 (ldd not working on x86_64).  Make a symlink

@@ -288,6 +288,7 @@ rec {
     # config string is paramount.
     freebsd12 = { execFormat = elf;     families = { inherit bsd; }; name = "freebsd"; version = 12; };
     freebsd13 = { execFormat = elf;     families = { inherit bsd; }; name = "freebsd"; version = 13; };
+    gnu      = { execFormat = elf;     families = { }; };
     linux    = { execFormat = elf;     families = { }; };
     netbsd   = { execFormat = elf;     families = { inherit bsd; }; };
     none     = { execFormat = unknown; families = { }; };

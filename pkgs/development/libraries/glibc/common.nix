@@ -26,6 +26,7 @@
 , buildPackages
 , fetchurl
 , linuxHeaders ? null
+, hurdHeaders ? null
 , gd ? null, libpng ? null
 , libidn2
 , bison
@@ -34,6 +35,7 @@
 
 { pname
 , withLinuxHeaders ? false
+, withHurdHeaders ? false
 , profilingLibraries ? false
 , withGd ? false
 , withLibcrypt ? false
@@ -46,9 +48,14 @@ let
   version = "2.37";
   patchSuffix = "-8";
   sha256 = "sha256-Ilfv8RGhgV109GhW2q9AsBnB5VMVbGnUi6DL/Bu5GkM=";
+  withKernelHeaders = withLinuxHeaders || withHurdHeaders;
+  kernelHeaders =
+    /**/ if withLinuxHeaders then linuxHeaders
+    else if withHurdHeaders  then hurdHeaders
+    else null;
 in
 
-assert withLinuxHeaders -> linuxHeaders != null;
+assert withKernelHeaders -> kernelHeaders != null;
 assert withGd -> gd != null && libpng != null;
 
 stdenv.mkDerivation ({
@@ -133,7 +140,7 @@ stdenv.mkDerivation ({
       "--sysconfdir=/etc"
       "--enable-stack-protector=strong"
       "--enable-bind-now"
-      (lib.withFeatureAs withLinuxHeaders "headers" "${linuxHeaders}/include")
+      (lib.withFeatureAs withKernelHeaders "headers" "${kernelHeaders}/include")
       (lib.enableFeature profilingLibraries "profile")
     ] ++ lib.optionals (stdenv.hostPlatform.isx86 || stdenv.hostPlatform.isAarch64) [
       # This feature is currently supported on
@@ -181,10 +188,11 @@ stdenv.mkDerivation ({
   strictDeps = true;
   depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [ bison python3Minimal ] ++ extraNativeBuildInputs;
-  buildInputs = [ linuxHeaders ] ++ lib.optionals withGd [ gd libpng ] ++ extraBuildInputs;
+  buildInputs = lib.optionals withKernelHeaders [ kernelHeaders ] ++ lib.optionals withGd [ gd libpng ] ++ extraBuildInputs;
 
   env = {
     linuxHeaders = lib.optionalString withLinuxHeaders linuxHeaders;
+    hurdHeaders = lib.optionalString withHurdHeaders hurdHeaders;
     inherit (stdenv) is64bit;
     # Needed to install share/zoneinfo/zone.tab.  Set to impure /bin/sh to
     # prevent a retained dependency on the bootstrap tools in the stdenv-linux
@@ -196,7 +204,7 @@ stdenv.mkDerivation ({
   passthru = { inherit version; minorRelease = version; };
 }
 
-// (removeAttrs args [ "withLinuxHeaders" "withGd" "postInstall" "makeFlags" ]) //
+// (removeAttrs args [ "withLinuxHeaders" "withHurdHeaders" "withGd" "postInstall" "makeFlags" ]) //
 
 {
   src = fetchurl {
@@ -275,6 +283,6 @@ stdenv.mkDerivation ({
     license = licenses.lgpl2Plus;
 
     maintainers = with maintainers; [ eelco ma27 ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.hurd;
   } // (args.meta or {});
 })

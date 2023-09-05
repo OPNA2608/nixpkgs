@@ -18,6 +18,9 @@ let
     # Genode
     "aarch64-genode" "i686-genode" "x86_64-genode"
 
+    # Hurd
+    "i686-gnu"
+
     # illumos
     "x86_64-solaris"
 
@@ -103,6 +106,7 @@ in {
                   ++ filterDoubles (matchAttrs { kernel = parse.kernels.linux; abi = parse.abis.gnuabi64; })
                   ++ filterDoubles (matchAttrs { kernel = parse.kernels.linux; abi = parse.abis.gnuabielfv1; })
                   ++ filterDoubles (matchAttrs { kernel = parse.kernels.linux; abi = parse.abis.gnuabielfv2; });
+  hurd          = filterDoubles predicates.isHurd;
   illumos       = filterDoubles predicates.isSunOS;
   linux         = filterDoubles predicates.isLinux;
   netbsd        = filterDoubles predicates.isNetBSD;

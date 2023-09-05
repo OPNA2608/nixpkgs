@@ -82,6 +82,7 @@ rec {
     isMinGW        = { kernel = kernels.windows; abi = abis.gnu; };
     isWasi         = { kernel = kernels.wasi; };
     isRedox        = { kernel = kernels.redox; };
+    isHurd         = { kernel = kernels.gnu; };
     isGhcjs        = { kernel = kernels.ghcjs; };
     isGenode       = { kernel = kernels.genode; };
     isNone         = { kernel = kernels.none; };
