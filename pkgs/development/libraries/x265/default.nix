@@ -34,8 +34,15 @@ let
     (mkFlag ppaSupport "ENABLE_PPA")
     (mkFlag vtuneSupport "ENABLE_VTUNE")
     (mkFlag werrorSupport "WARNINGS_AS_ERRORS")
+  ] ++ lib.optionals stdenv.hostPlatform.isPower [
+    # Assumes that POWER -> POWER8+, which is only guaranteed for ppc64le
+    (mkFlag (with stdenv.hostPlatform; isPower64 && isLittleEndian) "CPU_POWER8")
+    # Similar to POWER8, non-ppc64le doesn't have guaranteed support for AltiVec + VSX (POWER7+)
+    (mkFlag (with stdenv.hostPlatform; isPower64 && isLittleEndian) "ENABLE_ALTIVEC")
+  ] ++ lib.optionals (isCross && stdenv.hostPlatform.isRiscV) [
     # Potentially riscv cross could be fixed by providing the correct CMAKE_SYSTEM_PROCESSOR flag
-  ] ++ lib.optional (isCross && stdenv.hostPlatform.isRiscV) "-DENABLE_ASSEMBLY=OFF";
+    "-DENABLE_ASSEMBLY=OFF"
+  ];
 
   cmakeStaticLibFlags = [
     "-DHIGH_BIT_DEPTH=ON"
