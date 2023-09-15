@@ -82,7 +82,13 @@ stdenv.mkDerivation rec {
   '';
 
   doCheck = false;
-  doInstallCheck = stdenv.buildPlatform == stdenv.hostPlatform;
+  doInstallCheck = stdenv.buildPlatform == stdenv.hostPlatform
+    # Upstream is unsure if they can & want to support big-endian
+    # https://github.com/tpm2-software/tpm2-tss/issues/2139
+    # 
+    # Currently broken on s390x: https://github.com/tpm2-software/tpm2-tss/issues/2531
+    # On powerpc64-linux, same failures + all integration tests time out on powerpc64-linux, with a cryptic error that ports might already be in use
+    && !stdenv.isBigEndian;
   # Since we rewrote the load path in the dynamic loader for the TCTI
   # The various tcti implementation should be placed in their target directory
   # before we could run tests, so we make turn checkPhase into installCheckPhase

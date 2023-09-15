@@ -1,3 +1,4 @@
+# ffmpeg hits SIGILL on powerpc64-linux
 { version, hash, extraPatches ? [] }:
 
 { lib, stdenv, buildPackages, removeReferencesTo, addOpenGLRunpath, pkg-config, perl, texinfo, yasm
@@ -58,8 +59,8 @@
 , withModplug ? withFullDeps && !stdenv.isDarwin # ModPlug support
 , withMp3lame ? withHeadlessDeps # LAME MP3 encoder
 , withMysofa ? withFullDeps # HRTF support via SOFAlizer
-, withNvdec ? withHeadlessDeps && (with stdenv; !isDarwin && hostPlatform == buildPlatform && !isAarch32 && !hostPlatform.isRiscV)
-, withNvenc ? withHeadlessDeps && (with stdenv; !isDarwin && hostPlatform == buildPlatform && !isAarch32 && !hostPlatform.isRiscV)
+, withNvdec ? withHeadlessDeps && (with stdenv; !isDarwin && hostPlatform == buildPlatform && !isAarch32 && !hostPlatform.isRiscV && !hostPlatform.isPower)
+, withNvenc ? withHeadlessDeps && (with stdenv; !isDarwin && hostPlatform == buildPlatform && !isAarch32 && !hostPlatform.isRiscV && !hostPlatform.isPower)
 , withOgg ? withHeadlessDeps # Ogg container used by vorbis & theora
 , withOpenal ? withFullDeps # OpenAL 1.1 capture support
 , withOpencl ? withFullDeps
@@ -577,6 +578,8 @@ stdenv.mkDerivation (finalAttrs: {
     "--cxx=clang++"
   ];
 
+  makeFlags = [ "V=1" ];
+
   # ffmpeg embeds the configureFlags verbatim in its binaries and because we
   # configure binary, include, library dir etc., this causes references in
   # outputs where we don't want them. Patch the generated config.h to remove all
@@ -701,7 +704,7 @@ stdenv.mkDerivation (finalAttrs: {
       ++ optional buildSwscale "libswscale"
     ;
   in ''
-    ${ldLibraryPathEnv}="${lib.concatStringsSep ":" libsToLink}" make check -j$NIX_BUILD_CORES
+    ${ldLibraryPathEnv}="${lib.concatStringsSep ":" libsToLink}" make check -j$NIX_BUILD_CORES $makeFlags $checkFlags
   '';
 
   outputs = optionals withBin [ "bin" ] # The first output is the one that gets symlinked by default!

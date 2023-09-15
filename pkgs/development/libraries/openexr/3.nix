@@ -43,7 +43,8 @@ stdenv.mkDerivation rec {
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.isi686 "-msse2 -mfpmath=sse";
 
   # https://github.com/AcademySoftwareFoundation/openexr/issues/1400
-  doCheck = !stdenv.isAarch32;
+  # https://github.com/AcademySoftwareFoundation/openexr/issues/1175, affects other big-endian arches too
+  doCheck = !stdenv.isAarch32 && !stdenv.isBigEndian;
 
   meta = with lib; {
     description = "A high dynamic-range (HDR) image file format";

@@ -107,9 +107,10 @@ stdenv.mkDerivation rec {
 
   CXXFLAGS = lib.optionalString stdenv.hostPlatform.isAarch32 "-mfp16-format=ieee";
 
-  # FIXME x86_64-darwin:
-  # https://github.com/NixOS/nixpkgs/pull/204030#issuecomment-1352768690
-  doCheck = with stdenv; !(hostPlatform.isi686 || isDarwin && isx86_64);
+  # FIXME test failures on various platforms
+  # x86_64-darwin: https://github.com/NixOS/nixpkgs/pull/204030#issuecomment-1352768690
+  # non-LE: https://github.com/libjxl/libjxl/issues/2433#issuecomment-1613603590
+  doCheck = with stdenv; !(hostPlatform.isi686 || isDarwin && isx86_64 || isBigEndian);
 
   meta = with lib; {
     homepage = "https://github.com/libjxl/libjxl";

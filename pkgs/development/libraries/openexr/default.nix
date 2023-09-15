@@ -58,7 +58,8 @@ stdenv.mkDerivation rec {
 
   # https://github.com/AcademySoftwareFoundation/openexr/issues/1400
   # https://github.com/AcademySoftwareFoundation/openexr/issues/1281
-  doCheck = !stdenv.isAarch32 && !stdenv.isi686;
+  # https://github.com/AcademySoftwareFoundation/openexr/issues/1175, affects other big-endian arches too
+  doCheck = !stdenv.isAarch32 && !stdenv.isi686 && !stdenv.isBigEndian;
 
   meta = with lib; {
     description = "A high dynamic-range (HDR) image file format";

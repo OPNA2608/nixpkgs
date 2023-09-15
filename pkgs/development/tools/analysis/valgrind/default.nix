@@ -17,7 +17,7 @@ stdenv.mkDerivation rec {
     # Fix build on ELFv2 powerpc64
     # https://bugs.kde.org/show_bug.cgi?id=398883
     (fetchurl {
-      url = "https://github.com/void-linux/void-packages/raw/3e16b4606235885463fc9ab45b4c120f1a51aa28/srcpkgs/valgrind/patches/elfv2-ppc64-be.patch";
+      url = "https://github.com/void-linux/void-packages/raw/91448b35456d6dec246e5af1354d0d3c94caf123/srcpkgs/valgrind/patches/elfv2-ppc64-be.patch";
       sha256 = "NV/F+5aqFZz7+OF5oN5MUTpThv4H5PEY9sBgnnWohQY=";
     })
     # Fix checks on Musl.
@@ -87,7 +87,8 @@ stdenv.mkDerivation rec {
     lib.optional stdenv.hostPlatform.isx86_64 "--enable-only64bit"
     ++ lib.optional stdenv.hostPlatform.isDarwin "--with-xcodedir=${xnu}/include";
 
-  doCheck = true;
+  # Tests not patched to handle non-ELFv1 ppc64
+  doCheck = with stdenv.hostPlatform; !(isPower64 && isBigEndian && isAbiElfv2);
 
   postInstall = ''
     for i in $out/libexec/valgrind/*.supp; do

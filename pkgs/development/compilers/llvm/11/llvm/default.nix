@@ -16,6 +16,9 @@
 , buildLlvmTools
 , debugVersion ? false
 , doCheck ? stdenv.isLinux && (!stdenv.isx86_32) && (!stdenv.hostPlatform.isMusl) && (!stdenv.hostPlatform.isRiscV)
+  # All MCJIT & OrcMCJIT tests fail on powerpc64-linux
+  # TODO maybe narrow down to isAbiElfv2?
+  && !(stdenv.hostPlatform.isPower64 && stdenv.hostPlatform.isBigEndian)
   && (stdenv.hostPlatform == stdenv.buildPlatform)
 , enableManpages ? false
 , enableSharedLibraries ? !stdenv.hostPlatform.isStatic

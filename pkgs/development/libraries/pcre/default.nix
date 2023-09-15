@@ -1,4 +1,4 @@
-{ lib, stdenv, fetchurl
+{ lib, stdenv, fetchurl, fetchpatch
 , pcre, windows ? null
 , variant ? null
 }:
@@ -25,8 +25,16 @@ stdenv.mkDerivation rec {
   ]
     ++ lib.optional (variant != null) "--enable-${variant}";
 
-  # https://bugs.exim.org/show_bug.cgi?id=2173
-  patches = [ ./stacksize-detection.patch ];
+  patches = [
+    # https://bugs.exim.org/show_bug.cgi?id=2173
+    ./stacksize-detection.patch
+
+    # Fix cache flushing on PowerPC
+    (fetchpatch {
+      url = "https://github.com/void-linux/void-packages/raw/8e1eceec431ab3d3d6e469ad0680ce74e46f8be3/srcpkgs/pcre/patches/ppc-icache-flush.patch";
+      hash = "sha256-pttmKwihLzKrAV6O4qVLp2pu4NwNJEFS/9Id8/b3nAU=";
+    })
+  ];
 
   preCheck = ''
     patchShebangs RunGrepTest
