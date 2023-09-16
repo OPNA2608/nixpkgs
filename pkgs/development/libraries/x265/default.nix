@@ -89,6 +89,11 @@ stdenv.mkDerivation rec {
     (mkFlag ppaSupport "ENABLE_PPA")
     (mkFlag vtuneSupport "ENABLE_VTUNE")
     (mkFlag werrorSupport "WARNINGS_AS_ERRORS")
+  ] ++ lib.optionals stdenv.hostPlatform.isPower [
+    # ppc64le was introduced with POWER8, all other POWER platforms can target older families
+    (mkFlag (with stdenv.hostPlatform; isPower64 && isLittleEndian) "CPU_POWER8")
+    # Similar to POWER8, not all POWER platforms support AltiVec + VSX (POWER7+)
+    (mkFlag (with stdenv.hostPlatform; isPower64 && isLittleEndian) "ENABLE_ALTIVEC")
   ];
 
   cmakeStaticLibFlags = [
@@ -96,8 +101,6 @@ stdenv.mkDerivation rec {
     "-DENABLE_CLI=OFF"
     "-DENABLE_SHARED=OFF"
     "-DEXPORT_C_API=OFF"
-  ] ++ lib.optionals stdenv.hostPlatform.isPower [
-    "-DENABLE_ALTIVEC=OFF" # https://bitbucket.org/multicoreware/x265_git/issues/320/fail-to-build-on-power8-le
   ];
 
   preConfigure = lib.optionalString multibitdepthSupport ''
