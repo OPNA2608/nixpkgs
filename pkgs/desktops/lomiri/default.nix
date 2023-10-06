@@ -18,6 +18,7 @@ let
     gmenuharness = callPackage ./development/gmenuharness { };
     libusermetrics = callPackage ./development/libusermetrics { };
     lomiri-api = callPackage ./development/lomiri-api { };
+    lomiri-app-launch = callPackage ./development/lomiri-app-launch { };
 
     #### QML / QML-related
     lomiri-ui-toolkit = callPackage ./qml/lomiri-ui-toolkit { };
