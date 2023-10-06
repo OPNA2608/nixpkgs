@@ -32,6 +32,7 @@ let
     biometryd = callPackage ./services/biometryd { };
     hfd-service = callPackage ./services/hfd-service { };
     lomiri-download-manager = callPackage ./services/lomiri-download-manager { };
+    lomiri-url-dispatcher = callPackage ./services/lomiri-url-dispatcher { };
   };
 in
   lib.makeScope libsForQt5.newScope packages
