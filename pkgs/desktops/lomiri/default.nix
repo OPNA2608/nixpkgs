@@ -22,6 +22,7 @@ let
     libusermetrics = callPackage ./development/libusermetrics { };
     lomiri-api = callPackage ./development/lomiri-api { };
     lomiri-app-launch = callPackage ./development/lomiri-app-launch { };
+    qtmir = callPackage ./development/qtmir { };
 
     #### QML / QML-related
     lomiri-settings-components = callPackage ./qml/lomiri-settings-components { };
