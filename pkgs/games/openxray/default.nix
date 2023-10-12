@@ -17,14 +17,14 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "openxray";
-  version = "unstable-2023-07-20";
+  version = "unstable-2023-09-25";
 
   src = fetchFromGitHub {
     owner = "OpenXRay";
     repo = "xray-16";
-    rev = "80fa92baa15ffc3ac712b54ea899a9cf90877986";
+    rev = "c8cb6d38a0230733076099c18f4dc179ed5df4c8";
     fetchSubmodules = true;
-    hash = "sha256-nPj5zrEkO/R8y9Vh1hSb9XnB3lJsSfYqhgVPr/qNtmE=";
+    hash = "sha256-TcvZuMEoy5AsEqKSJsrtCfy/evuxMeA7veaw5OrOcf8=";
   };
 
   strictDeps = true;
