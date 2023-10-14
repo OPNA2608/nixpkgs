@@ -27,6 +27,7 @@ let
     u1db-qt = callPackage ./development/u1db-qt { };
 
     #### QML / QML-related
+    lomiri-action-api = callPackage ./qml/lomiri-action-api { };
     lomiri-settings-components = callPackage ./qml/lomiri-settings-components { };
     lomiri-ui-extras = callPackage ./qml/lomiri-ui-extras { };
     lomiri-ui-toolkit = callPackage ./qml/lomiri-ui-toolkit { };

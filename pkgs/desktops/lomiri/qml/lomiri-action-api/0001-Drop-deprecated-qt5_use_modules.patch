@@ -1,0 +1,79 @@
+diff '--color=auto' -ru a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/CMakeLists.txt	2023-06-02 12:12:37.679307502 +0200
+@@ -69,7 +69,10 @@
+ # Static C++ checks
+ add_custom_target(cppcheck COMMAND cppcheck --enable=all -q --error-exitcode=2
+                                        ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/tests)
++find_package(Qt5Core REQUIRED)
+ find_package(Qt5Quick REQUIRED)
++find_package(Qt5Widgets REQUIRED)
++find_package(Qt5Qml REQUIRED)
+ 
+ include_directories(include)
+ add_subdirectory(src)
+diff '--color=auto' -ru a/examples/action-context/CMakeLists.txt b/examples/action-context/CMakeLists.txt
+--- a/examples/action-context/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/examples/action-context/CMakeLists.txt	2023-06-02 12:07:02.515403569 +0200
+@@ -4,5 +4,5 @@
+ 
+ add_executable(action-context ${EXAMPLE_SRCS})
+ target_link_libraries(action-context lomiri-action-qt)
+-qt5_use_modules(action-context Core Widgets)
++target_link_libraries(action-context Qt5::Core Qt5::Widgets)
+ 
+diff '--color=auto' -ru a/examples/mail-app/CMakeLists.txt b/examples/mail-app/CMakeLists.txt
+--- a/examples/mail-app/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/examples/mail-app/CMakeLists.txt	2023-06-02 12:07:02.519403495 +0200
+@@ -4,4 +4,4 @@
+ 
+ add_executable(mail-app ${EXAMPLE_SRCS})
+ target_link_libraries(mail-app lomiri-action-qt)
+-qt5_use_modules(mail-app Core Widgets)
++target_link_libraries(mail-app Qt5::Core Qt5::Widgets)
+diff '--color=auto' -ru a/examples/preview-action/CMakeLists.txt b/examples/preview-action/CMakeLists.txt
+--- a/examples/preview-action/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/examples/preview-action/CMakeLists.txt	2023-06-02 12:07:02.519403495 +0200
+@@ -4,5 +4,5 @@
+ 
+ add_executable(preview-action ${EXAMPLE_SRCS})
+ target_link_libraries(preview-action lomiri-action-qt)
+-qt5_use_modules(preview-action Core Widgets)
++target_link_libraries(preview-action Qt5::Core Qt5::Widgets)
+ 
+diff '--color=auto' -ru a/qml/Lomiri/Action/CMakeLists.txt b/qml/Lomiri/Action/CMakeLists.txt
+--- a/qml/Lomiri/Action/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/qml/Lomiri/Action/CMakeLists.txt	2023-06-02 12:07:02.519403495 +0200
+@@ -16,7 +16,7 @@
+ )
+ target_link_libraries(lomiri-action-qml lomiri-action-qt)
+ 
+-qt5_use_modules(lomiri-action-qml Qml)
++target_link_libraries(lomiri-action-qml Qt5::Qml)
+ 
+ get_target_property(QMAKE_EXECUTABLE Qt5::qmake LOCATION)
+ exec_program(${QMAKE_EXECUTABLE} ARGS "-query QT_INSTALL_QML" OUTPUT_VARIABLE QT_IMPORTS_DIR)
+diff '--color=auto' -ru a/src/CMakeLists.txt b/src/CMakeLists.txt
+--- a/src/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/src/CMakeLists.txt	2023-06-02 12:07:02.523403421 +0200
+@@ -40,7 +40,7 @@
+ )
+ target_link_libraries (lomiri-action-qt ${HUD_LIBRARIES})
+ 
+-qt5_use_modules(lomiri-action-qt Core)
++target_link_libraries(lomiri-action-qt Qt5::Core)
+ 
+ install(
+   TARGETS lomiri-action-qt
+diff '--color=auto' -ru a/test/cpp/CMakeLists.txt b/test/cpp/CMakeLists.txt
+--- a/test/cpp/CMakeLists.txt	1970-01-01 01:00:01.000000000 +0100
++++ b/test/cpp/CMakeLists.txt	2023-06-02 12:13:03.611101928 +0200
+@@ -17,6 +17,7 @@
+ 
+ add_executable(cpptest ${TEST_SRCS})
+ target_link_libraries(cpptest lomiri-action-qt ${GIO_LIBRARIES})
+-qt5_use_modules(cpptest Core Test)
++find_package(Qt5Test REQUIRED)
++target_link_libraries(cpptest Qt5::Core Qt5::Test)
+ 
+ add_test(NAME cpp COMMAND ${testCommand})
