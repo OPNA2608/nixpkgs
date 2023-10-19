@@ -4,11 +4,11 @@
 , gitUpdater
 , testers
 , cmake
-, cmake-extras
 , glib
 , gobject-introspection
 , gtest
 , intltool
+, lomiri
 , pkg-config
 , systemd
 , vala
@@ -42,8 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [
-    cmake-extras
+    lomiri.cmake-extras
     glib
+    lomiri.lomiri-url-dispatcher
     systemd
   ];
 
@@ -53,7 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   cmakeFlags = [
     "-DENABLE_TESTS=${lib.boolToString finalAttrs.doCheck}"
-    "-DENABLE_LOMIRI_FEATURES=OFF"
+    "-DENABLE_LOMIRI_FEATURES=ON"
     "-DGSETTINGS_LOCALINSTALL=ON"
     "-DGSETTINGS_COMPILE=ON"
   ];
