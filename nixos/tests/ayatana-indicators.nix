@@ -28,6 +28,7 @@ in {
       enable = true;
       packages = with pkgs; [
         ayatana-indicator-messages
+        ayatana-indicator-power
       ];
     };
 
