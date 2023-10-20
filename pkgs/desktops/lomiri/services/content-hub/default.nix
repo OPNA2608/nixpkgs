@@ -6,10 +6,8 @@
 , cmake
 , cmake-extras
 , dbus-test-runner
-, doxygen
 , gettext
 , glib
-, graphviz
 , gsettings-qt
 , gtest
 , libapparmor
@@ -30,19 +28,18 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "content-hub";
-  version = "1.0.2";
+  version = "1.1.0";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/content-hub";
     rev = finalAttrs.version;
-    hash = "sha256-OGHZCTtvBmq/oBHcyrw+e6yLSHwi/aM04ALcaZXXaNs=";
+    hash = "sha256-IntEpgPCBmOL6K6TU+UhgGb6OHVA9pYurK5VN3woIIw=";
   };
 
   outputs = [
     "out"
     "dev"
-    "doc"
     "examples"
   ];
 
@@ -67,11 +64,14 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/com/lomiri/content/service/registry-updater.cpp import/Lomiri/Content/contenthubplugin.cpp \
       --replace '/usr' '/run/current-system/sw'
 
-    # Bad concatenation, let output fixup handle pkg-config patching
+    # Bad concatenation
     # Install headers correctly
     substituteInPlace CMakeLists.txt \
       --replace 'libdir ''${prefix}/''${CMAKE_INSTALL_LIBDIR}' 'libdir ''${prefix}/lib' \
       --replace 'install(DIRECTORY include DESTINATION ''${CMAKE_INSTALL_PREFIX})' 'install(DIRECTORY include/ DESTINATION ''${CMAKE_INSTALL_INCLUDEDIR})'
+
+    # debugging
+    substituteInPlace src/com/lomiri/content/debug.cpp --replace 'appLoggingLevel = 1' 'appLoggingLevel = 2'
   '';
 
   strictDeps = true;
@@ -82,8 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     qtdeclarative # qmlplugindump
     wrapGAppsHook
-    doxygen
-    graphviz
   ];
 
   buildInputs = [
@@ -117,7 +115,7 @@ stdenv.mkDerivation (finalAttrs: {
   cmakeFlags = [
     "-DGSETTINGS_COMPILE=ON"
     "-DGSETTINGS_LOCALINSTALL=ON"
-    "-DENABLE_DOC=ON"
+    "-DENABLE_DOC=OFF" # needs Qt5 qdoc: https://github.com/NixOS/nixpkgs/pull/245379
     "-DENABLE_TESTS=${lib.boolToString finalAttrs.doCheck}"
     "-DENABLE_UBUNTU_COMPAT=ON" # in case something still depends on it
   ];
