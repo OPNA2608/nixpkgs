@@ -38,13 +38,13 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "telephony-service";
-  version = "0.5.1";
+  version = "0.5.2";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/telephony-service";
     rev = finalAttrs.version;
-    hash = "sha256-2hFB+0ySoyCRS0a5hXuiGc1HksLFpbJi65aBQ0ccYpA=";
+    hash = "sha256-9KxM8UWTIBpMMPosar2ZV9W35WmCLIWXD1ulWtqCKxM=";
   };
 
   postPatch = ''
