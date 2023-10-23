@@ -1,4 +1,4 @@
-import ./make-test-python.nix ({ pkgs, lib, ... }: let
+import ./make-test-python.nix ({ pkgs, lib, withLomiriIndicators ? false, ... }: let
   user = "alice";
 in {
   name = "ayatana-indicators";
@@ -30,16 +30,23 @@ in {
         ayatana-indicator-messages
         ayatana-indicator-power
         ayatana-indicator-session
-      ];
+      ] ++ lib.optionals withLomiriIndicators (with pkgs.lomiri; [
+        lomiri-indicator-network
+      ]);
     };
 
     # Services needed by some indicators
     services.accounts-daemon.enable = true; # messages
+  } // lib.optionalAttrs withLomiriIndicators {
+    networking.networkmanager.enable = true; # lomiri-network
+    # TODO potentially urfkill for lomiri-network
   };
 
   # TODO session indicator starts up in a semi-broken state, but works fine after a restart. maybe being started before graphical session is truly up & ready?
   testScript = { nodes, ... }: let
-    runCommandPerIndicatorService = command: lib.strings.concatMapStringsSep "\n" command nodes.machine.systemd.user.targets."ayatana-indicators".wants;
+    runCommandOverServiceList = list: command: lib.strings.concatMapStringsSep "\n" command list;
+    runCommandOverAyatanaIndicators = runCommandOverServiceList (builtins.filter (service: !(lib.strings.hasPrefix "lomiri" service)) nodes.machine.systemd.user.targets."ayatana-indicators".wants);
+    runCommandOverAllIndicators = runCommandOverServiceList nodes.machine.systemd.user.targets."ayatana-indicators".wants;
   in ''
     start_all()
     machine.wait_for_x()
@@ -52,7 +59,7 @@ in {
     machine.sleep(10)
 
     # Now check if all indicators were brought up successfully, and kill them for later
-  '' + (runCommandPerIndicatorService (service: let serviceExec = builtins.replaceStrings [ "." ] [ "-" ] service; in ''
+  '' + (runCommandOverAyatanaIndicators (service: let serviceExec = builtins.replaceStrings [ "." ] [ "-" ] service; in ''
     machine.succeed("pgrep -f ${serviceExec}")
     machine.succeed("pkill -f ${serviceExec}")
   '')) + ''
@@ -67,7 +74,7 @@ in {
     machine.sleep(10)
 
     # Now check if all indicator services were brought up successfully
-  '' + runCommandPerIndicatorService (service: ''
+  '' + runCommandOverAllIndicators (service: ''
     machine.wait_for_unit("${service}", "${user}")
   '');
 })

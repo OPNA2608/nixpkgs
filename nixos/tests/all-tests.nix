@@ -136,6 +136,7 @@ in {
   avahi = handleTest ./avahi.nix {};
   avahi-with-resolved = handleTest ./avahi.nix { networkd = true; };
   ayatana-indicators = handleTest ./ayatana-indicators.nix {};
+  ayatana-indicators-with-lomiri = handleTest ./ayatana-indicators.nix { withLomiriIndicators = true; };
   babeld = handleTest ./babeld.nix {};
   bazarr = handleTest ./bazarr.nix {};
   bcachefs = handleTestOn ["x86_64-linux" "aarch64-linux"] ./bcachefs.nix {};
