@@ -2,6 +2,7 @@
 , lib
 , fetchFromGitLab
 , gitUpdater
+, nixosTests
 , ayatana-indicator-messages
 , cmake
 , dbus
@@ -173,7 +174,13 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  passthru.updateScript = gitUpdater { };
+  passthru = {
+    ayatana-indicators = [
+      "telephony-service-indicator"
+    ];
+    tests.vm = nixosTests.ayatana-indicators-with-lomiri;
+    updateScript = gitUpdater { };
+  };
 
   meta = with lib; {
     description = "Backend dispatcher service for various mobile phone related operations";

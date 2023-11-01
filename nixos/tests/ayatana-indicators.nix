@@ -32,20 +32,42 @@ in {
         ayatana-indicator-session
       ] ++ lib.optionals withLomiriIndicators (with pkgs.lomiri; [
         lomiri-indicator-network
+        telephony-service
       ]);
     };
 
-    # Services needed by some indicators
+    # Setup needed by some indicators
+
     services.accounts-daemon.enable = true; # messages
-  } // lib.optionalAttrs withLomiriIndicators {
+
     networking.networkmanager.enable = true; # lomiri-network
     # TODO potentially urfkill for lomiri-network
+
+    services.dbus.packages = lib.optionals withLomiriIndicators (with pkgs.lomiri; [
+      libusermetrics
+    ]);
+
+    environment.systemPackages = lib.optionals withLomiriIndicators (with pkgs.lomiri; [
+      lomiri-schemas
+    ]);
+
+    services.telepathy.enable = lib.mkDefault withLomiriIndicators;
+
+    users.users.usermetrics = lib.optionalAttrs withLomiriIndicators {
+      group = "usermetrics";
+      home = "/var/lib/usermetrics";
+      createHome = true;
+      isSystemUser = true;
+    };
+
+    users.groups.usermetrics = lib.optionalAttrs withLomiriIndicators { };
   };
 
   # TODO session indicator starts up in a semi-broken state, but works fine after a restart. maybe being started before graphical session is truly up & ready?
   testScript = { nodes, ... }: let
+    runCommandPerIndicatorService = command: lib.strings.concatMapStringsSep "\n" command nodes.machine.systemd.user.targets."ayatana-indicators".wants;
     runCommandOverServiceList = list: command: lib.strings.concatMapStringsSep "\n" command list;
-    runCommandOverAyatanaIndicators = runCommandOverServiceList (builtins.filter (service: !(lib.strings.hasPrefix "lomiri" service)) nodes.machine.systemd.user.targets."ayatana-indicators".wants);
+    runCommandOverAyatanaIndicators = runCommandOverServiceList (builtins.filter (service: !(lib.strings.hasPrefix "lomiri" service || lib.strings.hasPrefix "telephony-service" service)) nodes.machine.systemd.user.targets."ayatana-indicators".wants);
     runCommandOverAllIndicators = runCommandOverServiceList nodes.machine.systemd.user.targets."ayatana-indicators".wants;
   in ''
     start_all()
