@@ -481,6 +481,7 @@ in {
   login = handleTest ./login.nix {};
   logrotate = handleTest ./logrotate.nix {};
   loki = handleTest ./loki.nix {};
+  lomiri = handleTest ./lomiri.nix {};
   luks = handleTest ./luks.nix {};
   lvm2 = handleTest ./lvm2 {};
   lxd = pkgs.recurseIntoAttrs (handleTest ./lxd { inherit handleTestOn; });
