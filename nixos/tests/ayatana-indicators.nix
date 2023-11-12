@@ -1,7 +1,7 @@
 import ./make-test-python.nix ({ pkgs, lib, withLomiriIndicators ? false, ... }: let
   user = "alice";
 in {
-  name = "ayatana-indicators";
+  name = "ayatana-indicators" + lib.optionalString withLomiriIndicators "-with-lomiri";
 
   meta = {
     maintainers = with lib.maintainers; [ OPNA2608 ];
