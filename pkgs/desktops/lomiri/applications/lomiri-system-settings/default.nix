@@ -8,6 +8,7 @@
 , fetchFromGitLab
 , fetchpatch
 , accountsservice
+, ayatana-indicator-datetime
 , cmake
 , cmake-extras
 , content-hub
@@ -131,6 +132,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [
     accountsservice
+    ayatana-indicator-datetime
     cmake-extras
     content-hub
     geonames
