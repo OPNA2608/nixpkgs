@@ -1,12 +1,8 @@
 # TODO
-# - tests
 # - meta
 # - some of the plugin detection needs to be rewritten to check /run/current-system/sw
 #   i.e. whether battery entry should be displayed:
 #   "visible-if-file-exists": "/etc/dbus-1/system.d/com.lomiri.Repowerd.conf"
-# - Debian patches:
-#   - make compatible with regular accountsservice?
-#   - patch to use regular maliit-keyboard instead?
 { stdenv
 , lib
 , fetchFromGitLab
@@ -32,12 +28,12 @@
 , lomiri-schemas
 , lomiri-settings-components
 , lomiri-ui-toolkit
+, maliit-keyboard
 , pkg-config
 , python3
 , qmenumodel
 , qtbase
 , qtdeclarative
-, qtgraphicaleffects
 , qtmultimedia
 , ubports-click
 , upower
@@ -60,6 +56,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Introduce custom envvars checks to find plugins and their i18n
     #./Find-plugins-and-i18n-via-envvars.patch
+
+    # TODO
+    ./0001-plugins-language-Fix-linking.patch
 
     # Fix tests on newer python-dbusmock
     # https://gitlab.com/ubports/development/core/lomiri-system-settings/-/merge_requests/354
@@ -98,6 +97,16 @@ stdenv.mkDerivation (finalAttrs: {
     done
     cat src/CMakeLists.txt
     cat src/main.cpp
+
+    # Not implemented
+    sed -i plugins/gestures/gestures_dbushelper.h \
+      -e '/handleDT2WEnabledChanged/d'
+
+    # Port from lomiri-keyboard to maliit-keyboard
+    substituteInPlace plugins/language/CMakeLists.txt \
+      --replace 'LOMIRI_KEYBOARD_PLUGIN_PATH=\\"''${CMAKE_INSTALL_PREFIX}/lib/lomiri-keyboard/plugins\\"' 'LOMIRI_KEYBOARD_PLUGIN_PATH=\\"${lib.getLib maliit-keyboard}/lib/maliit/keyboard2/languages\"'
+    substituteInPlace plugins/language/{PageComponent,SpellChecking,ThemeValues}.qml plugins/language/onscreenkeyboard-plugin.cpp plugins/sound/PageComponent.qml \
+      --replace 'com.lomiri.keyboard.maliit' 'org.maliit.keyboard.maliit'
 
     # Decide which entries should be visible based on the current system
     substituteInPlace plugins/*/*.settings \
@@ -138,6 +147,7 @@ stdenv.mkDerivation (finalAttrs: {
     lomiri-schemas
     lomiri-settings-components
     lomiri-ui-toolkit
+    maliit-keyboard
     qmenumodel
     qtbase
     qtdeclarative
@@ -154,10 +164,6 @@ stdenv.mkDerivation (finalAttrs: {
     xvfb-run
   ];
 
-  checkInputs = [
-    qtgraphicaleffects
-  ];
-
   cmakeFlags = [
     "-DENABLE_TESTS=${lib.boolToString finalAttrs.doCheck}"
   ] ++ lib.optionals finalAttrs.doCheck [
@@ -165,33 +171,27 @@ stdenv.mkDerivation (finalAttrs: {
     "-DMODERN_PYTHON_DBUSMOCK=ON"
   ];
 
+  # The linking for this normally ignores missing symbols, which is inconvenient
+  env.NIX_LDFLAGS = "--unresolved-symbols=report-all";
+
   postInstall = ''
     glib-compile-schemas $out/share/glib-2.0/schemas
   '';
 
-  # TODO Failing with 2 segfaults
+  # Hits OpenGL context issue inside LUITK
   doCheck = false;
 
   enableParallelChecking = false;
 
-  checkPhase = ''
-    runHook preCheck
-
-    export QT_PLUGIN_PATH=${lib.getBin qtbase}/lib/qt-${qtbase.version}/plugins
+  preCheck = ''
+    export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
     export QML2_IMPORT_PATH=${lib.makeSearchPathOutput "bin" qtbase.qtQmlPrefix ([ qtdeclarative lomiri-ui-toolkit lomiri-settings-components ] ++ lomiri-ui-toolkit.propagatedBuildInputs)}
-
-    dbus-run-session --config-file=${dbus}/share/dbus-1/session.conf -- \
-      make test
-
-    runHook postCheck
   '';
 
   dontWrapGApps = true;
 
   preFixup = ''
     qtWrapperArgs+=(
-      --prefix QML2_IMPORT_PATH : "$out/share/lomiri-system-settings/qml-plugins"
-      --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ accountsservice ]}
       "''${gappsWrapperArgs[@]}"
     )
   '';

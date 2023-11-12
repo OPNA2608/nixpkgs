@@ -1,0 +1,36 @@
+From f126112ca78463f8554bfbef1795c13022085518 Mon Sep 17 00:00:00 2001
+From: OPNA2608 <christoph.neidahl@gmail.com>
+Date: Sun, 12 Nov 2023 09:50:55 +0100
+Subject: [PATCH] plugins/language: Fix linking
+
+Bind to the real accountsmanager / glib structs instead of custom ones, resolves issues with loading the compiled plugin
+---
+ plugins/language/language-plugin.h | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/plugins/language/language-plugin.h b/plugins/language/language-plugin.h
+index 4a972c77..3ba58376 100644
+--- a/plugins/language/language-plugin.h
++++ b/plugins/language/language-plugin.h
+@@ -25,11 +25,13 @@
+ #include "subset-model.h"
+ #include "sessionservice.h"
+ 
+-typedef struct _ActUser ActUser;
+-typedef struct _ActUserManager ActUserManager;
+-typedef struct _GObject GObject;
+-typedef struct _GParamSpec GParamSpec;
+-typedef struct _GSettings GSettings;
++extern "C"
++{
++    #include <act/act-user.h>
++    #include <act/act-user-manager.h>
++    #include <glib-object.h>
++}
++
+ typedef void *gpointer;
+ typedef char gchar;
+ 
+-- 
+2.40.1
+
