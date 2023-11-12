@@ -3,6 +3,7 @@
 , fetchFromGitLab
 , fetchpatch
 , gitUpdater
+, ayatana-indicator-datetime
 , biometryd
 , boost
 , cmake
@@ -117,6 +118,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [
+    ayatana-indicator-datetime
     boost
     cmake-extras
     dbus-test-runner
