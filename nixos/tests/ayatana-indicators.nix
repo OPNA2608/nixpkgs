@@ -27,6 +27,7 @@ in {
     services.ayatana-indicators = {
       enable = true;
       packages = with pkgs; [
+        ayatana-indicator-datetime
         ayatana-indicator-messages
         ayatana-indicator-power
         ayatana-indicator-session
@@ -45,15 +46,18 @@ in {
 
     services.dbus.packages = lib.optionals withLomiriIndicators (with pkgs.lomiri; [
       libusermetrics
+      lomiri-url-dispatcher
     ]);
 
     environment.systemPackages = lib.optionals withLomiriIndicators (with pkgs.lomiri; [
       lomiri-schemas
+      lomiri-url-dispatcher
     ]);
 
     services.telepathy.enable = lib.mkDefault withLomiriIndicators;
 
-    users.users.usermetrics = lib.optionalAttrs withLomiriIndicators {
+    # Only needed for withLomiriIndicators, but can't get the module system to not assert on this when i use optionalAttrs
+    users.users.usermetrics = {
       group = "usermetrics";
       home = "/var/lib/usermetrics";
       createHome = true;
