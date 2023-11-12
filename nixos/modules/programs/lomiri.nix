@@ -9,11 +9,10 @@ in {
   };
 
   config = let
-    # TODO Move indicators in separate module, they're independent of Lomiri
+    # TODO slowly move these into the services.ayatana-indicators.packages setting
     indicator-services = (with pkgs; [
       ayatana-indicator-application
       ayatana-indicator-bluetooth
-      ayatana-indicator-datetime
       ayatana-indicator-display
       ayatana-indicator-keyboard
       ayatana-indicator-notifications
@@ -113,6 +112,7 @@ in {
     services.ayatana-indicators = {
       enable = true;
       packages = (with pkgs; [
+        ayatana-indicator-datetime
         ayatana-indicator-messages
         ayatana-indicator-power
         ayatana-indicator-session
