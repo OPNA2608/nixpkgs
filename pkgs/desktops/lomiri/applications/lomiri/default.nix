@@ -32,6 +32,7 @@
 , lomiri-schemas
 , lomiri-notifications
 , lomiri-thumbnailer
+, maliit-keyboard
 , mir
 , nixos-artwork
 , nixos-icons
@@ -86,6 +87,10 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace include/paths.h.in data/{indicators-client,lomiri,lomiri-greeter}.desktop.in.in \
       --replace '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@' '@CMAKE_INSTALL_FULL_BINDIR@'
 
+    # Lights plugin was replaced with Leds from Hfd
+    substituteInPlace qml/Panel/Indicators/IndicatorsLight.qml \
+      --replace  'Lights.Off' 'Leds.Off'
+
     # NixOS-ify
     install -Dm644 ${./lomiri-launcher-logo.svg} $out/share/icons/hicolor/scalable/apps/lomiri-launcher-logo.svg
     substituteInPlace plugins/Utils/constants.cpp \
@@ -133,6 +138,7 @@ stdenv.mkDerivation (finalAttrs: {
     lomiri-schemas
     lomiri-system-settings
     lomiri-ui-toolkit
+    maliit-keyboard
     mir
     pam
     properties-cpp
