@@ -15,6 +15,7 @@
 , cmake-extras
 , content-hub
 , dbus
+, deviceinfo
 , geonames
 , gettext
 , glib
@@ -47,13 +48,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "lomiri-system-settings";
-  version = "1.0.1";
+  version = "1.0.2";
 
   src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/core/lomiri-system-settings";
     rev = finalAttrs.version;
-    hash = "sha256-7XJ2mvqcI+tBEpT6tAVJrcEzyDhiY1ttB1X1e24kmd8=";
+    hash = "sha256-gi6ZujIs0AEDLsqcTNlRNSS8SyqEU6q0+xaDf55XwuM=";
   };
 
   patches = [
@@ -65,7 +66,9 @@ stdenv.mkDerivation (finalAttrs: {
     # https://gitlab.com/ubports/development/core/lomiri-system-settings/-/merge_requests/354
     (fetchpatch {
       url = "https://gitlab.com/ubports/development/core/lomiri-system-settings/-/commit/b6c7a807daa85ab8a28b80564a3e29d50946145a.patch";
-      hash = "sha256-CrtisskULD7zFMJMe0Ebusgxso6WPAN3hk8egxElnK8=";
+      # merge conflict, patched in manually in postPatch
+      excludes = [ "CMakeLists.txt" ];
+      hash = "sha256-QCgkVos9Q9/8jd25rqzdEKdnBw0Re47X7B9nLH8QOQU=";
     })
     (fetchpatch {
       url = "https://gitlab.com/ubports/development/core/lomiri-system-settings/-/commit/8698bf41f21456a866baa52849a7fd200470e1c9.patch";
@@ -116,6 +119,10 @@ stdenv.mkDerivation (finalAttrs: {
     # Icon is named "unity-battery-80" in (current?) Suru theme
     substituteInPlace plugins/battery/battery.settings \
       --replace 'battery-080' 'unity-battery-080'
+
+    # Add option for modern python-dbusmock
+    sed -i CMakeLists.txt \
+      -e '/option(ENABLE_TESTS/a option(MODERN_PYTHON_DBUSMOCK "Adapt tst-bluetooth-device to work with python-dbusmock 0.26+" OFF)'
   '';
 
   strictDeps = true;
@@ -135,6 +142,7 @@ stdenv.mkDerivation (finalAttrs: {
     ayatana-indicator-datetime
     cmake-extras
     content-hub
+    deviceinfo
     geonames
     glib
     gnome-desktop
@@ -168,6 +176,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   cmakeFlags = [
     "-DENABLE_TESTS=${lib.boolToString finalAttrs.doCheck}"
+    "-DENABLE_DEVICENFO=ON"
   ] ++ lib.optionals finalAttrs.doCheck [
     # https://gitlab.com/ubports/development/core/lomiri-system-settings/-/issues/327
     "-DMODERN_PYTHON_DBUSMOCK=ON"
