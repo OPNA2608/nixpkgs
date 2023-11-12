@@ -1,12 +1,14 @@
 # TODO
-# - meta
-# - some of the plugin detection needs to be rewritten to check /run/current-system/sw
+# - some of the plugin detection needs to be patched to check /run/current-system/sw
 #   i.e. whether battery entry should be displayed:
 #   "visible-if-file-exists": "/etc/dbus-1/system.d/com.lomiri.Repowerd.conf"
+#   verify that everything is handled & makes sense
 { stdenv
 , lib
 , fetchFromGitLab
 , fetchpatch
+, gitUpdater
+, testers
 , accountsservice
 , ayatana-indicator-datetime
 , cmake
@@ -55,11 +57,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [
-    # Introduce custom envvars checks to find plugins and their i18n
-    #./Find-plugins-and-i18n-via-envvars.patch
-
-    # TODO
-    ./0001-plugins-language-Fix-linking.patch
+    # Fix broken linking (linking against C-compiled accountsservice from C++ requires more care about name mangling differences)
+    # Check if upstream wants this? Not sure how this currently works for them.
+    ./0001-lomiri-system-settings-plugins-language-Fix-linking.patch
 
     # Fix tests on newer python-dbusmock
     # https://gitlab.com/ubports/development/core/lomiri-system-settings/-/merge_requests/354
@@ -71,6 +71,7 @@ stdenv.mkDerivation (finalAttrs: {
       url = "https://gitlab.com/ubports/development/core/lomiri-system-settings/-/commit/8698bf41f21456a866baa52849a7fd200470e1c9.patch";
       hash = "sha256-cEldfwQl2Uuk80Myaf9w4aOmHGDphK20I7GrhuotNrU=";
     })
+
     # Make it work with regular accountsservice
     # https://gitlab.com/ubports/development/core/lomiri-system-settings/-/issues/341
     (fetchpatch {
@@ -81,6 +82,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   postPatch = ''
+    # LIBDIR is not expected to be absolute, gets concated with other variables
     substituteInPlace CMakeLists.txt \
       --replace "\''${CMAKE_INSTALL_LIBDIR}/qt5/qml" "\''${CMAKE_INSTALL_PREFIX}/${qtbase.qtQmlPrefix}" \
       --replace 'LIBDIR ''${CMAKE_INSTALL_LIBDIR}' 'LIBDIR lib'
@@ -96,10 +98,8 @@ stdenv.mkDerivation (finalAttrs: {
       sed -i src/main.cpp \
         -e "/mountPoint + ''${definition}/a view.engine()->addImportPath(mountPoint + ''${definition}_GLOBAL);"
     done
-    cat src/CMakeLists.txt
-    cat src/main.cpp
 
-    # Not implemented
+    # Method is declared but not implemented, causes error at runtime
     sed -i plugins/gestures/gestures_dbushelper.h \
       -e '/handleDT2WEnabledChanged/d'
 
@@ -173,7 +173,8 @@ stdenv.mkDerivation (finalAttrs: {
     "-DMODERN_PYTHON_DBUSMOCK=ON"
   ];
 
-  # The linking for this normally ignores missing symbols, which is inconvenient
+  # The linking for this normally ignores missing symbols, which is inconvenient for figuring out
+  # when the linker is ignoring missing symbols. Force it to report them at linktime instead of runtime.
   env.NIX_LDFLAGS = "--unresolved-symbols=report-all";
 
   postInstall = ''
@@ -197,4 +198,21 @@ stdenv.mkDerivation (finalAttrs: {
       "''${gappsWrapperArgs[@]}"
     )
   '';
+
+  passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+    updateScript = gitUpdater { };
+  };
+
+  meta = with lib; {
+    description = "System Settings application for Lomiri";
+    homepage = "https://gitlab.com/ubports/development/core/lomiri-system-settings";
+    license = licenses.gpl3Only;
+    mainProgram = "lomiri-system-settings";
+    maintainers = teams.lomiri.members;
+    platforms = platforms.linux;
+    pkgConfigModules = [
+      "LomiriSystemSettings"
+    ];
+  };
 })
