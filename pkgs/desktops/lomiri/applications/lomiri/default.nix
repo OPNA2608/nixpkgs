@@ -103,6 +103,10 @@ stdenv.mkDerivation (finalAttrs: {
     # Exclude broken tests (Mir headers these relied on were removed in mir 2.9)
     sed -i tests/mocks/CMakeLists.txt \
       -e '/add_subdirectory(QtMir\/Application)/d'
+
+    # Mir 2.15.0 uses std::optional, C++17 feature
+    substituteInPlace CMakeLists.txt \
+      --replace 'CMAKE_CXX_STANDARD 14' 'CMAKE_CXX_STANDARD 17'
   '' + lib.optionalString finalAttrs.doCheck ''
     patchShebangs tests/whitespace/check_whitespace.py
   '';
