@@ -33,7 +33,6 @@ in {
         #sync-monitor
 
         # Data
-        ubuntu-themes
         vanilla-dmz # TODO is this used in Lomiri?
       ]) ++ (with pkgs.lomiri; [
         lomiri-session # Wrappers to properly launch the session
@@ -78,6 +77,7 @@ in {
 
         lomiri-sounds
         #lomiri-wallpapers
+        suru-icon-theme
       ]);
     };
 
