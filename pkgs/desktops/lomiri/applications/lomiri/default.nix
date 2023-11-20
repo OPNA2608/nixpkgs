@@ -3,6 +3,7 @@
 , fetchFromGitLab
 , fetchpatch
 , gitUpdater
+, nixosTests
 , ayatana-indicator-datetime
 , biometryd
 , boost
@@ -202,7 +203,10 @@ stdenv.mkDerivation (finalAttrs: {
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
-  passthru.updateScript = gitUpdater { };
+  passthru = {
+    tests.vm = nixosTests.lomiri;
+    updateScript = gitUpdater { };
+  };
 
   meta = with lib; {
     description = "Shell of the Lomiri Operating environment";
