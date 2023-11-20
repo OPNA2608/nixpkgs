@@ -72,6 +72,8 @@ stdenv.mkDerivation (finalAttrs: {
       url = "https://gitlab.com/ubports/development/core/lomiri/-/commit/af6bfc41d73984e11e9a1ce7d61cb96ef00d6715.patch";
       hash = "sha256-m8QeRYf67AyK0k9C5HdnjnRyR0sVXjvqTOPuxh0e1Dc=";
     })
+
+    ./0099-lomiri-Disable-Wizard.patch
   ];
 
   # TODO: improve NixOS-ification, fix lomiri-greeter-wrapper?
