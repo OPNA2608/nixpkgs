@@ -45,6 +45,11 @@ stdenv.mkDerivation {
   postPatch = ''
     substituteInPlace qmltermwidget.pro \
       --replace '$$[QT_INSTALL_QML]' '$$PREFIX/${qtbase.qtQmlPrefix}/'
+
+    # Fix crash for users when incorrectly attempting to clean up C++-owned ColorSchemeManager instance in QML
+    # https://gitlab.com/ubports/development/apps/lomiri-terminal-app/-/issues/104#note_1662252236
+    substituteInPlace src/qmltermwidget_plugin.cpp \
+      --replace 'return ColorSchemeManager::instance();' 'QObject* instance = ColorSchemeManager::instance(); QQmlEngine::setObjectOwnership(instance, QQmlEngine::CppOwnership); return instance;'
   '';
 
   dontWrapQtApps = true;
