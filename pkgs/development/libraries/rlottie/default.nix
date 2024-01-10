@@ -2,8 +2,7 @@
 , stdenv
 , fetchFromGitHub
 , fetchpatch
-, meson
-, ninja
+, cmake
 , pkg-config
 }:
 
@@ -26,7 +25,11 @@ stdenv.mkDerivation rec {
     })
   ];
 
-  nativeBuildInputs = [ meson ninja pkg-config ];
+  nativeBuildInputs = [ cmake pkg-config ];
+
+  cmakeFlags = [
+    (lib.cmakeFeature "LIB_INSTALL_DIR" "${placeholder "out"}/lib")
+  ];
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString (stdenv.isDarwin && stdenv.isAarch64) "-U__ARM_NEON__";
 
