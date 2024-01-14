@@ -13,7 +13,7 @@
 stdenv.mkDerivation rec {
   pname = "${passthru.prettyName}-unwrapped";
   # nixpkgs-update: no auto update
-  version = "unstable-2023-05-17";
+  version = "0-unstable-2023-05-17";
 
   src = fetchFromGitHub {
     owner = "open-watcom";
