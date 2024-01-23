@@ -142,6 +142,8 @@ in {
       "/share/content-hub/peers"
       # Registers which applications handle dispatched URLs
       "/share/lomiri-url-dispatcher/urls"
+      # Splash screens for desktop apps launched via lomiri-app-launch
+      "/share/lomiri-app-launch/splash"
       # Try to get maliit stuff working
       "/share/maliit/plugins"
       # Data
