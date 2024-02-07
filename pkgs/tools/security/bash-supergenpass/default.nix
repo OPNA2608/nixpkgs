@@ -8,7 +8,7 @@
 
 stdenv.mkDerivation {
   pname = "bash-supergenpass";
-  version = "unstable-2020-02-03";
+  version = "0-unstable-2020-02-03";
 
   nativeBuildInputs = [ makeWrapper ];
 
