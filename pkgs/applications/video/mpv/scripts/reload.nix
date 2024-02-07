@@ -6,7 +6,7 @@
 buildLua rec {
   pname = "mpv-reload";
 
-  version = "unstable-2023-12-19";
+  version = "0-unstable-2023-12-19";
   src = fetchFromGitHub {
     owner = "4e6";
     repo  = pname;
