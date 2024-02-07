@@ -19,7 +19,7 @@
 
 stdenv.mkDerivation {
   pname = "drawterm";
-  version = "unstable-2024-02-18";
+  version = "0-unstable-2024-02-18";
 
   src = fetchFrom9Front {
     owner = "plan9front";
