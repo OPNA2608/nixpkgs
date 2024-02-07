@@ -5,7 +5,7 @@
 
 stdenv.mkDerivation {
   pname = "hello-wayland";
-  version = "unstable-2023-10-26";
+  version = "0-unstable-2023-10-26";
 
   src = fetchFromGitHub {
     owner = "emersion";
