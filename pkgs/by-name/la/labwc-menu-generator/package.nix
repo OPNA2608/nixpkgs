@@ -9,7 +9,7 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "labwc-menu-generator";
-  version = "unstable-2023-10-31";
+  version = "0-unstable-2023-10-31";
 
   src = fetchFromGitHub {
     owner = "labwc";
