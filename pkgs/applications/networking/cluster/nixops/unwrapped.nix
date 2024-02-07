@@ -13,7 +13,7 @@
 
 buildPythonApplication rec {
   pname = "nixops";
-  version = "unstable-2023-12-17";
+  version = "1.7-unstable-2023-12-17";
   pyproject = true;
 
   src = fetchFromGitHub {
@@ -51,7 +51,9 @@ buildPythonApplication rec {
 
   passthru = {
     tests.nixops = nixosTests.nixops.unstable;
-    updateScript = unstableGitUpdater {};
+    updateScript = unstableGitUpdater {
+      tagPrefix = "v";
+    };
   };
 
   meta = with lib; {
