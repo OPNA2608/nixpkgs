@@ -20,7 +20,7 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "wio";
-  version = "unstable-2023-11-23";
+  version = "0.17.0-unstable-2023-11-23";
 
   src = fetchFromGitHub {
     owner = "Rubo3";
