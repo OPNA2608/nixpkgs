@@ -4,7 +4,7 @@
 
 stdenv.mkDerivation rec {
   pname = "transgui";
-  version = "unstable-2023-10-19";
+  version = "5.18.0-unstable-2023-10-20";
 
   src = fetchFromGitHub {
     owner = "transmission-remote-gui";
@@ -60,7 +60,9 @@ stdenv.mkDerivation rec {
     cp -r "./lang" "$out/share/transgui"
   '';
 
-  passthru.updateScript = unstableGitUpdater { };
+  passthru.updateScript = unstableGitUpdater {
+    tagPrefix = "v";
+  };
 
   meta = {
     description = "A cross platform front-end for the Transmission BitTorrent client";
