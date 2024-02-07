@@ -1,7 +1,7 @@
 { stdenv, fetchFromGitHub, unstableGitUpdater }:
 stdenv.mkDerivation {
   pname = "yuzu-compatibility-list";
-  version = "unstable-2024-02-26";
+  version = "0-unstable-2024-02-26";
 
   src = fetchFromGitHub {
     owner = "flathub";
