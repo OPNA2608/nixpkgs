@@ -8,7 +8,7 @@
 
 buildNimPackage (finalAttrs: prevAttrs: {
   pname = "nitter";
-  version = "unstable-2024-01-12";
+  version = "0-unstable-2024-01-12";
 
   src = fetchFromGitHub {
     owner = "zedeus";
