@@ -7,7 +7,7 @@
 
 stdenv.mkDerivation rec {
   pname = "eigenmath";
-  version = "unstable-2024-02-25";
+  version = "0-unstable-2024-02-25";
 
   src = fetchFromGitHub {
     owner = "georgeweigt";
