@@ -9,7 +9,7 @@
 
 rustPlatform.buildRustPackage {
   pname = "nu-plugin-net";
-  version = "unstable-2023-11-15";
+  version = "0-unstable-2023-11-15";
 
   src = fetchFromGitHub {
     owner = "fennewald";
