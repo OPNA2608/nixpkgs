@@ -15,7 +15,7 @@
 
 buildPythonApplication rec {
   pname = "nile";
-  version = "unstable-2024-02-05";
+  version = "0-unstable-2024-02-05";
   format = "pyproject";
 
   src = fetchFromGitHub {
