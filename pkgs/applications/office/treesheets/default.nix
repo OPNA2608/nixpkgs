@@ -7,18 +7,18 @@
 , makeWrapper
 , wxGTK
 , Cocoa
-, unstableGitUpdater
+, gitUpdater
 }:
 
 stdenv.mkDerivation rec {
   pname = "treesheets";
-  version = "unstable-2024-01-30";
+  version = "7861249636";
 
   src = fetchFromGitHub {
     owner = "aardappel";
     repo = "treesheets";
-    rev = "f11a3418cb6e403898be215f3efcc2fcb7bc0f19";
-    sha256 = "FOeRfNPX1ER1ZMUWy+4b67XfrATPPZntfhywjaGgDpo=";
+    rev = "refs/tags/${version}";
+    hash = "sha256-FOeRfNPX1ER1ZMUWy+4b67XfrATPPZntfhywjaGgDpo=";
   };
 
   nativeBuildInputs = [
@@ -34,7 +34,7 @@ stdenv.mkDerivation rec {
     Cocoa
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-DPACKAGE_VERSION=\"${builtins.replaceStrings [ "unstable-" ] [ "" ] version}\"";
+  env.NIX_CFLAGS_COMPILE = "-DPACKAGE_VERSION=\"${version}\"";
 
   postInstall = lib.optionalString stdenv.isDarwin ''
     shopt -s extglob
@@ -45,7 +45,7 @@ stdenv.mkDerivation rec {
   '';
 
   passthru = {
-    updateScript = unstableGitUpdater { };
+    updateScript = gitUpdater { };
   };
 
   meta = with lib; {
