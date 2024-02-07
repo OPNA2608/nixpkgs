@@ -9,7 +9,7 @@
 
 stdenv.mkDerivation {
   pname = "libbacktrace";
-  version = "unstable-2023-11-30";
+  version = "0-unstable-2023-11-30";
 
   src = fetchFromGitHub {
     owner = "ianlancetaylor";
