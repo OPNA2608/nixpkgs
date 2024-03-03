@@ -6,7 +6,7 @@
 
 stdenv.mkDerivation {
   pname = "edid-decode";
-  version = "unstable-2022-12-14";
+  version = "0-unstable-2022-12-14";
 
   outputs = [
     "out"
