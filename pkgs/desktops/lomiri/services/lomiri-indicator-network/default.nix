@@ -96,9 +96,17 @@ stdenv.mkDerivation (finalAttrs: {
   cmakeFlags = [
     (lib.cmakeBool "GSETTINGS_LOCALINSTALL" true)
     (lib.cmakeBool "GSETTINGS_COMPILE" true)
-    (lib.cmakeBool "ENABLE_TESTS" finalAttrs.doCheck)
+    (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
     (lib.cmakeBool "ENABLE_UBUNTU_COMPAT" true) # just in case something needs it
     (lib.cmakeBool "BUILD_DOC" true) # lacks QML docs, needs qdoc: https://github.com/NixOS/nixpkgs/pull/245379
+    (lib.cmakeFeature "CMAKE_CTEST_ARGUMENTS" (lib.concatStringsSep ";" [
+      # Exclude tests
+      "-E" (lib.strings.escapeShellArg "(${lib.concatStringsSep "|" [
+        # Failing after glib 2.80.0 -> 2.80.2 bump
+        # https://gitlab.com/ubports/development/core/lomiri-indicator-network/-/issues/111
+        "^TestSecretAgent"
+      ]})")
+    ]))
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
