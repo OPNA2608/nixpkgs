@@ -136,6 +136,10 @@ stdenv.mkDerivation (finalAttrs: {
         "^TelepathyHelperSetupTest"
         "^AuthHandlerTest"
         "^ChatManagerTest"
+
+        # Failing after glib 2.80.0 -> 2.80.2 bump
+        # https://gitlab.com/ubports/development/core/lomiri-telephony-service/-/issues/69
+        "^MessagingMenuTest"
       ]})")
     ]))
   ];
