@@ -33672,6 +33672,8 @@ with pkgs;
     nodejs = nodejs_18;
   };
 
+  peertubePlugins = recurseIntoAttrs (callPackage ../servers/peertube/plugins.nix { });
+
   peroxide = callPackage ../applications/networking/peroxide { };
 
   pflask = callPackage ../os-specific/linux/pflask { };
