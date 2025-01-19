@@ -2,10 +2,12 @@
   stdenv,
   lib,
   fetchFromGitHub,
+  glog,
   cmake,
   gflags,
   gtest,
   perl,
+  testers,
 }:
 
 stdenv.mkDerivation rec {
@@ -32,6 +34,7 @@ stdenv.mkDerivation rec {
     # consumers of the CMake config file to fail at the configuration step.
     # Explicitly disabling unwind support sidesteps the issue.
     "-DWITH_UNWIND=OFF"
+    (lib.cmakeBool "WITH_PKGCONFIG" true)
   ];
 
   doCheck = true;
@@ -80,6 +83,8 @@ stdenv.mkDerivation rec {
       runHook postCheck
     '';
 
+  passthru.tests.pkg-config = testers.testMetaPkgConfig glog;
+
   meta = with lib; {
     homepage = "https://github.com/google/glog";
     license = licenses.bsd3;
@@ -88,6 +93,9 @@ stdenv.mkDerivation rec {
     maintainers = with maintainers; [
       nh2
       r-burns
+    ];
+    pkgConfigModules = [
+      "libglog"
     ];
   };
 }
