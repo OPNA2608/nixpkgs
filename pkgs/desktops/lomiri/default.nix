@@ -21,6 +21,7 @@ let
         # get_target_property() called with non-existent target "Qt6::qdoc".
         withDocumentation = !useQt6;
       };
+      lomiri-weather-app = callPackage ./applications/lomiri-weather-app { };
 
       #### Data
       lomiri-schemas = callPackage ./data/lomiri-schemas { };
