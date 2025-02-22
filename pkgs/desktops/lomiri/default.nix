@@ -61,6 +61,7 @@ let
       biometryd = callPackage ./services/biometryd { };
       lomiri-content-hub = callPackage ./services/lomiri-content-hub { };
       hfd-service = callPackage ./services/hfd-service { };
+      lomiri-address-book-service = callPackage ./services/lomiri-address-book-service { };
       lomiri-download-manager = callPackage ./services/lomiri-download-manager { };
       lomiri-history-service = callPackage ./services/lomiri-history-service { };
       lomiri-indicator-network = callPackage ./services/lomiri-indicator-network { };
