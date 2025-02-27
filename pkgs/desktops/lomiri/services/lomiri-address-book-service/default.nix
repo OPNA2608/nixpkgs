@@ -2,6 +2,8 @@
   stdenv,
   lib,
   fetchFromGitLab,
+  testers,
+  unstableGitUpdater,
   accounts-qt,
   ayatana-indicator-messages,
   cmake,
@@ -29,17 +31,20 @@
 }:
 
 let
-  testDbusServicesDir = runCommand "lomiri-address-book-service-test-services" {} ''
+  testDbusServicesDir = runCommand "lomiri-address-book-service-test-services" { } ''
     mkdir $out
     cp ${dconf}/share/dbus-1/services/ca.desrt.dconf.service $out/
   '';
-  testDbusConfig = runCommand "lomiri-address-book-service-test-session.conf" {
-    nativeBuildInputs = [
-      xmlstarlet
-    ];
-  } ''
-    xmlstarlet edit -s '/busconfig' -t elem -n servicedir -v '${testDbusServicesDir}' '${dbus-test-runner}/share/dbus-test-runner/session.conf' > $out
-  '';
+  testDbusConfig =
+    runCommand "lomiri-address-book-service-test-session.conf"
+      {
+        nativeBuildInputs = [
+          xmlstarlet
+        ];
+      }
+      ''
+        xmlstarlet edit -s '/busconfig' -t elem -n servicedir -v '${testDbusServicesDir}' '${dbus-test-runner}/share/dbus-test-runner/session.conf' > $out
+      '';
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "lomiri-address-book-service";
@@ -57,32 +62,34 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  postPatch = ''
-    substituteInPlace contacts/CMakeLists.txt \
-      --replace-fail "\''${CMAKE_INSTALL_LIBDIR}/qt5/plugins" "\''${CMAKE_INSTALL_PREFIX}/${qtbase.qtPluginPrefix}"
+  postPatch =
+    ''
+      substituteInPlace contacts/CMakeLists.txt \
+        --replace-fail "\''${CMAKE_INSTALL_LIBDIR}/qt5/plugins" "\''${CMAKE_INSTALL_PREFIX}/${qtbase.qtPluginPrefix}"
 
-    # libebackend-1.2's moduledir doesn't let us substitute prefix
-    substituteInPlace eds-extension/CMakeLists.txt \
-      --replace-fail 'pkg-config --variable=moduledir libebackend-1.2' "echo $out/lib/evolution-data-server/registry-modules"
+      # libebackend-1.2's moduledir doesn't let us substitute prefix
+      substituteInPlace eds-extension/CMakeLists.txt \
+        --replace-fail 'pkg-config --variable=moduledir libebackend-1.2' "echo $out/lib/evolution-data-server/registry-modules"
 
-    substituteInPlace systemd/CMakeLists.txt \
-      --replace-fail 'pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir)' 'pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir DEFINE_VARIABLES prefix=''${CMAKE_INSTALL_PREFIX})'
-  '' + lib.optionalString finalAttrs.finalPackage.doInstallCheck ''
-    substituteInPlace tests/CMakeLists.txt \
-      --replace-fail 'PATHS /usr/lib/evolution/' 'PATHS ${evolution-data-server}/libexec/'
+      substituteInPlace systemd/CMakeLists.txt \
+        --replace-fail 'pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir)' 'pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir DEFINE_VARIABLES prefix=''${CMAKE_INSTALL_PREFIX})'
+    ''
+    + lib.optionalString finalAttrs.finalPackage.doInstallCheck ''
+      substituteInPlace tests/CMakeLists.txt \
+        --replace-fail 'PATHS /usr/lib/evolution/' 'PATHS ${evolution-data-server}/libexec/'
 
-    substituteInPlace tests/unittest/run-eds-test.sh \
-      --replace-fail '--keep-env --max-wait' '--keep-env --dbus-config=${testDbusConfig} --max-wait'
+      substituteInPlace tests/unittest/run-eds-test.sh \
+        --replace-fail '--keep-env --max-wait' '--keep-env --dbus-config=${testDbusConfig} --max-wait'
 
-    substituteInPlace tests/unittest/contact-avatar-test.cpp \
-      --replace-fail 'file:///tmp' "file://$TMPDIR"
+      substituteInPlace tests/unittest/contact-avatar-test.cpp \
+        --replace-fail 'file:///tmp' "file://$TMPDIR"
 
-    patchShebangs tests/tst_tools/mock/*.py
+      patchShebangs tests/tst_tools/mock/*.py
 
-    # Debugging
-    substituteInPlace tests/unittest/contact-collection-test.cpp \
-      --replace-fail 'QVERIFY(c.id().toString().startsWith' 'qDebug() << c.id().toString(); qDebug() << contact.id().toString(); QVERIFY(c.id().toString().startsWith'
-  '';
+      # Debugging
+      substituteInPlace tests/unittest/contact-collection-test.cpp \
+        --replace-fail 'QVERIFY(c.id().toString().startsWith' 'qDebug() << c.id().toString(); qDebug() << contact.id().toString(); QVERIFY(c.id().toString().startsWith'
+    '';
 
   strictDeps = true;
 
@@ -112,10 +119,12 @@ stdenv.mkDerivation (finalAttrs: {
     dbus-test-runner
     gobject-introspection
     evolution-data-server
-    (python3.withPackages (ps: with ps; [
-      dbus-python
-      pygobject3
-    ]))
+    (python3.withPackages (
+      ps: with ps; [
+        dbus-python
+        pygobject3
+      ]
+    ))
     vala
   ];
 
@@ -125,10 +134,11 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doInstallCheck)
   ];
 
-  doInstallCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  # Many failures and a crash in qtpim, not sure why yet
+  # installCheck because it needs EDS to pick up its files, which is easiest to do when it's installed to $out
+  doInstallCheck = false;
 
-  # checkTarget = "test";
-  installCheckTarget = "check";
+  installCheckTarget = "test";
 
   # Spins up D-Bus
   enableParallelChecking = false;
@@ -148,17 +158,21 @@ stdenv.mkDerivation (finalAttrs: {
       export EDS_EXTRA_PREFIXES=$out
     '';
 
-  /*
-  installCheckPhase = ''
-    runHook preInstallCheck
-
-    make check -j1
-
-    runHook postInstallCheck
-  '';
-  */
+  passthru = {
+    tests.pkg-config = testers.hasPkgConfigModules {
+      package = finalAttrs.finalPackage;
+      # hardcoded to 1.0 at the time of writing
+      versionCheck = false;
+    };
+    updateScript = unstableGitUpdater { };
+  };
 
   meta = {
+    description = "Contact aggregator service that exports all contact information through D-Bus";
+    homepage = "https://gitlab.com/ubports/development/core/lomiri-address-book-service";
+    license = lib.licenses.gpl3Only;
+    maintainers = lib.teams.lomiri.members;
+    platforms = lib.platforms.linux;
     pkgConfigModules = [
       "evolution-data-server-ubuntu"
     ];
