@@ -1,0 +1,30 @@
+From 2a2e8e999672c640ba0d8c965ee513f6ee7e3b72 Mon Sep 17 00:00:00 2001
+From: OPNA2608 <opna2608@protonmail.com>
+Date: Thu, 27 Feb 2025 19:58:50 +0100
+Subject: [PATCH] tests/qml/tst_ButeoSyncFW.qml: Await component being
+ initialised
+
+...because the signal we're trying to listen for also gets emitted during initialisation, so it may leak into the rest of the test on slower hardware.
+---
+ tests/qml/tst_ButeoSyncFW.qml | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/tests/qml/tst_ButeoSyncFW.qml b/tests/qml/tst_ButeoSyncFW.qml
+index 3e0383e..898e82c 100644
+--- a/tests/qml/tst_ButeoSyncFW.qml
++++ b/tests/qml/tst_ButeoSyncFW.qml
+@@ -53,7 +53,10 @@ Item {
+             // Test service dissapear
+             // We can only test it on 'cleanupTestCase' because it will cause the dbus
+             // service to dissapear and any test after this call will fail
+-            buteoComponent = Qt.createQmlObject('import Buteo 0.1; ButeoSync{ }', root);
++
++            // profilesChanged also gets emitted during init, so wait for first signal emit before creating spy
++            buteoComponent = Qt.createQmlObject('import Buteo 0.1; ButeoSync{ property bool initialised: false; onProfilesChanged: { initialised = true; }}', root);
++            tryCompare(buteoComponent, 'initialised', true)
+ 
+             var spy = Qt.createQmlObject('import QtTest 1.0; SignalSpy{ }', root);
+             spy.target = buteoComponent
+-- 
+2.47.2
+
