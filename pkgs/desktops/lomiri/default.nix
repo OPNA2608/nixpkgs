@@ -14,6 +14,7 @@ let
     {
       #### Core Apps
       lomiri = callPackage ./applications/lomiri { };
+      lomiri-addressbook-app = callPackage ./applications/lomiri-addressbook-app { };
       lomiri-calculator-app = callPackage ./applications/lomiri-calculator-app { };
       lomiri-calendar-app = callPackage ./applications/lomiri-calendar-app { };
       lomiri-camera-app = callPackage ./applications/lomiri-camera-app { };
