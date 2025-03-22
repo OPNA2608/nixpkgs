@@ -1,0 +1,65 @@
+From de4459f0315f099d3e0a2d20b938ec76285f2d46 Mon Sep 17 00:00:00 2001
+From: OPNA2608 <opna2608@protonmail.com>
+Date: Mon, 17 Mar 2025 09:56:58 +0100
+Subject: [PATCH] command/instrument/swap_instruments_command*: Drop unused
+ property
+
+---
+ BambooTracker/bamboo_tracker.cpp                              | 2 +-
+ BambooTracker/command/instrument/swap_instruments_command.cpp | 3 +--
+ BambooTracker/command/instrument/swap_instruments_command.hpp | 3 +--
+ 3 files changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/BambooTracker/bamboo_tracker.cpp b/BambooTracker/bamboo_tracker.cpp
+index 8fce5592..1207763e 100644
+--- a/BambooTracker/bamboo_tracker.cpp
++++ b/BambooTracker/bamboo_tracker.cpp
+@@ -161,7 +161,7 @@ void BambooTracker::deepCloneInstrument(int num, int refNum)
+ 
+ void BambooTracker::swapInstruments(int a, int b, bool patternChange)
+ {
+-	comMan_.invoke(std::make_unique<SwapInstrumentsCommand>(instMan_, mod_, a, b, curSongNum_, patternChange));
++	comMan_.invoke(std::make_unique<SwapInstrumentsCommand>(instMan_, mod_, a, b, patternChange));
+ }
+ 
+ void BambooTracker::loadInstrument(io::BinaryContainer& container, const std::string& path, int instNum)
+diff --git a/BambooTracker/command/instrument/swap_instruments_command.cpp b/BambooTracker/command/instrument/swap_instruments_command.cpp
+index a17fbf6e..6146fb54 100644
+--- a/BambooTracker/command/instrument/swap_instruments_command.cpp
++++ b/BambooTracker/command/instrument/swap_instruments_command.cpp
+@@ -7,13 +7,12 @@
+ 
+ SwapInstrumentsCommand::SwapInstrumentsCommand(std::weak_ptr<InstrumentsManager> manager,
+ 											   std::weak_ptr<Module> mod, int inst1, int inst2,
+-											   int song, bool patternChange)
++											   bool patternChange)
+ 	: AbstractCommand(CommandId::SwapInstruments),
+ 	  manager_(manager),
+ 	  mod_(mod),
+ 	  inst1Num_(inst1),
+ 	  inst2Num_(inst2),
+-	  songNum_(song),
+ 	  patternChange_(patternChange)
+ {
+ }
+diff --git a/BambooTracker/command/instrument/swap_instruments_command.hpp b/BambooTracker/command/instrument/swap_instruments_command.hpp
+index ac18113e..7caa04b4 100644
+--- a/BambooTracker/command/instrument/swap_instruments_command.hpp
++++ b/BambooTracker/command/instrument/swap_instruments_command.hpp
+@@ -14,7 +14,7 @@ class SwapInstrumentsCommand final : public AbstractCommand
+ {
+ public:
+ 	SwapInstrumentsCommand(std::weak_ptr<InstrumentsManager> manager, std::weak_ptr<Module> mod,
+-						   int inst1, int inst2, int song, bool patternChange);
++						   int inst1, int inst2, bool patternChange);
+ 	bool redo() override;
+ 	bool undo() override;
+ 
+@@ -22,7 +22,6 @@ class SwapInstrumentsCommand final : public AbstractCommand
+ 	std::weak_ptr<InstrumentsManager> manager_;
+ 	std::weak_ptr<Module> mod_;
+ 	int inst1Num_, inst2Num_;
+-	int songNum_;
+ 	bool patternChange_;
+ 
+ 	void swapInstrumentsInPatterns();
