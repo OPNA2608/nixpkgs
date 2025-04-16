@@ -8396,22 +8396,30 @@ with pkgs;
   gnumake = callPackage ../development/tools/build-managers/gnumake { };
   gradle-packages = import ../development/tools/build-managers/gradle {
     inherit
-      jdk11
+      fetchpatch
       jdk17
       jdk21
-      jdk23
       ;
   };
+  gradleBootstrapGen = gradle-packages.bootstrapGen;
   gradleGen = gradle-packages.gen;
   wrapGradle = callPackage gradle-packages.wrapGradle { };
 
-  gradle_7-unwrapped = callPackage gradle-packages.gradle_7 { };
-  gradle_8-unwrapped = callPackage gradle-packages.gradle_8 { };
+  gradle_7-bootstrap-unwrapped = callPackage gradle-packages.gradle_7-bootstrap { };
+  gradle_8-bootstrap-unwrapped = callPackage gradle-packages.gradle_8-bootstrap { };
+  gradle-bootstrap-unwrapped = gradle_8-bootstrap-unwrapped;
+
+  gradle_7-bootstrap = wrapGradle gradle_7-bootstrap-unwrapped null;
+  gradle_8-bootstrap = wrapGradle gradle_8-bootstrap-unwrapped null;
+  gradle-bootstrap = wrapGradle gradle-bootstrap-unwrapped "gradle-bootstrap-unwrapped";
+
+  gradle_7-unwrapped = callPackage (gradle-packages.gradle_7 gradle_7-bootstrap) { };
+  gradle_8-unwrapped = callPackage (gradle-packages.gradle_8 (wrapGradle (gradle_8-bootstrap.unwrapped.override { javaToolchains = [ jdk17 ]; }) null)) { };
   gradle-unwrapped = gradle_8-unwrapped;
 
   gradle_7 = wrapGradle gradle_7-unwrapped null;
   gradle_8 = wrapGradle gradle_8-unwrapped null;
-  gradle = wrapGradle gradle-unwrapped "gradle-unwrapped";
+  gradle = wrapGradle gradle_-unwrapped "gradle-unwrapped";
 
   gperf = callPackage ../development/tools/misc/gperf { };
   # 3.1 changed some parameters from int to size_t, leading to mismatches.
