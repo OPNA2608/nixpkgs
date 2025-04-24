@@ -2,7 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   fetchzip,
   makeWrapper,
   premake5,
@@ -13,8 +12,7 @@
   bzip2,
   curl,
   flac,
-  # Use fmt 10+ after release 40.1.4+
-  fmt_9,
+  fmt,
   freetype,
   irrlicht,
   libevent,
@@ -27,7 +25,6 @@
   libX11,
   libxkbcommon,
   libXxf86vm,
-  lua5_3,
   mono,
   nlohmann_json,
   openal,
@@ -123,21 +120,9 @@ let
     src = edopro-src;
     sourceRoot = "${edopro-src.name}/ocgcore";
 
-    patches = [
-      # Fix linking against our Lua (different name mangling, C in Lua vs C++ in ocgcore)
-      ./ocgcore-lua-symbols.patch
-    ];
-
     nativeBuildInputs = [
       premake5
     ];
-
-    # Drop when edopro version >= 41
-    buildInputs = [ lua5_3 ];
-    preBuild = ''
-      premake5 gmake2 \
-        --lua-path="${lua5_3}"
-    '';
 
     enableParallelBuilding = true;
 
@@ -187,7 +172,7 @@ let
       bzip2
       curl
       flac
-      fmt_9
+      fmt
       freetype
       irrlicht-edopro
       libevent
@@ -199,14 +184,6 @@ let
       openal
       SDL2
       sqlite
-    ];
-
-    patches = [
-      (fetchpatch {
-        name = "libgit2-version.patch";
-        url = "https://github.com/edo9300/edopro/commit/f8ddbfff51231827a8dd1dcfcb2dda85f50a56d9.patch";
-        hash = "sha256-w9VTmWfw6vEyVvsOH+AK9lAbUOV+MagzGQ3Wa5DCS/U=";
-      })
     ];
 
     # nixpkgs' gcc stack currently appears to not support LTO
