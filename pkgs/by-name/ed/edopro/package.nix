@@ -6,7 +6,7 @@
   fetchzip,
   makeWrapper,
   premake5,
-  writeShellScriptBin,
+  writeShellApplication,
   runCommandLocal,
   symlinkJoin,
   imagemagick,
@@ -310,20 +310,26 @@ let
         "WindBot"
       ];
     in
-    writeShellScriptBin "edopro" ''
-      set -eu
-      EDOPRO_DIR="''${XDG_DATA_HOME:-$HOME/.local/share}/edopro"
+    writeShellApplication {
+      name = "edopro";
+      text = ''
+        EDOPRO_DIR="''${XDG_DATA_HOME:-$HOME/.local/share}/edopro"
 
-      if [ ! -d $EDOPRO_DIR ]; then
-          mkdir -p $EDOPRO_DIR
-          cp -r --no-preserve=all ${assets}/{${assetsToCopy}} $EDOPRO_DIR
-          chmod -R go-rwx $EDOPRO_DIR
+        if [ ! -d "$EDOPRO_DIR" ]; then
+            mkdir -p "$EDOPRO_DIR"
+            cp -r --no-preserve=all ${assets}/{${assetsToCopy}} "$EDOPRO_DIR"
+            chmod -R go-rwx "$EDOPRO_DIR"
 
-          rm $EDOPRO_DIR/config/io.github.edo9300.EDOPro.desktop.in
-      fi
+            rm "$EDOPRO_DIR"/config/io.github.edo9300.EDOPro.desktop.in
+        fi
 
-      exec ${lib.getExe edopro} -C $EDOPRO_DIR $@
-    '';
+        # This configures certain defaults of the game (script repositories, server locations)
+        # Defaults should always match release assets. Users can still override via user_configs.json
+        cp --no-preserve=all ${assets}/config/configs.json "$EDOPRO_DIR"/config/configs.json
+
+        exec ${lib.getExe edopro} -C "$EDOPRO_DIR" "$@"
+      '';
+    };
 
   edopro-desktop = runCommandLocal "io.github.edo9300.EDOPro.desktop" { } ''
     mkdir -p $out/share/applications
