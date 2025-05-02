@@ -20,7 +20,6 @@
   opencvSupport ? false,
   opencv4,
   faad2,
-  lcevcdec,
   ldacbt,
   liblc3,
   libass,
@@ -182,7 +181,6 @@ stdenv.mkDerivation (finalAttrs: {
       curl.dev
       fdk_aac
       gsm
-      lcevcdec
       libaom
       libdc1394
       libde265
@@ -303,6 +301,9 @@ stdenv.mkDerivation (finalAttrs: {
       "-Dzbar=${if enableZbar then "enabled" else "disabled"}"
       "-Dfaac=${if faacSupport then "enabled" else "disabled"}"
       "-Diqa=disabled" # required `dssim` library not packaging in nixpkgs as of writing, also this is AGPL so update license when adding support
+      # Enabling lcevcdecoder currently causes issues when attempting to decode regular h264 data
+      # warning: No decoder available for type 'video/x-h264, stream-format=(string)avc, [...], lcevc=(boolean)false, [...]
+      "-Dlcevcdecoder=disabled"
       "-Dlcevcencoder=disabled" # not packaged in nixpkgs as of writing
       "-Dmagicleap=disabled" # required `ml_audio` library not packaged in nixpkgs as of writing
       "-Dmsdk=disabled" # not packaged in nixpkgs as of writing / no Windows support
