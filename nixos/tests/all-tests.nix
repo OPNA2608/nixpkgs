@@ -529,7 +529,7 @@ in
   ft2-clone = handleTest ./ft2-clone.nix { };
   legit = handleTest ./legit.nix { };
   mimir = handleTest ./mimir.nix { };
-  galene = runTest ./galene.nix;
+  galene = discoverTests (import ./galene.nix);
   gancio = handleTest ./gancio.nix { };
   garage = handleTest ./garage { };
   gatus = runTest ./gatus.nix;

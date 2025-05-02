@@ -35,7 +35,7 @@ buildGoModule rec {
   '';
 
   passthru = {
-    tests.vm = nixosTests.galene;
+    tests.vm = nixosTests.galene.basic;
   };
 
   meta = with lib; {
