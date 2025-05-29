@@ -53,7 +53,6 @@ let
       or (throw "${stdenv.hostPlatform.system} is an unsupported arch label for edopro");
 
   maintainers = with lib.maintainers; [
-    OPNA2608
     redhawk
   ];
 
