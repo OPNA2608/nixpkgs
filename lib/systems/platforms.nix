@@ -22,6 +22,27 @@ rec {
     linux-kernel.autoModules = false;
   };
 
+  ppc64 = {
+    linux-kernel = {
+      name = "powerpc64";
+
+      baseConfig = "ppc64_defconfig";
+      autoModules = true;
+      target = "vmlinux";
+
+      # Taken from the PowerNV config below, all of them except the 64K page size option appear like this in Adélie as well
+      extraConfig = ''
+        PPC_64K_PAGES n
+        PPC_4K_PAGES y
+        IPV6 y
+
+        ATA_BMDMA y
+        ATA_SFF y
+        VIRTIO_MENU y
+      '';
+    };
+  };
+
   powernv = {
     linux-kernel = {
       name = "PowerNV";
