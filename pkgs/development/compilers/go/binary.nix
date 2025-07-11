@@ -35,5 +35,12 @@ stdenv.mkDerivation {
     license = lib.licenses.bsd3;
     teams = [ lib.teams.golang ];
     platforms = lib.platforms.darwin ++ lib.platforms.linux;
+    badPlatforms = [
+      # Support for big-endian POWER < 8 was dropped in 1.9, but POWER8 users have no real reason to run in big-endian mode
+      # So it is effectively unsupported, and SIGILLs on affordable ppc64 hardware
+      # https://github.com/golang/go/issues/19074 - Dropped support for big-endian POWER < 8, with community pushback
+      # https://github.com/golang/go/issues/73349 - upstream will not accept submissions to fix this
+      "powerpc64-linux"
+    ];
   };
 }
