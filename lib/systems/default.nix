@@ -487,6 +487,12 @@ let
                   }
                   .${cpu.name} or cpu.name;
                 vendor_ = final.rust.platform.vendor;
+                # We're very explicit about the ABI, while rust is not
+                abi_ =
+                  if cpu.name == "powerpc64" && abi.name == "gnuabielfv1" then
+                    "gnu"
+                  else
+                    abi.name;
               in
               # TODO: deprecate args.rustc in favour of args.rust after 23.05 is EOL.
               args.rust.rustcTarget or args.rustc.config or (
@@ -497,7 +503,7 @@ let
                 if final.isWasi then
                   "${cpu_}-wasip1"
                 else
-                  "${cpu_}-${vendor_}-${kernel.name}${optionalString (abi.name != "unknown") "-${abi.name}"}"
+                  "${cpu_}-${vendor_}-${kernel.name}${optionalString (abi_ != "unknown") "-${abi_}"}"
               );
 
             # The name of the rust target if it is standard, or the json file
