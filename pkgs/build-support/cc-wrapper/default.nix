@@ -411,6 +411,7 @@ stdenvNoCC.mkDerivation {
       ;
 
     inherit (targetPlatform.go) GOOS GOARCH GOARM;
+    CGO_ENABLED = 1;
 
     emacsBufferSetup = pkgs: ''
       ; We should handle propagation here too
