@@ -9819,8 +9819,17 @@ with pkgs;
   ### DEVELOPMENT / GO
 
   # the unversioned attributes should always point to the same go version
-  go = go_1_24;
-  buildGoModule = buildGo124Module;
+  go =
+    let
+      normalGo = go_1_24;
+    in
+    if (lib.meta.availableOn stdenv.hostPlatform normalGo) then
+      normalGo
+    else
+      gccgo;
+  buildGoModule = callPackage ../build-support/go/module.nix {
+    inherit (buildPackages) go;
+  };
 
   go_latest = go_1_24;
   buildGoLatestModule = buildGo124Module;
@@ -9838,6 +9847,11 @@ with pkgs;
   go_1_25 = callPackage ../development/compilers/go/1.25.nix { };
   buildGo125Module = callPackage ../build-support/go/module.nix {
     go = buildPackages.go_1_25;
+  };
+
+  # gccgo defined by gcc stuff
+  buildGccGoModule = callPackage ../build-support/go/module.nix {
+    go = buildPackages.gccgo;
   };
 
   ### DEVELOPMENT / HARE
