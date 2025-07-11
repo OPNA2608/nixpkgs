@@ -28,7 +28,7 @@ rec {
   ppc64-elfv2 = {
     config = "powerpc64-unknown-linux-gnuabielfv2";
   };
-  ppc64 = ppc64-elfv2;
+  ppc64 = ppc64-elfv1;
   ppc64-musl = {
     config = "powerpc64-unknown-linux-musl";
     gcc = {

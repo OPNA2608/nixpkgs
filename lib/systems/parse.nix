@@ -908,9 +908,9 @@ rec {
           else if isLinux parsed || isWindows parsed then
             if isAarch32 parsed then
               if versionAtLeast (parsed.cpu.version or "0") "6" then abis.gnueabihf else abis.gnueabi
-            # Default ppc64 BE to ELFv2
+            # Default ppc64 BE to ELFv1, as it is the better-supported one
             else if isPower64 parsed && isBigEndian parsed then
-              abis.gnuabielfv2
+              abis.gnuabielfv1
             else
               abis.gnu
           else
