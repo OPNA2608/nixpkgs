@@ -410,6 +410,8 @@ stdenvNoCC.mkDerivation {
       isZig
       ;
 
+    inherit (targetPlatform.go) GOOS GOARCH GOARM;
+
     emacsBufferSetup = pkgs: ''
       ; We should handle propagation here too
       (mapc
