@@ -309,6 +309,12 @@ stdenv.mkDerivation (finalAttrs: {
       substituteInPlace meson.build \
         --replace "find_program('clang'" "find_program('${stdenv.cc.targetPrefix}clang'"
     ''
+    +
+      lib.optionalString (withLibBPF && stdenv.hostPlatform.isPower64 && stdenv.hostPlatform.isAbiElfv1)
+        ''
+          substituteInPlace meson.build \
+            --replace-fail "'-D__powerpc64__', '-D__TARGET_ARCH_powerpc', '-D_CALL_ELF=2'" "'-D__powerpc64__', '-D__TARGET_ARCH_powerpc', '-D_CALL_ELF=1'"
+        ''
     + lib.optionalString withUkify ''
       substituteInPlace src/ukify/ukify.py \
         --replace \
