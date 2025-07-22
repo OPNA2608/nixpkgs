@@ -133,9 +133,6 @@ stdenv.mkDerivation (finalAttrs: {
       CFLAGS=-D_XOPEN_SOURCE_EXTENDED
     '';
 
-  # TODO: wcwidth isn't getting pulled in for some reason
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
-
   enableParallelBuilding = true;
 
   doCheck = false;
