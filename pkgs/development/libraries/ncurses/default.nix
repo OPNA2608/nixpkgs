@@ -33,6 +33,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
   setOutputFlags = false; # some aren't supported
 
+  # linux-gnuabielfv{1,2} is not in ncurses' list of targets that might support POSIX (or smth like that?).
+  # Causes some defines (_XOPEN_SOURCE=600, _DEFAULT_SOURCE) to not get set, so wcwidth is not exposed by system headers, which causes a FTBFS.
+  postPatch = ''
+    substituteInPlace {.,Ada95,test}/{configure,aclocal.m4} \
+      --replace-fail 'linux*gnu|' 'linux*gnu|linux*gnuabielfv*|'
+  '';
+
   # see other isOpenBSD clause below
   configurePlatforms =
     if stdenv.hostPlatform.isOpenBSD then
