@@ -344,13 +344,23 @@ let
       (enableFeature enableExecutableProfiling "profiling")
       (enableFeature enableSharedLibraries "shared")
       (enableFeature doCoverage "coverage")
+    ]
+    ++ optionals (lib.versionAtLeast ghc.version "8.6.5") [
+      # 8.0.1 doesn't understand this flag
       (enableFeature enableStaticLibraries "static")
+    ]
+    ++ [
       (enableFeature enableSharedExecutables "executable-dynamic")
       (enableFeature doCheck "tests")
       (enableFeature doBenchmark "benchmarks")
       "--enable-library-vanilla" # TODO: Should this be configurable?
       (enableFeature enableLibraryForGhci "library-for-ghci")
+    ]
+    ++ optionals (lib.versionAtLeast ghc.version "8.6.5") [
+      # 8.0.1 doesn't understand this flag
       (enableFeature enableDeadCodeElimination "split-sections")
+    ]
+    ++ [
       (enableFeature (!dontStrip) "library-stripping")
       (enableFeature (!dontStrip) "executable-stripping")
     ]
