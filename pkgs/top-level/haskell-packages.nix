@@ -112,7 +112,10 @@ in
       ghc8107 = callPackage ../development/compilers/ghc/8.10.7.nix {
         bootPkgs =
           # the oldest ghc with aarch64-darwin support is 8.10.5
-          if stdenv.buildPlatform.isPower64 && stdenv.buildPlatform.isLittleEndian then
+          if stdenv.buildPlatform.isPower64 && stdenv.buildPlatform.isBigEndian then
+            # to my (@OPNA2608) knowledge there are no newer official binaries for this platform
+            bb.packages.ghc801Binary
+          else if stdenv.buildPlatform.isPower64 && stdenv.buildPlatform.isLittleEndian then
             # to my (@a-m-joseph) knowledge there are no newer official binaries for this platform
             bb.packages.ghc865Binary
           else
@@ -515,6 +518,12 @@ in
     in
     {
 
+      ghc801Binary = callPackage ../development/haskell-modules {
+        buildHaskellPackages = bh.packages.ghc801Binary;
+        ghc = bh.compiler.ghc801Binary;
+        compilerConfig = callPackage ../development/haskell-modules/configuration-ghc-8.0.x.nix { };
+        packageSetConfig = bootstrapPackageSet;
+      };
       ghc865Binary = callPackage ../development/haskell-modules {
         buildHaskellPackages = bh.packages.ghc865Binary;
         ghc = bh.compiler.ghc865Binary;
