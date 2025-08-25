@@ -1,5 +1,5 @@
 let
-  version = "8.10.7";
+  version = "8.6.5";
 in
 
 {
@@ -279,7 +279,7 @@ stdenv.mkDerivation (
 
     src = fetchurl {
       url = "https://downloads.haskell.org/ghc/${version}/ghc-${version}-src.tar.xz";
-      sha256 = "e3eef6229ce9908dfe1ea41436befb0455fefb1932559e860ad4c606b0d03c9d";
+      sha256 = "4d4aa1e96f4001b934ac6193ab09af5d6172f41f5a5d39d8e43393b9aafee361";
     };
 
     enableParallelBuilding = true;
@@ -291,13 +291,15 @@ stdenv.mkDerivation (
 
     patches =
       [
+        # Fix docs build with sphinx >= 4.0
+        # Extracted from https://gitlab.haskell.org/ghc/ghc/-/commit/83407ffc7acc00cc025b9f6ed063add9ab9f9bcc
+        # Backported to 8.2.2, still necessary here
+        ./ghc-8.2.2-sphinx-Fix-compat-with-sphinx-4.patch
+
         # Fix docs build with sphinx >= 6.0
         # https://gitlab.haskell.org/ghc/ghc/-/issues/22766
-        (fetchpatch {
-          name = "ghc-docs-sphinx-6.0.patch";
-          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/10e94a556b4f90769b7fd718b9790d58ae566600.patch";
-          sha256 = "0kmhfamr16w8gch0lgln2912r8aryjky1hfcda3jkcwa5cdzgjdv";
-        })
+        # # Backported to 8.6.5
+        ./ghc-8.6.5-sphinx-Use-modern-syntax-for-extlinks.patch
 
         # Determine size of time related types using hsc2hs instead of assuming CLong.
         # Prevents failures when e.g. stat(2)ing on 32bit systems with 64bit time_t etc.
@@ -322,28 +324,31 @@ stdenv.mkDerivation (
         ./respect-ar-path.patch
 
         # fix hyperlinked haddock sources: https://github.com/haskell/haddock/pull/1482
-        (fetchpatch {
-          url = "https://patch-diff.githubusercontent.com/raw/haskell/haddock/pull/1482.patch";
-          sha256 = "sha256-8w8QUCsODaTvknCDGgTfFNZa8ZmvIKaKS+2ZJZ9foYk=";
-          extraPrefix = "utils/haddock/";
-          stripLen = 1;
-        })
+        # TODO fails to apply
+        #(fetchpatch {
+        #  url = "https://patch-diff.githubusercontent.com/raw/haskell/haddock/pull/1482.patch";
+        #  sha256 = "sha256-8w8QUCsODaTvknCDGgTfFNZa8ZmvIKaKS+2ZJZ9foYk=";
+        #  extraPrefix = "utils/haddock/";
+        #  stripLen = 1;
+        #})
 
         # cabal passes incorrect --host= when cross-compiling
         # https://github.com/haskell/cabal/issues/5887
-        (fetchpatch {
-          url = "https://raw.githubusercontent.com/input-output-hk/haskell.nix/122bd81150386867da07fdc9ad5096db6719545a/overlays/patches/ghc/cabal-host.patch";
-          sha256 = "sha256:0yd0sajgi24sc1w5m55lkg2lp6kfkgpp3lgija2c8y3cmkwfpdc1";
-        })
+        # TODO fails to apply
+        #(fetchpatch {
+        #  url = "https://raw.githubusercontent.com/input-output-hk/haskell.nix/122bd81150386867da07fdc9ad5096db6719545a/overlays/patches/ghc/cabal-host.patch";
+        #  sha256 = "sha256:0yd0sajgi24sc1w5m55lkg2lp6kfkgpp3lgija2c8y3cmkwfpdc1";
+        #})
 
         # In order to build ghcjs packages, the Cabal of the ghc used for the ghcjs
         # needs to be patched. Ref https://github.com/haskell/cabal/pull/7575
-        (fetchpatch {
-          url = "https://github.com/haskell/cabal/commit/369c4a0a54ad08a9e6b0d3bd303fedd7b5e5a336.patch";
-          sha256 = "120f11hwyaqa0pq9g5l1300crqij49jg0rh83hnp9sa49zfdwx1n";
-          stripLen = 3;
-          extraPrefix = "libraries/Cabal/Cabal/";
-        })
+        # TODO fails to apply
+        #(fetchpatch {
+        #  url = "https://github.com/haskell/cabal/commit/369c4a0a54ad08a9e6b0d3bd303fedd7b5e5a336.patch";
+        #  sha256 = "120f11hwyaqa0pq9g5l1300crqij49jg0rh83hnp9sa49zfdwx1n";
+        #  stripLen = 3;
+        #  extraPrefix = "libraries/Cabal/Cabal/";
+        #})
 
         # We need to be able to set AR_STAGE0 and LD_STAGE0 when cross-compiling
         (fetchpatch {
@@ -358,11 +363,19 @@ stdenv.mkDerivation (
         # we provide via --with-ffi-includes) which breaks bootstrapping e.g. when
         # cross compiling GHC. Without include-dirs, cc-wrapper and splicing will
         # correctly pick the suitable libffi out of the build environment.
+        # TODO fails to apply
+        #(fetchpatch {
+        #  name = "ghci-no-libffi-include.patch";
+        #  url = "https://gitlab.haskell.org/ghc/ghc/-/commit/b2721819f391ab49871271283f32df54810c4387.patch";
+        #  sha256 = "1rmv3132xhxbka97v0rx7r6larx5f5nnvs4mgm9q3rmgpjyd1vf9";
+        #  includes = [ "libraries/ghci/ghci.cabal.in" ];
+        #})
+
+        # _AC_PROG_CC_99 is no longer available
         (fetchpatch {
-          name = "ghci-no-libffi-include.patch";
-          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/b2721819f391ab49871271283f32df54810c4387.patch";
-          sha256 = "1rmv3132xhxbka97v0rx7r6larx5f5nnvs4mgm9q3rmgpjyd1vf9";
-          includes = [ "libraries/ghci/ghci.cabal.in" ];
+          name = "ghc-Fix-_AC_PROG_CC_99.patch";
+          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/ad2ef3a13f1eb000eab8e3d64592373b91a52806.patch";
+          hash = "sha256-Dm9nOcS20wiA5Op4vF9Y8YqcgSSC3IKRlYusBukzf8Y=";
         })
 
         # unboxed arrays are borked on big-endian, lead to internal compiler errors
@@ -371,9 +384,7 @@ stdenv.mkDerivation (
           name = "ghc-Disable-unboxed-arrays.patch";
           # From https://gitlab.haskell.org/ghc/ghc/-/issues/15411#note_174828
           url = "https://gitlab.haskell.org/-/project/1/uploads/5deb133cf910e9e0ca9ad9fe53f7383a/Disable-unboxed-arrays.patch";
-          stripLen = 2;
-          extraPrefix = "libraries/containers/";
-          hash = "sha256-pe+Mlz1zP4uHUZ5MZAFcwkJBkXr7hkErrS7DAO86hg0=";
+          hash = "sha256-WHHjT0yhGSlH27+2jMPQA4IyfFPDCOmZTSRV3Lb0v84=";
         })
       ]
       ++ lib.optionals stdenv.hostPlatform.isDarwin [

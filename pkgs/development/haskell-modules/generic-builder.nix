@@ -74,7 +74,8 @@ in
   doCheck ? !isCross,
   doBenchmark ? false,
   doHoogle ? true,
-  doHaddockQuickjump ? doHoogle,
+  # unrecognized 'haddock' option `--quickjump'
+  doHaddockQuickjump ? doHoogle && lib.strings.versionAtLeast ghc.version "8.6.5",
   doInstallIntermediates ? false,
   editedCabalFile ? null,
   enableLibraryProfiling ? !outputsJS,
@@ -787,7 +788,7 @@ lib.fix (
         runHook preCheck
         checkFlagsArray+=(
           "--show-details=streaming"
-          "--test-wrapper=${testWrapperScript}"
+          ${lib.optionalString (ghc.version != "8.2.2" && ghc.version != "8.6.5") "--test-wrapper=${testWrapperScript}" }
           ${lib.escapeShellArgs (builtins.map (opt: "--test-option=${opt}") testFlags)}
         )
         export NIX_GHC_PACKAGE_PATH_FOR_TEST="''${NIX_GHC_PACKAGE_PATH_FOR_TEST:-$packageConfDir:}"

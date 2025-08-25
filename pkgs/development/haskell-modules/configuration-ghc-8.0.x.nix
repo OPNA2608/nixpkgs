@@ -41,10 +41,24 @@ self: super: {
   xhtml = null;
 
   # These are now core libraries in GHC 8.4.x.
-  mtl = self.mtl_2_3_1;
+  # Setup: ./mtl.cabal:59: Parse of field 'build-depends' failed.
+  mtl =
+    overrideCabal (drv: {
+      version = "2.2.2";
+      sha256 = "1xmy5741h8cyy0d91ahvqdz2hykkk20l8br7lg1rccnkis5g80w8";
+      editedCabalFile = null;
+      revision = null;
+    }) super.mtl_2_3_1;
   parsec = self.parsec_3_1_13_0;
   stm = self.stm_2_5_0_0;
   text = self.text_1_2_3_1;
+
+  # Module ‘GHC.Exts’ does not export ‘word32ToInt32#’
+  alex =
+    overrideCabal (drv: {
+      version = "3.5.1.0";
+      sha256 = "01rax51p8p91a5jv5i56fny4lzmwgvjlxh767gh9x5gbz23gwbn9";
+    }) super.alex;
 
   # https://github.com/bmillwood/applicative-quoters/issues/6
   applicative-quoters = appendPatch super.applicative-quoters (pkgs.fetchpatch {
@@ -85,6 +99,14 @@ self: super: {
   haddock-library = self.haddock-library_1_4_3;
   haddock-api = self.haddock-api_2_17_4;
   haddock = self.haddock_2_17_5;
+
+  # happy-lib: 'library' expects no argument
+  happy =
+    overrideCabal (drv: {
+      version = "1.20.1.1";
+      sha256 = "06w8g3lfk2ynrfhqznhp1mnp8a5b64lj6qviixpndzf5lv2psklb";
+    }) super.happy;
+  happy-lib = null;
 
   # GHC 8.0 doesn't have semigroups included by default
   ListLike = addBuildDepend super.ListLike self.semigroups;

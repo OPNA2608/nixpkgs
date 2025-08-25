@@ -297,6 +297,17 @@ stdenv.mkDerivation (
           stripLen = 1;
           extraPrefix = "libraries/unix/";
         })
+
+        # unboxed arrays are borked on big-endian, lead to internal compiler errors
+        # https://gitlab.haskell.org/ghc/ghc/-/issues/16998
+        (fetchpatch {
+          name = "ghc-Disable-unboxed-arrays.patch";
+          # From https://gitlab.haskell.org/ghc/ghc/-/issues/15411#note_174828
+          url = "https://gitlab.haskell.org/-/project/1/uploads/5deb133cf910e9e0ca9ad9fe53f7383a/Disable-unboxed-arrays.patch";
+          stripLen = 2;
+          extraPrefix = "libraries/containers/";
+          hash = "sha256-pe+Mlz1zP4uHUZ5MZAFcwkJBkXr7hkErrS7DAO86hg0=";
+        })
       ]
       ++ lib.optionals (lib.versionOlder version "9.4") [
         # fix hyperlinked haddock sources: https://github.com/haskell/haddock/pull/1482
