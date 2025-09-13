@@ -524,7 +524,10 @@ stdenv.mkDerivation rec {
         echo 'echo "Compile grub2 with { kbdcompSupport = true; } to enable support for this command."' >> util/grub-kbdcomp.in
       '';
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+    pkg-config
+  ];
   nativeBuildInputs = [
     bison
     flex
@@ -602,6 +605,9 @@ stdenv.mkDerivation rec {
     "--enable-grub-mount" # dep of os-prober
   ]
   ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+    # Set BUILD_PKG_CONFIG to non-cross pkg-config, so the right freetype gets linked in build-grub-mkfont
+    "BUILD_PKG_CONFIG=pkg-config"
+
     # grub doesn't do cross-compilation as usual and tries to use unprefixed
     # tools to target the host. Provide toolchain information explicitly for
     # cross builds.
