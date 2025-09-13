@@ -26,6 +26,7 @@
   runtimeShell,
   zfs ? null,
   efiSupport ? false,
+  ieee1275Support ? false,
   zfsSupport ? false,
   xenSupport ? false,
   xenPvhSupport ? false,
@@ -61,6 +62,10 @@ let
     riscv64-linux.target = "riscv64";
   };
 
+  ieee1275SystemsBuild = {
+    powerpc64-linux.target = "powerpc";
+  };
+
   xenSystemsBuild = {
     i686-linux.target = "i386";
     x86_64-linux.target = "x86_64";
@@ -90,7 +95,8 @@ let
 in
 
 assert zfsSupport -> zfs != null;
-assert !(efiSupport && (xenSupport || xenPvhSupport));
+assert !(efiSupport && ieee1275Support);
+assert !((efiSupport || ieee1275Support) && (xenSupport || xenPvhSupport));
 assert !(xenSupport && xenPvhSupport);
 
 stdenv.mkDerivation rec {
@@ -613,6 +619,10 @@ stdenv.mkDerivation rec {
     "--target=${efiSystemsBuild.${stdenv.hostPlatform.system}.target}"
     "--program-prefix="
   ]
+  ++ lib.optionals ieee1275Support [
+    "--with-platform=ieee1275"
+    "--target=${ieee1275SystemsBuild.${stdenv.hostPlatform.system}.target}"
+  ]
   ++ lib.optionals xenSupport [
     "--with-platform=xen"
     "--target=${xenSystemsBuild.${stdenv.hostPlatform.system}.target}"
@@ -626,6 +636,8 @@ stdenv.mkDerivation rec {
   grubTarget =
     if efiSupport then
       "${efiSystemsInstall.${stdenv.hostPlatform.system}.target}-efi"
+    else if ieee1275Support then
+      "${ieee1275SystemsBuild.${stdenv.hostPlatform.system}.target}-ieee1275"
     else
       lib.optionalString inPCSystems "${pcSystems.${stdenv.hostPlatform.system}.target}-pc";
 
@@ -669,6 +681,8 @@ stdenv.mkDerivation rec {
     platforms =
       if efiSupport then
         lib.attrNames efiSystemsBuild
+      else if ieee1275Support then
+        lib.attrNames ieee1275SystemsBuild
       else if xenSupport then
         lib.attrNames xenSystemsBuild
       else if xenPvhSupport then
