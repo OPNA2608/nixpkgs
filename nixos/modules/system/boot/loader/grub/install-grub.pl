@@ -80,6 +80,7 @@ my $timeoutStyle = get("timeoutStyle");
 my $defaultEntry = get("default");
 my $fsIdentifier = get("fsIdentifier");
 my $grubEfi = get("grubEfi");
+my $grubIEEE1275 = get("grubIEEE1275");
 my $grubTargetEfi = get("grubTargetEfi");
 my $bootPath = get("bootPath");
 my $storePath = get("storePath");
@@ -659,7 +660,7 @@ if (get("useOSProber") eq "true") {
         $ENV{'GRUB_SAVEDEFAULT'} = "true";
     }
 
-    my $targetpackage = ($efiTarget eq "no") ? $grub : $grubEfi;
+    my $targetpackage = ($efiTarget eq "no") ? (($grubIEEE1275 eq "") ? $grub : $grubIEEE1275) : $grubEfi;
     system(get("shell"), "-c", "pkgdatadir=$targetpackage/share/grub $targetpackage/etc/grub.d/30_os-prober >> $tmpFile");
 }
 
@@ -753,7 +754,8 @@ if (($requireNewInstall != 0) && ($efiTarget eq "no" || $efiTarget eq "both")) {
     foreach my $dev (@deviceTargets) {
         next if $dev eq "nodev";
         print STDERR "installing the GRUB 2 boot loader on $dev...\n";
-        my @command = ("$grub/sbin/grub-install", "--recheck", "--root-directory=$tmpDir", Cwd::abs_path($dev), @extraGrubInstallArgs);
+        my $realGrub = ($grubIEEE1275 eq "") ? $grub : $grubIEEE1275;
+        my @command = ("$realGrub/sbin/grub-install", "--recheck", "--root-directory=$tmpDir", Cwd::abs_path($dev), @extraGrubInstallArgs);
         if ($forceInstall eq "true") {
             push @command, "--force";
         }

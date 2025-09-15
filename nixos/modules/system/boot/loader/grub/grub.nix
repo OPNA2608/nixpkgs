@@ -56,6 +56,7 @@ let
     if cfg.devices == [ "nodev" ] then null else realGrub;
 
   grubEfi = if cfg.efiSupport then realGrub.override { efiSupport = cfg.efiSupport; } else null;
+  grubIEEE1275 = if cfg.ieee1275Support then realGrub.override { ieee1275Support = cfg.ieee1275Support; } else null;
 
   f = x: optionalString (x != null) ("" + x);
 
@@ -81,6 +82,7 @@ let
         fullName = lib.getName realGrub;
         fullVersion = lib.getVersion realGrub;
         grubEfi = f grubEfi;
+        grubIEEE1275 = f grubIEEE1275;
         grubTargetEfi = optionalString cfg.efiSupport (f (grubEfi.grubTarget or ""));
         bootPath = args.path;
         storePath = config.boot.loader.grub.storePath;
@@ -108,6 +110,7 @@ let
           default
           fsIdentifier
           efiSupport
+          ieee1275Support
           efiInstallAsRemovable
           gfxmodeEfi
           gfxmodeBios
@@ -703,6 +706,14 @@ in
         type = types.bool;
         description = ''
           Whether GRUB should be built with EFI support.
+        '';
+      };
+
+      ieee1275Support = mkOption {
+        default = false;
+        type = types.bool;
+        description = ''
+          Whether GRUB should be built with IEEE1275 support.
         '';
       };
 

@@ -17,6 +17,7 @@ let
       grubDevice,
       grubIdentifier,
       grubUseEfi,
+      grubUseIEEE1275,
       extraConfig,
       forceGrubReinstallCount ? 0,
       withTestInstrumentation ? true,
@@ -52,6 +53,11 @@ let
                 boot.loader.grub.device = "nodev";
                 boot.loader.grub.efiSupport = true;
                 boot.loader.grub.efiInstallAsRemovable = true; # XXX: needed for OVMF?
+              ''
+            else if grubUseIEEE1275 then
+              ''
+                boot.loader.grub.device = "nodev";
+                boot.loader.grub.ieee1275Support = true;
               ''
             else
               ''
@@ -100,6 +106,7 @@ let
       createPartitions,
       grubDevice,
       grubUseEfi,
+      grubUseIEEE1275,
       grubIdentifier,
       postInstallCommands,
       postBootCommands,
@@ -188,6 +195,7 @@ let
                     grubDevice
                     grubIdentifier
                     grubUseEfi
+                    grubUseIEEE1275
                     extraConfig
                     clevisTest
                     ;
@@ -281,6 +289,7 @@ let
                     grubDevice
                     grubIdentifier
                     grubUseEfi
+                    grubUseIEEE1275
                     extraConfig
                     clevisTest
                     ;
@@ -314,6 +323,7 @@ let
                 grubDevice
                 grubIdentifier
                 grubUseEfi
+                grubUseIEEE1275
                 extraConfig
                 clevisTest
                 ;
@@ -382,6 +392,7 @@ let
                 grubDevice
                 grubIdentifier
                 grubUseEfi
+                grubUseIEEE1275
                 extraConfig
                 clevisTest
                 ;
@@ -480,6 +491,7 @@ let
                 grubDevice
                 grubIdentifier
                 grubUseEfi
+                grubUseIEEE1275
                 extraConfig
                 clevisTest
                 ;
@@ -516,6 +528,7 @@ let
                 grubDevice
                 grubIdentifier
                 grubUseEfi
+                grubUseIEEE1275
                 extraConfig
                 clevisTest
                 ;
@@ -630,6 +643,7 @@ let
       grubDevice ? "/dev/vda",
       grubIdentifier ? "uuid",
       grubUseEfi ? false,
+      grubUseIEEE1275 ? false,
       enableOCR ? false,
       meta ? { },
       passthru ? { },
@@ -643,19 +657,30 @@ let
     }:
     let
       isEfi = bootLoader == "systemd-boot" || (bootLoader == "grub" && grubUseEfi);
+      isIEEE1275 = bootLoader == "grub" && grubUseIEEE1275;
     in
+    assert !(grubUseEfi && grubUseIEEE1275);
     makeTest {
       inherit enableOCR passthru;
       name = "installer-" + name;
       meta = {
         # put global maintainers here, individuals go into makeInstallerTest fkt call
         maintainers = (meta.maintainers or [ ]);
-        # non-EFI tests can only run on x86
-        platforms = mkIf (!isEfi) [
-          "x86_64-linux"
-          "x86_64-darwin"
-          "i686-linux"
-        ];
+        platforms = mkIf (!isEfi) (
+          if isIEEE1275 then [
+            # Installer itself works fine, but qemu only has built-in support for IEEE 1275 when emulating
+            # these platforms
+            "powerpc64-linux"
+            "powerpc64le-linux"
+            "powerpc-linux"
+            "sparc64-linux"
+          ] else [
+            # non-EFI, non-IEEE-1275 tests can only run on x86
+            "x86_64-linux"
+            "x86_64-darwin"
+            "i686-linux"
+          ]
+        );
       };
       nodes =
         let
@@ -760,13 +785,21 @@ let
                     zfsSupport = extraInstallerConfig.boot.supportedFilesystems.zfs or false;
                   in
                   [
-                    (pkgs.grub2.override { inherit zfsSupport; })
-                    (pkgs.grub2_efi.override { inherit zfsSupport; })
                     pkgs.nixos-artwork.wallpapers.simple-dark-gray-bootloader
                     pkgs.perlPackages.FileCopyRecursive
                     pkgs.perlPackages.XMLSAX
                     pkgs.perlPackages.XMLSAXBase
                   ]
+                  ++ optional (pkgs.lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.grub2) (
+                    pkgs.grub2.override { inherit zfsSupport; }
+                  )
+                  ++ optional (pkgs.lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.grub2_efi) (
+                    pkgs.grub2_efi.override { inherit zfsSupport; }
+                  )
+                  ++ optional (pkgs.lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.grub2_ieee1275) (
+                    pkgs.grub2_ieee1275.override { inherit zfsSupport; }
+                  )
+                  ++ optional isIEEE1275 pkgs.hfsprogs
                 )
                 ++ optionals (bootLoader == "systemd-boot") [
                   pkgs.zstd.bin
@@ -816,6 +849,7 @@ let
           grubDevice
           grubIdentifier
           grubUseEfi
+          grubUseIEEE1275
           extraConfig
           testSpecialisationConfig
           testFlakeSwitch
@@ -909,6 +943,32 @@ let
     '';
     bootLoader = "grub";
     grubUseEfi = true;
+  };
+
+  simple-ieee1275-grub-config = {
+    createPartitions = ''
+      installer.succeed(
+          # vda1 is occupied by some APM thing, usable partitions start at vda2
+          "flock /dev/vda parted --script /dev/vda -- mklabel mac"
+          + " mkpart primary hfs 1MiB 256MiB"
+          + " mkpart primary linux-swap 256MiB 1024MiB"
+          + " mkpart primary ext2 1024MiB -1MiB",  # /
+          "udevadm settle",
+          "mkswap /dev/vda3 -L swap",
+          "swapon -L swap",
+          "mkfs.ext3 -L nixos /dev/vda4",
+          "mount LABEL=nixos /mnt",
+          "mkfs.hfsplus -v BOOT /dev/vda2",
+          "mkdir -p /mnt/boot",
+          # disk name != disk label?
+          "mount /dev/vda2 /mnt/boot",
+      )
+    '';
+    bootLoader = "grub";
+    grubUseIEEE1275 = true;
+    extraInstallerConfig = {
+      environment.systemPackages = with pkgs; [ hfsprogs ];
+    };
   };
 
   specialisation-test-extraconfig = {
@@ -1155,6 +1215,8 @@ in
   };
 
   simpleUefiGrub = makeInstallerTest "simpleUefiGrub" simple-uefi-grub-config;
+
+  simpleIEEE1275Grub = makeInstallerTest "simpleIEEE1275Grub" simple-ieee1275-grub-config;
 
   # Test cloned configurations with the uefi grub configuration
   simpleUefiGrubSpecialisation = makeInstallerTest "simpleUefiGrubSpecialisation" (
