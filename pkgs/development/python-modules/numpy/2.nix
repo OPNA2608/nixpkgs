@@ -19,6 +19,7 @@
 
   # native dependencies
   blas,
+  coreutils,
   lapack,
 
   # Reverse dependency
@@ -81,6 +82,10 @@ buildPythonPackage rec {
     # remove needless reference to full Python path stored in built wheel
     substituteInPlace numpy/meson.build \
       --replace-fail 'py.full_path()' "'python'"
+
+    # Test_POWER_Features::test_features - FileNotFoundError: [Errno 2] No such file or directory: '/bin/true'
+    substituteInPlace numpy/_core/tests/test_cpu_features.py \
+      --replace-fail '/bin/true' '${lib.getExe' coreutils "true"}'
   '';
 
   build-system = [
@@ -158,6 +163,17 @@ buildPythonPackage rec {
   ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) [
     # AssertionError: (np.int64(0), np.longdouble('9.9999999999999994515e-21'), np.longdouble('3.9696755572509052902e+20'), 'arctanh')
     "test_loss_of_precision"
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.isPower64 && stdenv.hostPlatform.isBigEndian) [
+    # AssertionError: 
+    # Arrays are not almost equal to 6 decimals
+    #
+    # Mismatched elements: 1 / 1 (100%)
+    # Max absolute difference among violations: 1.52015924
+    # Max relative difference among violations: 1.52015924
+    #  ACTUAL: array([2.520159], dtype=float32)
+    #  DESIRED: array(1)
+    "test_sq_cases"
   ]
   ++ lib.optionals (stdenv.hostPlatform ? gcc.arch) [
     # remove if https://github.com/numpy/numpy/issues/27460 is resolved

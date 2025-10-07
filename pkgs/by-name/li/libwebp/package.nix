@@ -44,6 +44,11 @@ stdenv.mkDerivation rec {
     hash = "sha256-7i4fGBTsTjAkBzCjVqXqX4n22j6dLgF/0mz4ajNA45U=";
   };
 
+  postPatch = ''
+    substituteInPlace cmake/config.h.in \
+      --replace-fail 'undef WORDS_BIGENDIAN' '${if stdenv.hostPlatform.isBigEndian then "define WORDS_BIGENDIAN 1" else "undef WORDS_BIGENDIAN"}'
+  '';
+
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" true)
     (lib.cmakeBool "WEBP_USE_THREAD" threadingSupport)

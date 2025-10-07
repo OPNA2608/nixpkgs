@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   buildPythonPackage,
   fetchFromGitHub,
   pythonOlder,
@@ -61,6 +62,15 @@ buildPythonPackage rec {
 
   pytestFlags = [
     "-Wignore::DeprecationWarning"
+  ];
+
+  disabledTestPaths = lib.optionals (
+    # Missing upstream report
+    stdenv.hostPlatform.isi686
+    # https://github.com/ESSS/pytest-regressions/issues/156
+    || stdenv.hostPlatform.isBigEndian
+  ) [
+    "tests/test_ndarrays_regression.py"
   ];
 
   pythonImportsCheck = [

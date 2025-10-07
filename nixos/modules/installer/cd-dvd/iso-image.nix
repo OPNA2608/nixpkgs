@@ -216,6 +216,8 @@ let
     [ baseIsolinuxCfg ] ++ lib.optional config.boot.loader.grub.memtest86.enable isolinuxMemtest86Entry
   );
 
+  efiRoot = "/EFI/BOOT";
+
   refindBinary =
     if targetArch == "x64" || targetArch == "aa64" then "refind_${targetArch}.efi" else null;
 
@@ -224,12 +226,24 @@ let
     if refindBinary != null then
       ''
         # Adds rEFInd to the ISO.
-        cp -v ${pkgs.refind}/share/refind/${refindBinary} $out/EFI/BOOT/
+        cp -v ${pkgs.refind}/share/refind/${refindBinary} $out/${efiRoot}/
       ''
     else
       "# No refind for ${targetArch}";
 
   grubPkgs = if config.boot.loader.grub.forcei686 then pkgs.pkgsi686Linux else pkgs;
+
+  grubRoot = if config.isoImage.makeIeee1275Bootable then "/boot/grub" else efiRoot;
+
+  grubMarkerFile = "nixos-installer-image";
+
+  grubEmbeddedCfg = pkgs.writers.writeText "grub-embedded.cfg" ''
+    # Search using a "marker file"
+    search --set=root --file /${grubMarkerFile}
+
+    # Switch to real config file
+    configfile ($root)/${grubRoot}/grub.cfg
+  '';
 
   grubMenuCfg = ''
     set textmode=${lib.boolToString (config.isoImage.forceTextMode)}
@@ -239,7 +253,7 @@ let
     #
 
     # Search using a "marker file"
-    search --set=root --file /EFI/nixos-installer-image
+    search --set=root --file /${grubMarkerFile}
 
     insmod gfxterm
     insmod png
@@ -280,13 +294,13 @@ let
       if config.isoImage.grubTheme != null then
         ''
           # Sets theme.
-          set theme=(\$root)/EFI/BOOT/grub-theme/theme.txt
+          set theme=(\$root)/boot/grub-theme/theme.txt
           # Load theme fonts
-          $(find ${config.isoImage.grubTheme} -iname '*.pf2' -printf "loadfont (\$root)/EFI/BOOT/grub-theme/%P\n")
+          $(find ${config.isoImage.grubTheme} -iname '*.pf2' -printf "loadfont (\$root)/boot/grub-theme/%P\n")
         ''
       else
         ''
-          if background_image (\$root)/EFI/BOOT/efi-background.png; then
+          if background_image (\$root)/${grubRoot}/efi-background.png; then
             # Black background means transparent background when there
             # is a background image set... This seems undocumented :(
             set color_normal=black/black
@@ -300,14 +314,14 @@ let
     }
 
     hiddenentry 'Text mode' --hotkey 't' {
-      loadfont (\$root)/EFI/BOOT/unicode.pf2
+      loadfont (\$root)/${grubRoot}/unicode.pf2
       set textmode=true
       terminal_output console
     }
 
     ${lib.optionalString (config.isoImage.grubTheme != null) ''
       hiddenentry 'GUI mode' --hotkey 'g' {
-        $(find ${config.isoImage.grubTheme} -iname '*.pf2' -printf "loadfont (\$root)/EFI/BOOT/grub-theme/%P\n")
+        $(find ${config.isoImage.grubTheme} -iname '*.pf2' -printf "loadfont (\$root)/boot/grub-theme/%P\n")
         set textmode=false
         terminal_output gfxterm
       }
@@ -318,17 +332,23 @@ let
   # Notes about grub:
   #  * Yes, the grubMenuCfg has to be repeated in all submenus. Otherwise you
   #    will get white-on-black console-like text on sub-menus. *sigh*
-  efiDir =
-    pkgs.runCommand "efi-directory"
+  grubDir =
+    let
+      grubBuildPkg = if config.isoImage.makeIeee1275Bootable then pkgs.buildPackages.grub2_ieee1275 else pkgs.buildPackages.grub2_efi;
+      grubHostPkg = if config.isoImage.makeIeee1275Bootable then grubPkgs.grub2_ieee1275 else grubPkgs.grub2_efi;
+      grubBootName = if config.isoImage.makeIeee1275Bootable then "grub.elf" else "BOOT${lib.toUpper targetArch}.EFI";
+    in
+    pkgs.runCommand "grub-directory"
       {
-        nativeBuildInputs = [ pkgs.buildPackages.grub2_efi ];
+        nativeBuildInputs = [ grubBuildPkg ];
         strictDeps = true;
       }
-      ''
-        mkdir -p $out/EFI/BOOT
+      (''
+        grub-script-check ${grubEmbeddedCfg}
 
         # Add a marker so GRUB can find the filesystem.
-        touch $out/EFI/nixos-installer-image
+        mkdir $out
+        echo "hiiiiii :3" > $out/${grubMarkerFile}
 
         # ALWAYS required modules.
         MODULES=(
@@ -337,6 +357,9 @@ let
           "iso9660"
           "part_gpt"
           "part_msdos"
+      '' + lib.optionalString config.isoImage.makeIeee1275Bootable ''
+          "part_apple"
+      '' + ''
 
           # Basic stuff
           "normal"
@@ -344,14 +367,18 @@ let
           "linux"
           "configfile"
           "loopback"
+      '' + lib.optionalString (!config.isoImage.makeIeee1275Bootable) ''
           "chain"
+      '' + ''
           "halt"
 
+      '' + lib.optionalString config.isoImage.makeEfiBootable ''
           # Allows rebooting into firmware setup interface
           "efifwsetup"
 
           # EFI Graphics Output Protocol
           "efi_gop"
+      '' + ''
 
           # User commands
           "ls"
@@ -389,27 +416,30 @@ let
         # Modules that may or may not be available per-platform.
         echo "Adding additional modules:"
         for mod in efi_uga; do
-          if [ -f ${grubPkgs.grub2_efi}/lib/grub/${grubPkgs.grub2_efi.grubTarget}/$mod.mod ]; then
+          if [ -f ${grubHostPkg}/lib/grub/${grubHostPkg.grubTarget}/$mod.mod ]; then
             echo " - $mod"
             MODULES+=("$mod")
           fi
         done
 
-        # Make our own efi program, we can't rely on "grub-install" since it seems to
+        mkdir -p $out/${grubRoot}
+
+        # Make our own boot program, we can't rely on "grub-install" since it seems to
         # probe for devices, even with --skip-fs-probe.
         grub-mkimage \
-          --directory=${grubPkgs.grub2_efi}/lib/grub/${grubPkgs.grub2_efi.grubTarget} \
-          -o $out/EFI/BOOT/BOOT${lib.toUpper targetArch}.EFI \
-          -p /EFI/BOOT \
-          -O ${grubPkgs.grub2_efi.grubTarget} \
+          --directory=${grubHostPkg}/lib/grub/${grubHostPkg.grubTarget} \
+          -o $out/${grubRoot}/${grubBootName} \
+          -c ${grubEmbeddedCfg} \
+          -p ${grubRoot} \
+          -O ${grubHostPkg.grubTarget} \
           ''${MODULES[@]}
-        cp ${grubPkgs.grub2_efi}/share/grub/unicode.pf2 $out/EFI/BOOT/
+        cp ${grubHostPkg}/share/grub/unicode.pf2 $out/${grubRoot}
 
-        cat <<EOF > $out/EFI/BOOT/grub.cfg
+        cat <<EOF > $out/${grubRoot}/grub.cfg
 
         set timeout=${toString grubEfiTimeout}
 
-        clear
+        #clear
         # This message will only be viewable on the default (UEFI) console.
         echo ""
         echo "Loading graphical boot menu..."
@@ -455,7 +485,7 @@ let
               # Force root to be the FAT partition
               # Otherwise it breaks rEFInd's boot
               search --set=root --no-floppy --fs-uuid 1234-5678
-              chainloader (\$root)/EFI/BOOT/${refindBinary}
+              chainloader (\$root)/${grubRoot}/${refindBinary}
             }
           fi
         ''}
@@ -463,7 +493,7 @@ let
           fwsetup
           clear
           echo ""
-          echo "If you see this message, your EFI system doesn't support this feature."
+          echo "If you see this message, then your system doesn't support this feature."
           echo ""
         }
         menuentry 'Shutdown' --class shutdown {
@@ -471,10 +501,10 @@ let
         }
         EOF
 
-        grub-script-check $out/EFI/BOOT/grub.cfg
-
+        grub-script-check $out/${grubRoot}/grub.cfg
+      '' + lib.optionalString config.isoImage.makeEfiBootable ''
         ${refind}
-      '';
+      '');
 
   efiImg =
     pkgs.runCommand "efi-image_eltorito"
@@ -490,8 +520,8 @@ let
       #   dates (cp -p, touch, mcopy -m, faketime for label), IDs (mkfs.vfat -i)
       ''
         mkdir ./contents && cd ./contents
-        mkdir -p ./EFI/BOOT
-        cp -rp "${efiDir}"/EFI/BOOT/{grub.cfg,*.EFI,*.efi} ./EFI/BOOT
+        mkdir -p ./${efiRoot}
+        cp -rp "${grubDir}"/${efiRoot}/{grub.cfg,*.EFI,*.efi} ./${efiRoot}
 
         # Rewrite dates for everything in the FS
         find . -exec touch --date=2000-01-01 {} +
@@ -649,6 +679,14 @@ in
       type = lib.types.bool;
       description = ''
         Whether the ISO image should be an EFI-bootable volume.
+      '';
+    };
+
+    isoImage.makeIeee1275Bootable = lib.mkOption {
+      default = false;
+      type = lib.types.bool;
+      description = ''
+        Whether the ISO image should be bootable according to IEEE-1275.
       '';
     };
 
@@ -866,11 +904,13 @@ in
     # here and it causes a cyclic dependency.
     boot.loader.grub.enable = lib.mkImageMediaOverride false;
 
-    environment.systemPackages = [
+    environment.systemPackages = if config.isoImage.makeIeee1275Bootable then [
+      grubPkgs.grub2_ieee1275
+    ] else ([
       grubPkgs.grub2
     ]
-    ++ lib.optional (config.isoImage.makeBiosBootable) pkgs.syslinux;
-    system.extraDependencies = [ grubPkgs.grub2_efi ];
+    ++ lib.optional (config.isoImage.makeBiosBootable) pkgs.syslinux);
+    system.extraDependencies = lib.optional (lib.meta.availableOn grubPkgs.hostPlatform grubPkgs.grub2_efi) grubPkgs.grub2_efi;
 
     # In stage 1 of the boot, mount the CD as the root FS by label so
     # that we don't need to know its device.  We pass the label of the
@@ -991,19 +1031,45 @@ in
           target = "/boot/efi.img";
         }
         {
-          source = "${efiDir}/EFI";
+          source = "${grubDir}/EFI";
           target = "/EFI";
         }
         {
           source = config.isoImage.efiSplashImage;
-          target = "/EFI/BOOT/efi-background.png";
+          target = "/${efiRoot}/efi-background.png";
+        }
+      ]
+      ++ lib.optionals config.isoImage.makeIeee1275Bootable [
+        {
+          source = "${grubDir}/boot/grub";
+          target = "/boot/grub";
+        }
+        {
+          source = pkgs.runCommand "grub-BootX" { } ''
+            cp ${grubPkgs.grub2_ieee1275}/lib/grub/powerpc-ieee1275/grub.chrp $out
+            substituteInPlace $out --replace-fail '\System\Library\CoreServices\grub.elf' '\boot\grub\grub.elf'
+          '';
+          target = "/System/Library/CoreServices/BootX";
+        }
+        {
+          source = pkgs.runCommand "grub-bootinfo" { } ''
+            cp ${grubPkgs.grub2_ieee1275}/lib/grub/powerpc-ieee1275/bootinfo.txt $out
+            substituteInPlace $out --replace-fail '\boot\grub\powerpc.elf' '\boot\grub\grub.elf'
+          '';
+          target = "/ppc/bootinfo.txt";
+        }
+      ]
+      ++ lib.optionals (config.isoImage.makeIeee1275Bootable || config.isoImage.makeEfiBootable) [
+        {
+          source = "${grubDir}/${grubMarkerFile}";
+          target = grubMarkerFile;
         }
       ]
       ++ lib.optionals (config.isoImage.makeEfiBootable && !config.boot.initrd.systemd.enable) [
         # http://www.supergrubdisk.org/wiki/Loopback.cfg
         # This feature will be removed, and thus is not supported by systemd initrd
         {
-          source = (pkgs.writeTextDir "grub/loopback.cfg" "source /EFI/BOOT/grub.cfg") + "/grub";
+          source = (pkgs.writeTextDir "grub/loopback.cfg" "source /${efiRoot}/grub.cfg") + "/grub";
           target = "/boot/grub";
         }
       ]
@@ -1016,7 +1082,7 @@ in
       ++ lib.optionals (config.isoImage.grubTheme != null) [
         {
           source = config.isoImage.grubTheme;
-          target = "/EFI/BOOT/grub-theme";
+          target = "/boot/grub-theme";
         }
       ];
 

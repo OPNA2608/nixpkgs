@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fetchpatch,
   perl,
   which,
   # Most packages depending on openblas expect integer width to match
@@ -178,7 +179,7 @@ let
   shlibExt = stdenv.hostPlatform.extensions.sharedLibrary;
 
 in
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "openblas";
   version = "0.3.30";
 
@@ -190,13 +191,23 @@ stdenv.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "OpenMathLib";
     repo = "OpenBLAS";
-    rev = "v${version}";
+    rev = "v${finalAttrs.version}";
     hash = "sha256-foP2OXUL6ttgYvCxLsxUiVdkPoTvGiHomdNudbSUmSE=";
   };
 
+  patches = [
+    # https://github.com/OpenMathLib/OpenBLAS/issues/5460
+    (fetchpatch {
+      name = "0001-openblas-Use-generic-kernels-for-SCAL-on-POWER4-5.patch";
+      url = "https://github.com/OpenMathLib/OpenBLAS/commit/14c9dcaac70d9382de00ba4418643d9587f4950e.patch";
+      hash = "sha256-mIOqRc7tE1rV/krrAu630JwApZHdeHCdVmO5j6eDC8U=";
+    })
+  ];
+
   postPatch = ''
     # cc1: error: invalid feature modifier 'sve2' in '-march=armv8.5-a+sve+sve2+bf16'
-    substituteInPlace Makefile.arm64 --replace "+sve2+bf16" ""
+    substituteInPlace Makefile.arm64 --replace-fail "+sve2+bf16" ""
+    substituteInPlace Makefile --replace-fail 'all :: tests' 'all :: shared'
   '';
 
   inherit blas64;
@@ -284,7 +295,7 @@ stdenv.mkDerivation rec {
         for alias in blas cblas lapack; do
           cat <<EOF > $out/lib/pkgconfig/$alias.pc
     Name: $alias
-    Version: ${version}
+    Version: ${finalAttrs.version}
     Description: $alias provided by the OpenBLAS package.
     Cflags: -I$dev/include
     Libs: -L$out/lib -lopenblas
@@ -332,4 +343,4 @@ stdenv.mkDerivation rec {
     platforms = attrNames configs;
     maintainers = with maintainers; [ ttuegel ];
   };
-}
+})

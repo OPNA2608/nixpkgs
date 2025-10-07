@@ -30,6 +30,12 @@ buildPythonPackage rec {
     substituteInPlace setup.py \
       --replace "build_cmd = [sys.executable, build_skia_py, build_dir]" \
         'build_cmd = [sys.executable, build_skia_py, "--no-fetch-gn", "--no-virtualenv", "--gn-path", "${gn}/bin/gn", build_dir]'
+
+    # From Firefox' vendored skia, to fix compilation on big-endian
+    #substituteInPlace src/cpp/skia-builder/skia/include/core/SkColorType.h \
+    #  --replace-fail \
+    #    '#error "SK_*32_SHIFT values must correspond to BGRA or RGBA byte order"' \
+    #    'kN32_SkColorType = kBGRA_8888_SkColorType,'
   ''
   + lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) ''
     substituteInPlace src/cpp/skia-builder/skia/gn/skia/BUILD.gn \
@@ -67,6 +73,9 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
+  # "The Skia team is not endian-savvy enough to support big-endian CPUs."
+  #env.NIX_CFLAGS_COMPILE = "-DI_ACKNOWLEDGE_SKIA_DOES_NOT_SUPPORT_BIG_ENDIAN";
+
   pythonImportsCheck = [ "pathops" ];
 
   meta = {
@@ -74,6 +83,8 @@ buildPythonPackage rec {
     homepage = "https://github.com/fonttools/skia-pathops";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.BarinovMaxim ];
+    # "The Skia team is not endian-savvy enough to support big-endian CPUs."
+    badPlatforms = lib.platforms.bigEndian;
     # ERROR at //gn/BUILDCONFIG.gn:87:14: Script returned non-zero exit code.
     broken = isPyPy;
   };
