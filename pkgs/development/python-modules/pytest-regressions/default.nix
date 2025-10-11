@@ -64,13 +64,14 @@ buildPythonPackage rec {
     "-Wignore::DeprecationWarning"
   ];
 
-  disabledTestPaths = lib.optionals (
+  disabledTests = lib.optionals (
     # Missing upstream report
     stdenv.hostPlatform.isi686
     # https://github.com/ESSS/pytest-regressions/issues/156
     || stdenv.hostPlatform.isBigEndian
   ) [
-    "tests/test_ndarrays_regression.py"
+    "test_different_data_types"
+    "test_common_case" # not listed in the issue, but fails after the above is skipped
   ];
 
   pythonImportsCheck = [
