@@ -7,6 +7,7 @@
   expat,
   fetchCrate,
   fetchFromGitLab,
+  fetchpatch,
   file,
   flex,
   glslang,
@@ -163,6 +164,22 @@ stdenv.mkDerivation {
 
   patches = [
     ./opencl.patch
+
+    # Fixes printf format mismatch in vc4
+    # https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/38151
+    (fetchpatch {
+      name = "0001-mesa-vc4-Fix-printing-of-get_tiling-modifier.patch";
+      url = "https://gitlab.freedesktop.org/mesa/mesa/-/commit/4c699087d446cac93c0b6685bb7b5ff00d04cab8.patch";
+      hash = "sha256-OLsT5ZU0bgHDIUcsKSiNOLSoRq5xNHkEw+4canF9Fk0=";
+    })
+
+    # Fixes printf format mismatch in rocket
+    # https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/39119
+    (fetchpatch {
+      name = "0002-mesa-rocket-Fix-printing-of-rknpu_mem_create.dma_addr.patch";
+      url = "https://gitlab.freedesktop.org/mesa/mesa/-/commit/41b9dc3a2cdf1e3163d517bd7cfc8c8738e8db92.patch";
+      hash = "sha256-hOVeQpfkZdRenS10xM5rx8bYfR7pTUSritKhp5VeFAg=";
+    })
   ];
 
   postPatch = ''
