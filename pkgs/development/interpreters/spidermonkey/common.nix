@@ -73,6 +73,10 @@ stdenv.mkDerivation (finalAttrs: {
     ]
     ++ lib.optionals (lib.versionAtLeast version "140" && stdenv.hostPlatform.is32bit) [
       ./fix-32bit-build.patch
+    ]
+    # Add support for --rust-{host,target}-triplet
+    ++ [
+      ./add-rust-triplet-options.patch
     ];
 
   nativeBuildInputs = [
@@ -137,8 +141,11 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-tests"
     # Spidermonkey seems to use different host/build terminology for cross
     # compilation here.
+    # Rust also uses slightly different triplets in some cases.
     "--host=${stdenv.buildPlatform.config}"
     "--target=${stdenv.hostPlatform.config}"
+    "--rust-host-triplet=${stdenv.buildPlatform.rust.rustcTarget}"
+    "--rust-target-triplet=${stdenv.hostPlatform.rust.rustcTarget}"
   ];
 
   # mkDerivation by default appends --build/--host to configureFlags when cross compiling
