@@ -512,6 +512,12 @@ lib.makeOverridable (
           find -empty -type d -delete
         '';
 
+        preFixup = ''
+          if [ -z "''${dontStrip-}" -a -e $out/vmlinux ]; then
+            strip -v -S -p $out/vmlinux
+          fi
+        '';
+
         requiredSystemFeatures = [ "big-parallel" ];
 
         meta = {
