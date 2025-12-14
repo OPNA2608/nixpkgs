@@ -19,6 +19,9 @@
   qtdeclarative,
 }:
 
+let
+  withQt6 = lib.strings.versionAtLeast qtbase.version "6";
+in
 stdenv.mkDerivation (finalAttrs: {
   pname = "lomiri-api";
   version = "0.3.0";
@@ -33,6 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
   outputs = [
     "out"
     "dev"
+  ]
+  ++ lib.optionals withQt6 [
     "doc"
   ];
 
@@ -53,10 +58,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [
     cmake
-    doxygen
-    graphviz
     pkg-config
     qtdeclarative
+  ]
+  ++ lib.optionals withQt6 [
+    doxygen
+    graphviz
   ];
 
   buildInputs = [
@@ -76,7 +83,8 @@ stdenv.mkDerivation (finalAttrs: {
   dontWrapQtApps = true;
 
   cmakeFlags = [
-    (lib.cmakeBool "ENABLE_QT6" (lib.strings.versionAtLeast qtbase.version "6"))
+    (lib.cmakeBool "ENABLE_QT6" withQt6)
+    (lib.cmakeBool "NO_TESTS" (!finalAttrs.finalPackage.doCheck))
   ];
 
   env.FONTCONFIG_FILE = makeFontsConf { fontDirectories = [ ]; };
@@ -86,7 +94,10 @@ stdenv.mkDerivation (finalAttrs: {
     export HOME=$TMPDIR
   '';
 
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  doCheck =
+    stdenv.buildPlatform.canExecute stdenv.hostPlatform
+    # Needs libqtdbustest to get patched for Qt6 support
+    && !withQt6;
 
   preCheck = ''
     # needs minimal plugin and QtTest QML
@@ -113,10 +124,10 @@ stdenv.mkDerivation (finalAttrs: {
     platforms = lib.platforms.linux;
     pkgConfigModules = [
       "liblomiri-api"
-      "lomiri-shell-api"
-      "lomiri-shell-application"
-      "lomiri-shell-launcher"
-      "lomiri-shell-notifications"
+      "lomiri-shell-api${lib.optionalString withQt6 "-qt6"}"
+      "lomiri-shell-application${lib.optionalString withQt6 "-qt6"}"
+      "lomiri-shell-launcher${lib.optionalString withQt6 "-qt6"}"
+      "lomiri-shell-notifications${lib.optionalString withQt6 "-qt6"}"
     ];
   };
 })
