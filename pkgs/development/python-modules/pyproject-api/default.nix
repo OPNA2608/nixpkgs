@@ -1,4 +1,5 @@
 {
+  stdenv,
   lib,
   buildPythonPackage,
   fetchFromGitHub,
@@ -13,6 +14,9 @@
   tomli,
 
   # docs
+  # furo needs working nodejs
+  nodejs,
+  withDocumentation ? lib.meta.availableOn stdenv.buildPlatform nodejs,
   sphinxHook,
   furo,
   sphinx-autodoc-typehints,
@@ -41,14 +45,16 @@ buildPythonPackage rec {
 
   outputs = [
     "out"
+  ]
+  ++ lib.optionals withDocumentation [
     "doc"
   ];
 
   nativeBuildInputs = [
     hatchling
     hatch-vcs
-
-    # docs
+  ]
+  ++ lib.optionals withDocumentation [
     sphinxHook
     furo
     sphinx-autodoc-typehints
