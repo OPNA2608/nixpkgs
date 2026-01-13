@@ -38,6 +38,14 @@ stdenv.mkDerivation rec {
       "--includedir=$dev/include"
       "--libdir=$out/lib"
     )
+  ''
+  # There is a check for linux-gnu on POWER that disables shared library creation if /lib/ld.so.1 doesn't exists
+  # (which it never does for us), because it assumes that it is then running on / targeting MkLinux, which supposedly
+  # didn't support shared libraries.
+  # MkLinux is discontinued, regular Linux supports POWER now. Delete the case and allow shared libraries to be made.
+  + ''
+    substituteInPlace ltconfig \
+      --replace-fail 'powerpc*) dynamic_linker=no ;;' ""
   '';
 
   buildInputs = [ ncurses ];
