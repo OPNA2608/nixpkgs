@@ -773,6 +773,11 @@ let
       DEVTMPFS = yes;
 
       UNICODE = yes; # Casefolding support for filesystems
+      }
+    // lib.optionalAttrs stdenv.hostPlatform.isPower {
+      # Needed to use the installation iso image formatted for tbxi booting (ISO9660 w/ HFS+ hybrid partition).
+      HFS_FS = yes;
+      HFSPLUS_FS = yes;
     };
 
     security = {
@@ -1564,6 +1569,16 @@ let
         # avoid driver/FS trouble arising from unusual page size
         PPC_64K_PAGES = no;
         PPC_4K_PAGES = yes;
+
+        # Fails to auto-load
+        # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=713943
+        I2C_POWERMAC = yes;
+      }
+      // lib.optionalAttrs stdenv.hostPlatform.isPower {
+        # Needed for booting PowerMacs from disc
+        # (the only nice way that doesn't involve messing around with internal drives or in Open Firmware)
+        ATA = yes;
+        PATA_MACIO = yes;
       };
 
     accel = {
