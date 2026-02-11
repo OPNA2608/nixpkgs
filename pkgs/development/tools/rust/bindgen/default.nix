@@ -1,4 +1,6 @@
 {
+  stdenv,
+  lib,
   rust-bindgen-unwrapped,
   zlib,
   bash,
@@ -7,6 +9,13 @@
 }:
 let
   clang = rust-bindgen-unwrapped.clang;
+  hasUnsupportedGnuSuffix = lib.hasPrefix "gnuabielfv" stdenv.targetPlatform.parsed.abi.name;
+  clangCompatibleConfig =
+    if hasUnsupportedGnuSuffix then
+      lib.removeSuffix (lib.removePrefix "gnu" stdenv.targetPlatform.parsed.abi.name) stdenv.targetPlatform.config
+    else
+      stdenv.targetPlatform.config;
+  explicitAbiValue = if hasUnsupportedGnuSuffix then stdenv.targetPlatform.parsed.abi.abi else "";
   self =
     runCommand "rust-bindgen-${rust-bindgen-unwrapped.version}"
       {
@@ -44,9 +53,15 @@ let
       # if you modify the logic to find the right clang flags, also modify rustPlatform.bindgenHook
       ''
         mkdir -p $out/bin
-        export cincludes="$(< ${clang}/nix-support/cc-cflags) $(< ${clang}/nix-support/libc-cflags)"
-        export cxxincludes="$(< ${clang}/nix-support/libcxx-cxxflags)"
-        substituteAll ${./wrapper.sh} $out/bin/bindgen
+        cincludes="$(< ${clang}/nix-support/cc-cflags) $(< ${clang}/nix-support/libc-cflags)"
+        cxxincludes="$(< ${clang}/nix-support/libcxx-cxxflags)"
+        substitute ${./wrapper.sh} $out/bin/bindgen \
+          --replace-fail "@bash@" "${bash}" \
+          --replace-fail "@cxxincludes@" "$cxxincludes" \
+          --replace-fail "@cincludes@" "$cincludes" \
+          --replace-fail "@unwrapped@" "${rust-bindgen-unwrapped}" \
+          --replace-fail "@defaultTarget@" "${clangCompatibleConfig}" \
+          --replace-fail "@explicitAbiValue@" "${explicitAbiValue}"
         chmod +x $out/bin/bindgen
       '';
 in
