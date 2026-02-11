@@ -1087,36 +1087,7 @@ in
         {
           source =
             let
-              ppm2osbadgeicon = pkgs.callPackage (
-                {
-                  stdenv,
-                }:
-                stdenv.mkDerivation {
-                  pname = "ppm2osbadgeicon";
-                  version = "3";
-
-                  src = ./ppm2osbadgeicon.c;
-
-                  dontUnpack = true;
-                  dontConfigure = true;
-
-                  buildPhase = ''
-                    runHook preBuild
-
-                    $CC -std=c99 -Wall -Wextra -pedantic -Werror $src -o ppm2osbadgeicon -lm
-
-                    runHook postBuild
-                  '';
-
-                  installPhase = ''
-                    runHook preInstall
-
-                    install -Dm755 -t $out/bin ppm2osbadgeicon
-
-                    runHook postInstall
-                  '';
-                }
-              ) { };
+              /*
               mktestosbadgeicon = pkgs.callPackage (
                 {
                   stdenv,
@@ -1147,6 +1118,7 @@ in
                   '';
                 }
               ) { };
+              */
 
               bootxStart = pkgs.writers.writeText "BootX-start" ''
                 <CHRP-BOOT>
@@ -1179,10 +1151,10 @@ in
                   $out
               '';
             in
-            pkgs.runCommand "grub-BootX" { nativeBuildInputs = [ ppm2osbadgeicon ]; } ''
+            pkgs.runCommand "grub-BootX" { nativeBuildInputs = [ pkgs.ppm2osbadgeicon ]; } ''
               cat ${bootxStart} > $out
               ppm2osbadgeicon ${./flake.ppm} >> $out
-              cat ${bootxEnd} >> $out 
+              cat ${bootxEnd} >> $out
             '';
           target = "/System/Library/CoreServices/BootX";
         }
