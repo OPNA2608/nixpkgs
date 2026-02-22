@@ -331,6 +331,7 @@ let
       optional (
         targetPlatform ? gcc.cpu && !(targetPlatform.isDarwin && targetPlatform.isAarch64)
       ) "-mcpu=${targetPlatform.gcc.cpu}"
+    ++ optional (targetPlatform ? gcc.abi) "-mabi=${targetPlatform.gcc.abi}"
     ++
       # -mfloat-abi only matters on arm32 but we set it here
       # unconditionally just in case. If the abi specifically sets hard
