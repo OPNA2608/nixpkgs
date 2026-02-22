@@ -369,7 +369,26 @@ stdenv.mkDerivation (finalAttrs: {
     # on modern FreeBSD, use the system one instead
     substituteInPlace src/bootstrap/src/core/build_steps/tool.rs \
         --replace 'cargo.env("LZMA_API_STATIC", "1");' ' '
-  '';
+  ''
+  # Unconditional but mostly no-op to avoid complete bitrot
+  + (
+    let
+      isPpc64GnuElfv2 =
+        stdenv.targetPlatform.isPower64
+        && stdenv.targetPlatform.isBigEndian
+        && stdenv.targetPlatform.isGnu
+        && stdenv.targetPlatform.isAbiElfv2;
+    in
+    ''
+      substituteInPlace compiler/rustc_target/src/spec/targets/powerpc64_unknown_linux_gnu.rs \
+        --replace-fail 'base.abi = "elfv1"' 'base.abi = "${
+          if isPpc64GnuElfv2 then "elfv2" else "elfv1"
+        }"' \
+        --replace-fail 'base.llvm_abiname = "elfv1"' 'base.llvm_abiname = "${
+          if isPpc64GnuElfv2 then "elfv2" else "elfv1"
+        }"'
+    ''
+  );
 
   # rustc unfortunately needs cmake to compile llvm-rt but doesn't
   # use it for the normal build. This disables cmake in Nix.

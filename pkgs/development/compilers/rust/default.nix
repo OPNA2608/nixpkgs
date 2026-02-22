@@ -39,7 +39,15 @@ let
   };
   # Allow faster cross compiler generation by reusing Build artifacts
   fastCross =
-    (stdenv.buildPlatform == stdenv.hostPlatform) && (stdenv.hostPlatform != stdenv.targetPlatform);
+    (stdenv.buildPlatform == stdenv.hostPlatform)
+    && (stdenv.hostPlatform != stdenv.targetPlatform)
+    # we're patching in support for gnuabielfv2, need to take the long route
+    && !(
+      stdenv.targetPlatform.isPower64
+      && stdenv.targetPlatform.isBigEndian
+      && stdenv.targetPlatform.isGnu
+      && stdenv.targetPlatform.isAbiElfv2
+    );
 in
 {
   lib = lib';
