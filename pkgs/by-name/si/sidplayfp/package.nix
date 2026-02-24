@@ -3,6 +3,7 @@
   lib,
   fetchFromGitHub,
   gitUpdater,
+  runCommand,
   testers,
   alsaSupport ? stdenv.hostPlatform.isLinux,
   alsa-lib,
@@ -10,6 +11,7 @@
   pulseSupport ? stdenv.hostPlatform.isLinux,
   libpulseaudio,
   libsidplayfp,
+  makeWrapper,
   out123Support ? stdenv.hostPlatform.isDarwin,
   mpg123,
   perl,
@@ -56,7 +58,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
+      package =
+        # sidplayfp prints its own version + libsidplayfp version, lets isolate just the one we care about
+        runCommand "sidplayfp-print-version"
+          {
+            inherit (finalAttrs.finalPackage) pname version meta;
+            nativeBuildInputs = [ makeWrapper ];
+          }
+          ''
+            makeWrapper ${lib.getExe finalAttrs.finalPackage} $out/bin/${finalAttrs.finalPackage.meta.mainProgram} \
+              --append-flags '| head -n1'
+          '';
     };
     updateScript = gitUpdater {
       rev-prefix = "v";
