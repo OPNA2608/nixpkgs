@@ -8,6 +8,11 @@ in
     version = "2.25.2";
     hash = "sha256-+nahWuAcGWgxBM6/a2HWwDw5DkQpUt5i/CEGzTLwNQw=";
     cargoHash = "sha256-fVD+RGU/2UGVihIktKg2+eDWmlWomDOAcrY6k2XwF1c=";
+    patches = [
+      # https://github.com/miracle-wm-org/miracle-wm/issues/728
+      # https://github.com/canonical/mir/pull/4721
+      ./1001-mir-Drop-remaining-references-to-boost_system.patch
+    ];
   };
 
   mir_2_15 = common {

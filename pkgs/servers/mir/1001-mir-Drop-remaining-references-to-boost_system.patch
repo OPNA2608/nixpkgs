@@ -1,0 +1,36 @@
+From a813d9c18781719019403b48ddc2d3f26fd69dd2 Mon Sep 17 00:00:00 2001
+From: OPNA2608 <opna2608@protonmail.com>
+Date: Tue, 24 Feb 2026 18:38:05 +0100
+Subject: [PATCH] tests/mirtest*.pc.in: Drop remaining references to
+ boost_system
+
+---
+ tests/mirtest-internal.pc.in | 2 +-
+ tests/mirtest.pc.in          | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tests/mirtest-internal.pc.in b/tests/mirtest-internal.pc.in
+index d72540821f..af95a98e8f 100644
+--- a/tests/mirtest-internal.pc.in
++++ b/tests/mirtest-internal.pc.in
+@@ -6,5 +6,5 @@ Name: mirtest-internal
+ Description: Mir test assist internal library
+ Version: @PROJECT_VERSION@
+ Requires: mirtest mirserver mirserver-internal
+-Libs: -L${libdir} -lmir-test-assist -lmir-test-assist-internal -ldl -lboost_filesystem -lboost_system
++Libs: -L${libdir} -lmir-test-assist -lmir-test-assist-internal -ldl -lboost_filesystem
+ Cflags: -I${includedir}
+diff --git a/tests/mirtest.pc.in b/tests/mirtest.pc.in
+index b3711c79b5..dbcf698a7f 100644
+--- a/tests/mirtest.pc.in
++++ b/tests/mirtest.pc.in
+@@ -6,5 +6,5 @@ Name: mirtest
+ Description: Mir test assist library
+ Version: @PROJECT_VERSION@
+ Requires: miral mirserver mirplatform mircommon
+-Libs: -L${libdir} -lmir-test-assist -ldl -lboost_filesystem -lboost_system
++Libs: -L${libdir} -lmir-test-assist -ldl -lboost_filesystem
+ Cflags: -I${includedir}
+-- 
+2.51.2
+
