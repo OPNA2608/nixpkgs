@@ -15,18 +15,21 @@
   lomiri-ui-toolkit,
   mesa,
   pkg-config,
-  qqc2-suru-style,
+  qqc2-suru-style ? null,
+  qt5compat ? null,
   qtbase,
   qtdeclarative,
-  qtquickcontrols2,
-  qtsystems,
+  qtquickcontrols2 ? null,
+  qtsystems ? null,
   qttools,
   qtwebengine,
   wrapQtAppsHook,
   xvfb-run,
+  withDocumentation ? true,
 }:
 
 let
+  withQt6 = lib.strings.versionAtLeast qtbase.version "6";
   listToQtVar = suffix: lib.makeSearchPathOutput "bin" suffix;
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -42,6 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   outputs = [
     "out"
+  ]
+  ++ lib.optionals withDocumentation [
     "doc"
   ];
 
@@ -55,16 +60,23 @@ stdenv.mkDerivation (finalAttrs: {
 
     substituteInPlace doc/CMakeLists.txt \
       --replace-fail 'COMMAND ''${QDOC_BIN} -qt5' 'COMMAND ''${QDOC_BIN}'
+  ''
+  # Can't find out Qt6 qdoc?
+  + lib.optionalString (!withDocumentation) ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail 'add_subdirectory(doc)' 'message(WARNING "[Nix] Not building documentation")'
   '';
 
-  strictDeps = true;
+  strictDeps = !withQt6;
 
   nativeBuildInputs = [
     cmake
     gettext
     pkg-config
-    qttools # qdoc
     wrapQtAppsHook
+  ]
+  ++ lib.optionals withDocumentation [
+    qttools # qdoc
   ];
 
   buildInputs = [
@@ -79,9 +91,14 @@ stdenv.mkDerivation (finalAttrs: {
     lomiri-content-hub
     lomiri-ui-extras
     lomiri-ui-toolkit
-    qqc2-suru-style
     qtquickcontrols2
     qtsystems
+  ]
+  ++ lib.optionals (!withQt6) [
+    qqc2-suru-style
+  ]
+  ++ lib.optionals withQt6 [
+    qt5compat
   ];
 
   nativeCheckInputs = [
@@ -92,11 +109,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   cmakeFlags = [
     (lib.cmakeBool "CLICK_MODE" false)
-    (lib.cmakeBool "ENABLE_QT6" (lib.strings.versionAtLeast qtbase.version "6"))
-    (lib.cmakeBool "WERROR" true)
+    (lib.cmakeBool "ENABLE_QT6" withQt6)
+    (lib.cmakeBool "WERROR" (!withQt6)) # Porting WIP
   ];
 
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  doCheck =
+    stdenv.buildPlatform.canExecute stdenv.hostPlatform
+    # Hard dependency on Qt5 still
+    && (!withQt6);
 
   disabledTests = [
     # Don't care about linter failures
@@ -115,6 +135,8 @@ stdenv.mkDerivation (finalAttrs: {
           lomiri-ui-toolkit
           qtwebengine
           qtdeclarative
+        ]
+        ++ lib.optionals (!withQt6) [
           qtquickcontrols2
           qtsystems
         ]
