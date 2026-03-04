@@ -84,6 +84,11 @@ buildPythonPackage {
     "tests/test_inkex_gui_window.py"
     # Failed to find pixmap 'image-missing' in /build/source/tests/data/
     "tests/test_inkex_gui_pixmaps.py"
+  ]
+  # Failures w/ binary dxf data
+  # https://github.com/NixOS/nixpkgs/issues/496213
+  ++ lib.optionals (stdenv.hostPlatform.isPower64 && stdenv.hostPlatform.isBigEndian) [
+    "tests/test_dxf_input.py"
   ];
 
   postPatch = ''
