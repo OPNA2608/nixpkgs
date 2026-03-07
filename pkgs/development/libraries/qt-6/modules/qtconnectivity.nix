@@ -20,4 +20,8 @@ qtModule {
     qtbase
     qtdeclarative
   ];
+
+  postPatch = ''
+    substituteInPlace src/nfc/configure.cmake --replace-fail "qt_configure_add_summary_entry(ARGS pcslite)" "qt_configure_add_summary_entry(ARGS pcsclite)"
+  '';
 }
