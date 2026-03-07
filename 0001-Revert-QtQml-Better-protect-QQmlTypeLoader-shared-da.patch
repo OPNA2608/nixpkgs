@@ -1,0 +1,1839 @@
+From cf42741721549af4209707f1dcef0adca09fdff2 Mon Sep 17 00:00:00 2001
+From: OPNA2608 <opna2608@protonmail.com>
+Date: Fri, 6 Mar 2026 21:22:20 +0100
+Subject: [PATCH] Revert "QtQml: Better protect QQmlTypeLoader shared data"
+
+This reverts commit 6be33f6a54704e3563c265c71f3c163c548f8d7b.
+---
+ src/qml/CMakeLists.txt               |   1 -
+ src/qml/qml/qqmldatablob.cpp         |   6 +-
+ src/qml/qml/qqmldatablob_p.h         |   6 +-
+ src/qml/qml/qqmlengine.cpp           |   6 +-
+ src/qml/qml/qqmlscriptblob.cpp       |  11 +-
+ src/qml/qml/qqmltypedata.cpp         |  15 +-
+ src/qml/qml/qqmltypeloader.cpp       | 399 ++++++++++++---------------
+ src/qml/qml/qqmltypeloader_p.h       | 156 +++++++----
+ src/qml/qml/qqmltypeloaderdata.cpp   |  18 --
+ src/qml/qml/qqmltypeloaderdata_p.h   | 346 -----------------------
+ src/qml/qml/qqmltypeloaderthread.cpp |   4 +-
+ 11 files changed, 295 insertions(+), 673 deletions(-)
+ delete mode 100644 src/qml/qml/qqmltypeloaderdata.cpp
+ delete mode 100644 src/qml/qml/qqmltypeloaderdata_p.h
+
+diff --git a/src/qml/CMakeLists.txt b/src/qml/CMakeLists.txt
+index 407f4f5b9e..c7a4ed5bdc 100644
+--- a/src/qml/CMakeLists.txt
++++ b/src/qml/CMakeLists.txt
+@@ -328,7 +328,6 @@ qt_internal_add_qml_module(Qml
+         qml/qqmltypecompiler.cpp qml/qqmltypecompiler_p.h
+         qml/qqmltypedata.cpp qml/qqmltypedata_p.h
+         qml/qqmltypeloader.cpp qml/qqmltypeloader_p.h
+-        qml/qqmltypeloaderdata.cpp qml/qqmltypeloaderdata_p.h
+         qml/qqmltypeloaderqmldircontent.cpp qml/qqmltypeloaderqmldircontent_p.h
+         qml/qqmltypeloaderthread.cpp qml/qqmltypeloaderthread_p.h
+         qml/qqmltypemodule.cpp qml/qqmltypemodule_p.h
+diff --git a/src/qml/qml/qqmldatablob.cpp b/src/qml/qml/qqmldatablob.cpp
+index 2a3ac9ea74..a577e8fab8 100644
+--- a/src/qml/qml/qqmldatablob.cpp
++++ b/src/qml/qml/qqmldatablob.cpp
+@@ -240,8 +240,8 @@ QList<QQmlError> QQmlDataBlob::errors() const
+ {
+     Q_ASSERT(isCompleteOrError()
+              || !m_typeLoader
+-             || !m_typeLoader->thread()
+-             || m_typeLoader->thread()->isThisThread());
++             || !m_typeLoader->m_thread
++             || m_typeLoader->m_thread->isThisThread());
+     return m_errors;
+ }
+ 
+@@ -528,7 +528,7 @@ void QQmlDataBlob::tryDone()
+ #ifdef DATABLOB_DEBUG
+         qWarning("QQmlDataBlob: Dispatching completed");
+ #endif
+-        m_typeLoader->thread()->callCompleted(this);
++        m_typeLoader->m_thread->callCompleted(this);
+ 
+         release();
+     }
+diff --git a/src/qml/qml/qqmldatablob_p.h b/src/qml/qml/qqmldatablob_p.h
+index 8874c2c395..a66c7f90d1 100644
+--- a/src/qml/qml/qqmldatablob_p.h
++++ b/src/qml/qml/qqmldatablob_p.h
+@@ -105,21 +105,21 @@ public:
+     void assertTypeLoaderThreadIfRunning() const
+     {
+         const Loader *loader = m_typeLoader;
+-        Q_ASSERT(!loader || !loader->thread() || loader->thread()->isThisThread());
++        Q_ASSERT(!loader || !loader->m_thread || loader->m_thread->isThisThread());
+     }
+ 
+     template<typename Loader = QQmlTypeLoader>
+     void assertTypeLoaderThread() const
+     {
+         const Loader *loader = m_typeLoader;
+-        Q_ASSERT(loader && loader->thread() && loader->thread()->isThisThread());
++        Q_ASSERT(loader && loader->m_thread && loader->m_thread->isThisThread());
+     }
+ 
+     template<typename Loader = QQmlTypeLoader>
+     void assertEngineThread() const
+     {
+         const Loader *loader = m_typeLoader;
+-        Q_ASSERT(loader && loader->engine() && loader->engine()->thread()->isCurrentThread());
++        Q_ASSERT(loader && loader->m_engine && loader->m_engine->thread()->isCurrentThread());
+     }
+ 
+ protected:
+diff --git a/src/qml/qml/qqmlengine.cpp b/src/qml/qml/qqmlengine.cpp
+index cc13b5006d..cf7dc0ff7f 100644
+--- a/src/qml/qml/qqmlengine.cpp
++++ b/src/qml/qml/qqmlengine.cpp
+@@ -643,7 +643,9 @@ void QQmlEngine::trimComponentCache()
+ {
+     Q_D(QQmlEngine);
+     handle()->trimCompilationUnits();
++    d->typeLoader.lock();
+     d->typeLoader.trimCache();
++    d->typeLoader.unlock();
+ }
+ 
+ /*!
+@@ -774,8 +776,6 @@ void QQmlEngine::setNetworkAccessManagerFactory(QQmlNetworkAccessManagerFactory
+     d->typeLoader.setNetworkAccessManagerFactory(factory);
+ }
+ 
+-class QQmlEnginePublicAPIToken {};
+-
+ /*!
+   Returns the current QQmlNetworkAccessManagerFactory.
+ 
+@@ -784,7 +784,7 @@ class QQmlEnginePublicAPIToken {};
+ QQmlNetworkAccessManagerFactory *QQmlEngine::networkAccessManagerFactory() const
+ {
+     Q_D(const QQmlEngine);
+-    return d->typeLoader.networkAccessManagerFactory().get(QQmlEnginePublicAPIToken());
++    return d->typeLoader.networkAccessManagerFactory();
+ }
+ 
+ QNetworkAccessManager *QQmlEnginePrivate::getNetworkAccessManager()
+diff --git a/src/qml/qml/qqmlscriptblob.cpp b/src/qml/qml/qqmlscriptblob.cpp
+index bcd026b957..fa969e9ae0 100644
+--- a/src/qml/qml/qqmlscriptblob.cpp
++++ b/src/qml/qml/qqmlscriptblob.cpp
+@@ -41,7 +41,7 @@ void QQmlScriptBlob::dataReceived(const SourceCodeData &data)
+             return;
+         }
+ 
+-        if (m_typeLoader->readCacheFile()) {
++        if (readCacheFile()) {
+             auto unit = QQml::makeRefPointer<QV4::CompiledData::CompilationUnit>();
+             QString error;
+             if (unit->loadFromDisk(url(), data.sourceTimeStamp(), &error)) {
+@@ -73,16 +73,15 @@ void QQmlScriptBlob::dataReceived(const SourceCodeData &data)
+ 
+     if (m_isModule) {
+         QList<QQmlJS::DiagnosticMessage> diagnostics;
+-        unit = QV4::Compiler::Codegen::compileModule(
+-                m_typeLoader->isDebugging(), urlString(), source, data.sourceTimeStamp(),
+-                &diagnostics);
++        unit = QV4::Compiler::Codegen::compileModule(isDebugging(), urlString(), source,
++                                                     data.sourceTimeStamp(), &diagnostics);
+         QList<QQmlError> errors = QQmlEnginePrivate::qmlErrorFromDiagnostics(urlString(), diagnostics);
+         if (!errors.isEmpty()) {
+             setError(errors);
+             return;
+         }
+     } else {
+-        QmlIR::Document irUnit(urlString(), finalUrlString(), m_typeLoader->isDebugging());
++        QmlIR::Document irUnit(urlString(), finalUrlString(), isDebugging());
+ 
+         irUnit.jsModule.sourceTimeStamp = data.sourceTimeStamp();
+ 
+@@ -105,7 +104,7 @@ void QQmlScriptBlob::dataReceived(const SourceCodeData &data)
+         unit = std::move(irUnit.javaScriptCompilationUnit);
+     }
+ 
+-    if (m_typeLoader->writeCacheFile()) {
++    if (writeCacheFile()) {
+         QString errorString;
+         if (unit->saveToDisk(url(), &errorString)) {
+             QString error;
+diff --git a/src/qml/qml/qqmltypedata.cpp b/src/qml/qml/qqmltypedata.cpp
+index 9daf976d2b..9b8e3e5632 100644
+--- a/src/qml/qml/qqmltypedata.cpp
++++ b/src/qml/qml/qqmltypedata.cpp
+@@ -81,13 +81,6 @@ bool QQmlTypeData::tryLoadFromDiskCache()
+ {
+     assertTypeLoaderThread();
+ 
+-    if (!m_backupSourceCode.isCacheable())
+-        return false;
+-
+-    if (auto unit = QQmlMetaType::obtainCompilationUnit(url()))
+-        return loadFromDiskCache(unit);
+-
+-    if (!m_typeLoader->readCacheFile())
+         return false;
+ 
+     auto unit = QQml::makeRefPointer<QV4::CompiledData::CompilationUnit>();
+@@ -811,7 +804,7 @@ void QQmlTypeData::initializeFromCachedUnit(const QQmlPrivate::CachedQmlUnit *un
+     }
+ 
+     m_document.reset(
+-            new QmlIR::Document(urlString(), finalUrlString(), m_typeLoader->isDebugging()));
++            new QmlIR::Document(urlString(), finalUrlString(), isDebugging()));
+     QQmlIRLoader loader(unit->qmlData, m_document.data());
+     loader.load();
+     m_document->javaScriptCompilationUnit
+@@ -826,7 +819,7 @@ bool QQmlTypeData::loadFromSource()
+     assertTypeLoaderThread();
+ 
+     m_document.reset(
+-            new QmlIR::Document(urlString(), finalUrlString(), m_typeLoader->isDebugging()));
++            new QmlIR::Document(urlString(), finalUrlString(), isDebugging()));
+     m_document->jsModule.sourceTimeStamp = m_backupSourceCode.sourceTimeStamp();
+     QmlIR::IRBuilder compiler;
+ 
+@@ -859,7 +852,7 @@ void QQmlTypeData::restoreIR(const QQmlRefPointer<QV4::CompiledData::Compilation
+     assertTypeLoaderThread();
+ 
+     m_document.reset(
+-            new QmlIR::Document(urlString(), finalUrlString(), m_typeLoader->isDebugging()));
++            new QmlIR::Document(urlString(), finalUrlString(), isDebugging()));
+     QQmlIRLoader loader(unit->unitData(), m_document.data());
+     loader.load();
+     m_document->javaScriptCompilationUnit = unit;
+@@ -974,7 +967,7 @@ void QQmlTypeData::compile(const QQmlRefPointer<QQmlTypeNameCache> &typeNameCach
+         return;
+     }
+ 
+-    const bool trySaveToDisk = m_typeLoader->writeCacheFile() && !typeRecompilation;
++    const bool trySaveToDisk = writeCacheFile() && !typeRecompilation;
+     if (trySaveToDisk) {
+         QString errorString;
+         if (compilationUnit->saveToDisk(url(), &errorString)) {
+diff --git a/src/qml/qml/qqmltypeloader.cpp b/src/qml/qml/qqmltypeloader.cpp
+index 5d09bf21c6..f6242a6559 100644
+--- a/src/qml/qml/qqmltypeloader.cpp
++++ b/src/qml/qml/qqmltypeloader.cpp
+@@ -35,11 +35,22 @@
+ 
+ #include <functional>
+ 
+-#define ASSERT_LOADTHREAD() Q_ASSERT(thread() && thread()->isThisThread())
+-#define ASSERT_ENGINETHREAD() Q_ASSERT(engine()->thread()->isCurrentThread())
++#define ASSERT_LOADTHREAD() Q_ASSERT(m_thread && m_thread->isThisThread())
++#define ASSERT_ENGINETHREAD() Q_ASSERT(m_engine->thread()->isCurrentThread())
+ 
+ QT_BEGIN_NAMESPACE
+ 
++namespace {
++
++    template<typename LockType>
++    struct LockHolder
++    {
++        LockType& lock;
++        LockHolder(LockType *l) : lock(*l) { lock.lock(); }
++        ~LockHolder() { lock.unlock(); }
++    };
++}
++
+ Q_TRACE_POINT(qtqml, QQmlCompiling_entry, const QUrl &url)
+ Q_TRACE_POINT(qtqml, QQmlCompiling_exit)
+ 
+@@ -83,55 +94,43 @@ void QQmlTypeLoader::invalidate()
+     // Need to delete the network replies after
+     // the loader thread is shutdown as it could be
+     // getting new replies while we clear them
+-    QQmlTypeLoaderThreadDataPtr data(&m_data);
+-    data->networkReplies.clear();
++    m_networkReplies.clear();
+ #endif // qml_network
+ }
+ 
+ void QQmlTypeLoader::addUrlInterceptor(QQmlAbstractUrlInterceptor *urlInterceptor)
+ {
+     ASSERT_ENGINETHREAD();
+-    QQmlTypeLoaderConfiguredDataPtr data(&m_data);
+-    data->urlInterceptors.append(urlInterceptor);
++    m_urlInterceptors.append(urlInterceptor);
+ }
+ 
+ void QQmlTypeLoader::removeUrlInterceptor(QQmlAbstractUrlInterceptor *urlInterceptor)
+ {
+     ASSERT_ENGINETHREAD();
+-    QQmlTypeLoaderConfiguredDataPtr data(&m_data);
+-    data->urlInterceptors.removeOne(urlInterceptor);
++    m_urlInterceptors.removeOne(urlInterceptor);
+ }
+ 
+ QList<QQmlAbstractUrlInterceptor *> QQmlTypeLoader::urlInterceptors() const
+ {
+     ASSERT_ENGINETHREAD();
+-    QQmlTypeLoaderConfiguredDataConstPtr data(&m_data);
+-    return data->urlInterceptors;
+-}
+-
+-static QUrl doInterceptUrl(
+-        const QUrl &url, QQmlAbstractUrlInterceptor::DataType type,
+-        const QList<QQmlAbstractUrlInterceptor *> &urlInterceptors)
+-{
+-    QUrl result = url;
+-    for (QQmlAbstractUrlInterceptor *interceptor : urlInterceptors)
+-        result = interceptor->intercept(result, type);
+-    return result;
++    return m_urlInterceptors;
+ }
+ 
+ QUrl QQmlTypeLoader::interceptUrl(const QUrl &url, QQmlAbstractUrlInterceptor::DataType type) const
+ {
+     // Can be called from either thread, but only after interceptor setup is done.
+ 
+-    QQmlTypeLoaderConfiguredDataConstPtr data(&m_data);
+-    return doInterceptUrl(url, type, data->urlInterceptors);
++    QUrl result = url;
++    for (QQmlAbstractUrlInterceptor *interceptor : m_urlInterceptors)
++        result = interceptor->intercept(result, type);
++    return result;
+ }
+ 
+ bool QQmlTypeLoader::hasUrlInterceptors() const
+ {
+     // Can be called from either thread, but only after interceptor setup is done.
+-    QQmlTypeLoaderConfiguredDataConstPtr data(&m_data);
+-    return !data->urlInterceptors.isEmpty();
++
++    return !m_urlInterceptors.isEmpty();
+ }
+ 
+ #if QT_CONFIG(qml_debug)
+@@ -139,9 +138,8 @@ void QQmlTypeLoader::setProfiler(QQmlProfiler *profiler)
+ {
+     ASSERT_ENGINETHREAD();
+ 
+-    QQmlTypeLoaderConfiguredDataPtr data(&m_data);
+-    Q_ASSERT(!data->profiler);
+-    data->profiler.reset(profiler);
++    Q_ASSERT(!m_profiler);
++    m_profiler.reset(profiler);
+ }
+ #endif
+ 
+@@ -206,7 +204,7 @@ void QQmlTypeLoader::doLoad(const Loader &loader, const QQmlDataBlob::Ptr &blob,
+ #endif
+     blob->startLoading();
+ 
+-    if (QQmlTypeLoaderThread *t = thread(); t && t->isThisThread()) {
++    if (m_thread && m_thread->isThisThread()) {
+         loader.loadThread(this, blob);
+         return;
+     }
+@@ -227,11 +225,11 @@ void QQmlTypeLoader::doLoad(const Loader &loader, const QQmlDataBlob::Ptr &blob,
+     }
+ 
+     Q_ASSERT(mode == Synchronous);
+-    Q_ASSERT(thread());
++    Q_ASSERT(m_thread);
+ 
+-    QQmlTypeLoaderSharedDataConstPtr lock(&m_data);
++    LockHolder<QQmlTypeLoader> lock(this);
+     do {
+-        m_data.thread()->waitForNextMessage();
++        m_thread->waitForNextMessage();
+     } while (!blob->isCompleteOrError());
+ }
+ 
+@@ -271,10 +269,8 @@ void QQmlTypeLoader::drop(const QQmlDataBlob::Ptr &blob)
+ 
+     // We must not destroy a QQmlDataBlob from the main thread
+     // since it will shuffle its dependencies around.
+-    // Therefore, if we're not on the type loader thread,
+-    // we defer the destruction to the type loader thread.
+-    if (QQmlTypeLoaderThread *t = thread(); t && !t->isThisThread())
+-        t->drop(blob);
++    if (m_thread)
++        m_thread->drop(blob);
+ }
+ 
+ void QQmlTypeLoader::loadWithStaticDataThread(const QQmlDataBlob::Ptr &blob, const QByteArray &data)
+@@ -310,17 +306,15 @@ void QQmlTypeLoader::loadThread(const QQmlDataBlob::Ptr &blob)
+         }
+ 
+         if (blob->setProgress(1.f) && blob->isAsync())
+-            thread()->callDownloadProgressChanged(blob, 1.);
++            m_thread->callDownloadProgressChanged(blob, 1.);
+ 
+         setData(blob, fileName);
+ 
+     } else {
+ #if QT_CONFIG(qml_network)
+-        QNetworkReply *reply = thread()->networkAccessManager()->get(QNetworkRequest(blob->m_url));
+-        QQmlTypeLoaderNetworkReplyProxy *nrp = thread()->networkReplyProxy();
+-
+-        QQmlTypeLoaderThreadDataPtr data(&m_data);
+-        data->networkReplies.insert(reply, blob);
++        QNetworkReply *reply = m_thread->networkAccessManager()->get(QNetworkRequest(blob->m_url));
++        QQmlTypeLoaderNetworkReplyProxy *nrp = m_thread->networkReplyProxy();
++        m_networkReplies.insert(reply, blob);
+ 
+         if (reply->isFinished()) {
+             nrp->manualFinished(reply);
+@@ -340,6 +334,10 @@ void QQmlTypeLoader::loadThread(const QQmlDataBlob::Ptr &blob)
+ 
+ #define DATALOADER_MAXIMUM_REDIRECT_RECURSION 16
+ 
++#ifndef TYPELOADER_MINIMUM_TRIM_THRESHOLD
++#define TYPELOADER_MINIMUM_TRIM_THRESHOLD 64
++#endif
++
+ #if QT_CONFIG(qml_network)
+ void QQmlTypeLoader::networkReplyFinished(QNetworkReply *reply)
+ {
+@@ -347,8 +345,7 @@ void QQmlTypeLoader::networkReplyFinished(QNetworkReply *reply)
+ 
+     reply->deleteLater();
+ 
+-    QQmlTypeLoaderThreadDataPtr data(&m_data);
+-    QQmlRefPointer<QQmlDataBlob> blob = data->networkReplies.take(reply);
++    QQmlRefPointer<QQmlDataBlob> blob = m_networkReplies.take(reply);
+ 
+     Q_ASSERT(blob);
+ 
+@@ -361,10 +358,10 @@ void QQmlTypeLoader::networkReplyFinished(QNetworkReply *reply)
+             blob->m_finalUrl = url;
+             blob->m_finalUrlString.clear();
+ 
+-            QNetworkReply *reply = thread()->networkAccessManager()->get(QNetworkRequest(url));
+-            QObject *nrp = thread()->networkReplyProxy();
++            QNetworkReply *reply = m_thread->networkAccessManager()->get(QNetworkRequest(url));
++            QObject *nrp = m_thread->networkReplyProxy();
+             QObject::connect(reply, SIGNAL(finished()), nrp, SLOT(finished()));
+-            data->networkReplies.insert(reply, std::move(blob));
++            m_networkReplies.insert(reply, std::move(blob));
+ #ifdef DATABLOB_DEBUG
+             qWarning("QQmlDataBlob: redirected to %s", qPrintable(blob->finalUrlString()));
+ #endif
+@@ -385,15 +382,14 @@ void QQmlTypeLoader::networkReplyProgress(QNetworkReply *reply,
+ {
+     ASSERT_LOADTHREAD();
+ 
+-    QQmlTypeLoaderThreadDataConstPtr data(&m_data);
+-    const QQmlRefPointer<QQmlDataBlob> blob = data->networkReplies.value(reply);
++    const QQmlRefPointer<QQmlDataBlob> blob = m_networkReplies.value(reply);
+ 
+     Q_ASSERT(blob);
+ 
+     if (bytesTotal != 0) {
+         const qreal progress = (qreal(bytesReceived) / qreal(bytesTotal));
+         if (blob->setProgress(progress) && blob->isAsync())
+-            thread()->callDownloadProgressChanged(blob, blob->progress());
++            m_thread->callDownloadProgressChanged(blob, blob->progress());
+     }
+ }
+ #endif // qml_network
+@@ -404,28 +400,29 @@ gets called in the correct thread.
+ */
+ template<class Interface>
+ void doInitializeEngine(
+-        Interface *iface, QQmlTypeLoaderThread *thread, QQmlTypeLoaderLockedData *data,
+-        const char *uri)
++        Interface *iface, QQmlTypeLoaderThread *thread, QQmlEngine *engine, const char *uri)
+ {
+     // Can be called from either thread
+     // Must not touch engine if called from type loader thread
+ 
+-    if (thread && thread->isThisThread())
++    if (thread && thread->isThisThread()) {
+         thread->initializeEngine(iface, uri);
+-    else
+-        iface->initializeEngine(data->engine(), uri);
++    } else {
++        Q_ASSERT(engine->thread() == QThread::currentThread());
++        iface->initializeEngine(engine, uri);
++    }
+ }
+ 
+ void QQmlTypeLoader::initializeEngine(QQmlEngineExtensionInterface *iface, const char *uri)
+ {
+     // Can be called from either thread
+-    doInitializeEngine(iface, thread(), &m_data, uri);
++    doInitializeEngine(iface, m_thread, m_engine, uri);
+ }
+ 
+ void QQmlTypeLoader::initializeEngine(QQmlExtensionInterface *iface, const char *uri)
+ {
+     // Can be called from either thread
+-    doInitializeEngine(iface, thread(), &m_data, uri);
++    doInitializeEngine(iface, m_thread, m_engine, uri);
+ }
+ 
+ void QQmlTypeLoader::setData(const QQmlDataBlob::Ptr &blob, const QByteArray &data)
+@@ -501,12 +498,11 @@ static bool isPathAbsolute(const QString &path)
+ */
+ QStringList QQmlTypeLoader::importPathList(PathType type) const
+ {
+-    QQmlTypeLoaderConfiguredDataConstPtr data(&m_data);
+     if (type == LocalOrRemote)
+-        return data->importPaths;
++        return m_importPaths;
+ 
+     QStringList list;
+-    for (const QString &path : data->importPaths) {
++    for (const QString &path : m_importPaths) {
+         bool localPath = isPathAbsolute(path) || QQmlFile::isLocalFile(path);
+         if (localPath == (type == Local))
+             list.append(path);
+@@ -544,12 +540,11 @@ void QQmlTypeLoader::addImportPath(const QString &path)
+         cPath.replace(QLatin1Char('\\'), QLatin1Char('/'));
+     }
+ 
+-    QQmlTypeLoaderConfiguredDataPtr data(&m_data);
+     if (!cPath.isEmpty()) {
+-        if (data->importPaths.contains(cPath))
+-            data->importPaths.move(data->importPaths.indexOf(cPath), 0);
++        if (m_importPaths.contains(cPath))
++            m_importPaths.move(m_importPaths.indexOf(cPath), 0);
+         else
+-            data->importPaths.prepend(cPath);
++            m_importPaths.prepend(cPath);
+     }
+ }
+ 
+@@ -560,8 +555,7 @@ void QQmlTypeLoader::setImportPathList(const QStringList &paths)
+ {
+     qCDebug(lcQmlImport) << "setImportPathList:" << paths;
+ 
+-    QQmlTypeLoaderConfiguredDataPtr data(&m_data);
+-    data->importPaths.clear();
++    m_importPaths.clear();
+     for (auto it = paths.crbegin(); it != paths.crend(); ++it)
+         addImportPath(*it);
+ 
+@@ -576,8 +570,7 @@ void QQmlTypeLoader::setImportPathList(const QStringList &paths)
+ void QQmlTypeLoader::setPluginPathList(const QStringList &paths)
+ {
+     qCDebug(lcQmlImport) << "setPluginPathList:" << paths;
+-    QQmlTypeLoaderConfiguredDataPtr data(&m_data);
+-    data->pluginPaths = paths;
++    m_pluginPaths = paths;
+ }
+ 
+ /*!
+@@ -587,42 +580,39 @@ void QQmlTypeLoader::addPluginPath(const QString& path)
+ {
+     qCDebug(lcQmlImport) << "addPluginPath:" << path;
+ 
+-    QQmlTypeLoaderConfiguredDataPtr data(&m_data);
+-
+     QUrl url = QUrl(path);
+     if (url.isRelative() || url.scheme() == QLatin1String("file")
+         || (url.scheme().size() == 1 && QFile::exists(path)) ) {  // windows path
+         QDir dir = QDir(path);
+-        data->pluginPaths.prepend(dir.canonicalPath());
++        m_pluginPaths.prepend(dir.canonicalPath());
+     } else {
+-        data->pluginPaths.prepend(path);
++        m_pluginPaths.prepend(path);
+     }
+ }
+ 
+ #if QT_CONFIG(qml_network)
+-QQmlNetworkAccessManagerFactoryPtrConst QQmlTypeLoader::networkAccessManagerFactory() const
++QQmlNetworkAccessManagerFactory *QQmlTypeLoader::networkAccessManagerFactory() const
+ {
+     ASSERT_ENGINETHREAD();
+-    return QQmlNetworkAccessManagerFactoryPtrConst(&m_data);
++    QMutexLocker locker(&m_networkAccessManagerMutex);
++    return m_networkAccessManagerFactory;
+ }
+ 
+ void QQmlTypeLoader::setNetworkAccessManagerFactory(QQmlNetworkAccessManagerFactory *factory)
+ {
+     ASSERT_ENGINETHREAD();
+-    QQmlNetworkAccessManagerFactoryPtr(&m_data).reset(factory);
++    QMutexLocker locker(&m_networkAccessManagerMutex);
++    m_networkAccessManagerFactory = factory;
+ }
+ 
+ QNetworkAccessManager *QQmlTypeLoader::createNetworkAccessManager(QObject *parent) const
+ {
+     // Can be called from both threads, or even from a WorkerScript
+-
+-    // TODO: Calling the user's create() method under the lock is quite rude.
+-    //       However, we've been doing so for a long time and stopping the
+-    //       practice would expose thread safety issues in user code.
+-    // ### Qt7: Maybe change the factory interface to provide a different method
+-    //          that can be called without the lock.
+-    if (const auto factory = QQmlNetworkAccessManagerFactoryPtrConst(&m_data))
+-        return factory->create(parent);
++    {
++        QMutexLocker locker(&m_networkAccessManagerMutex);
++        if (m_networkAccessManagerFactory)
++            return m_networkAccessManagerFactory->create(parent);
++    }
+ 
+     return new QNetworkAccessManager(parent);
+ }
+@@ -630,43 +620,33 @@ QNetworkAccessManager *QQmlTypeLoader::createNetworkAccessManager(QObject *paren
+ 
+ void QQmlTypeLoader::clearQmldirInfo()
+ {
+-    QQmlTypeLoaderThreadDataPtr data(&m_data);
+-
+-    auto itr = data->qmldirInfo.constBegin();
+-    while (itr != data->qmldirInfo.constEnd()) {
+-        const QQmlTypeLoaderThreadData::QmldirInfo *cache = *itr;
++    QStringHash<QmldirInfo *>::ConstIterator itr = m_qmldirInfo.constBegin();
++    while (itr != m_qmldirInfo.constEnd()) {
++        QmldirInfo *cache = *itr;
+         do {
+-            const QQmlTypeLoaderThreadData::QmldirInfo *nextCache = cache->next;
++            QmldirInfo *nextCache = cache->next;
+             delete cache;
+             cache = nextCache;
+         } while (cache);
+ 
+         ++itr;
+     }
+-    data->qmldirInfo.clear();
++    m_qmldirInfo.clear();
+ }
+ 
+-static void initializeConfiguredData(
+-        const QQmlTypeLoaderConfiguredDataPtr &data, QQmlEngine *engine)
+-{
+-    QV4::ExecutionEngine *v4 = engine->handle();
+-    data->diskCacheOptions = v4->diskCacheOptions();
+-    data->isDebugging = v4->debugger() != nullptr;
+-    data->initialized = true;
+-}
+ 
+ void QQmlTypeLoader::startThread()
+ {
+     ASSERT_ENGINETHREAD();
+ 
+-    if (!m_data.thread()) {
+-        // Re-read the relevant configuration values at the last possible moment before we start
++    if (!m_thread) {
++        // Read the relevant configuration values at the last possible moment before we start
+         // the thread. After the thread has been started, changing the configuration would result
+-        // in UB. Therefore we can disregard this case. We need to re-read it because a preview
+-        // or a debugger may have been connected in between.
+-        QQmlTypeLoaderConfiguredDataPtr data(&m_data);
+-        initializeConfiguredData(data, m_data.engine());
+-        m_data.createThread(this);
++        // in UB. Therefore we can disregard this case.
++        QV4::ExecutionEngine *v4 = m_engine->handle();
++        m_isDebugging = v4->debugger() != nullptr;
++        m_diskCacheOptions = v4->diskCacheOptions();
++        m_thread = new QQmlTypeLoaderThread(this);
+     }
+ }
+ 
+@@ -674,8 +654,10 @@ void QQmlTypeLoader::shutdownThread()
+ {
+     ASSERT_ENGINETHREAD();
+ 
+-    if (m_data.thread())
+-        m_data.deleteThread();
++    if (m_thread) {
++        delete m_thread;
++        m_thread = nullptr;
++    }
+ }
+ 
+ QQmlTypeLoader::Blob::PendingImport::PendingImport(
+@@ -1132,33 +1114,24 @@ bool QQmlTypeLoader::Blob::loadImportDependencies(
+     return true;
+ }
+ 
+-static QQmlTypeLoaderConfiguredDataConstPtr configuredData(QQmlTypeLoaderLockedData *m_data)
+-{
+-    if (!QQmlTypeLoaderConfiguredDataConstPtr(m_data)->initialized)
+-        initializeConfiguredData(QQmlTypeLoaderConfiguredDataPtr(m_data), m_data->engine());
+-
+-    return QQmlTypeLoaderConfiguredDataConstPtr(m_data);
+-}
+-
+-bool QQmlTypeLoader::isDebugging()
++bool QQmlTypeLoader::Blob::isDebugging() const
+ {
+-    return configuredData(&m_data)->isDebugging;
++    return typeLoader()->m_isDebugging;
+ }
+ 
+-bool QQmlTypeLoader::readCacheFile()
++bool QQmlTypeLoader::Blob::readCacheFile() const
+ {
+-    return configuredData(&m_data)->diskCacheOptions & QV4::ExecutionEngine::DiskCache::QmlcRead;
++    return typeLoader()->m_diskCacheOptions & QV4::ExecutionEngine::DiskCache::QmlcRead;
+ }
+ 
+-bool QQmlTypeLoader::writeCacheFile()
++bool QQmlTypeLoader::Blob::writeCacheFile() const
+ {
+-    return configuredData(&m_data)->diskCacheOptions & QV4::ExecutionEngine::DiskCache::QmlcWrite;
++    return typeLoader()->m_diskCacheOptions & QV4::ExecutionEngine::DiskCache::QmlcWrite;
+ }
+ 
+-QQmlMetaType::CacheMode QQmlTypeLoader::aotCacheMode()
++QQmlMetaType::CacheMode QQmlTypeLoader::Blob::aotCacheMode() const
+ {
+-    const QV4::ExecutionEngine::DiskCacheOptions options
+-            = configuredData(&m_data)->diskCacheOptions;
++    const QV4::ExecutionEngine::DiskCacheOptions options = typeLoader()->m_diskCacheOptions;
+     if (!(options & QV4::ExecutionEngine::DiskCache::Aot))
+         return QQmlMetaType::RejectAll;
+     if (options & QV4::ExecutionEngine::DiskCache::AotByteCode)
+@@ -1202,10 +1175,10 @@ static QStringList parseEnvPath(const QString &envImportPath)
+ Constructs a new type loader that uses the given \a engine.
+ */
+ QQmlTypeLoader::QQmlTypeLoader(QQmlEngine *engine)
+-    : m_data(engine)
++    : m_engine(engine)
++    , m_typeCacheTrimThreshold(TYPELOADER_MINIMUM_TRIM_THRESHOLD)
+ {
+-    QQmlTypeLoaderConfiguredDataPtr data(&m_data);
+-    data->pluginPaths << QLatin1String(".");
++    m_pluginPaths << QLatin1String(".");
+     // Search order is:
+     // 1. android or macos specific bundle paths.
+     // 2. applicationDirPath()
+@@ -1307,7 +1280,7 @@ Returns a QQmlTypeData for the specified \a url.  The QQmlTypeData may be cached
+ */
+ QQmlRefPointer<QQmlTypeData> QQmlTypeLoader::getType(const QUrl &unNormalizedUrl, Mode mode)
+ {
+-    // This can be called from either thread.
++    // TODO: This can be called from either thread and it's too complex for that.
+ 
+     Q_ASSERT(!unNormalizedUrl.isRelative() &&
+             (QQmlFile::urlToLocalFileOrQrc(unNormalizedUrl).isEmpty() ||
+@@ -1326,9 +1299,9 @@ QQmlRefPointer<QQmlTypeData> QQmlTypeLoader::getType(const QUrl &unNormalizedUrl
+             // NB: We do not want to know whether the thread is the main thread, but specifically
+             //     that the thread is _not_ the thread we're waiting for.
+             //     If !QT_CONFIG(qml_type_loader_thread) the QML thread is the main thread.
+-            if (thread() && !thread()->isThisThread()) {
++            if (m_thread && !m_thread->isThisThread()) {
+                 while (!typeData->isCompleteOrError())
+-                    thread()->waitForNextMessage(); // Requires lock to be held, via data above
++                    m_thread->waitForNextMessage();
+             }
+         }
+         return typeData;
+@@ -1336,31 +1309,31 @@ QQmlRefPointer<QQmlTypeData> QQmlTypeLoader::getType(const QUrl &unNormalizedUrl
+ 
+     QQmlRefPointer<QQmlTypeData> typeData;
+     {
+-        QQmlTypeLoaderSharedDataPtr data(&m_data);
++        LockHolder<QQmlTypeLoader> holder(this);
+ 
+-        typeData = data->typeCache.value(url);
++        typeData = m_typeCache.value(url);
+         if (typeData)
+             return handleExisting(typeData);
+ 
+         // Trim before adding the new type, so that we don't immediately trim it away
+-        if (data->typeCache.size() >= data->typeCacheTrimThreshold)
+-            trimCache(data);
++        if (m_typeCache.size() >= m_typeCacheTrimThreshold)
++            trimCache();
+ 
+         typeData = QQml::makeRefPointer<QQmlTypeData>(url, this);
+ 
+         // TODO: if (compiledData == 0), is it safe to omit this insertion?
+-        data->typeCache.insert(url, typeData);
++        m_typeCache.insert(url, typeData);
+     }
+ 
+     QQmlMetaType::CachedUnitLookupError error = QQmlMetaType::CachedUnitLookupError::NoError;
+-    const QQmlMetaType::CacheMode cacheMode = aotCacheMode();
++    const QQmlMetaType::CacheMode cacheMode = typeData->aotCacheMode();
+     if (const QQmlPrivate::CachedQmlUnit *cachedUnit = (cacheMode != QQmlMetaType::RejectAll)
+             ? QQmlMetaType::findCachedCompilationUnit(typeData->url(), cacheMode, &error)
+             : nullptr) {
+-        loadWithCachedUnit(QQmlDataBlob::Ptr(typeData.data()), cachedUnit, mode);
++        QQmlTypeLoader::loadWithCachedUnit(QQmlDataBlob::Ptr(typeData.data()), cachedUnit, mode);
+     } else {
+         typeData->setCachedUnitStatus(error);
+-        load(QQmlDataBlob::Ptr(typeData.data()), mode);
++        QQmlTypeLoader::load(QQmlDataBlob::Ptr(typeData.data()), mode);
+     }
+ 
+     return typeData;
+@@ -1370,8 +1343,7 @@ QQmlRefPointer<QQmlTypeData> QQmlTypeLoader::getType(const QUrl &unNormalizedUrl
+ Returns a QQmlTypeData for the given \a data with the provided base \a url.  The
+ QQmlTypeData will not be cached.
+ */
+-QQmlRefPointer<QQmlTypeData> QQmlTypeLoader::getType(
+-        const QByteArray &data, const QUrl &url, Mode mode)
++QQmlRefPointer<QQmlTypeData> QQmlTypeLoader::getType(const QByteArray &data, const QUrl &url, Mode mode)
+ {
+     // Can be called from either thread.
+ 
+@@ -1395,8 +1367,8 @@ QQmlRefPointer<QV4::CompiledData::CompilationUnit> QQmlTypeLoader::injectModule(
+     QQmlPrivate::CachedQmlUnit cached { unit, nullptr, nullptr};
+ 
+     {
+-        QQmlTypeLoaderSharedDataPtr data(&m_data);
+-        data->scriptCache.insert(relativeUrl, blob);
++        LockHolder<QQmlTypeLoader> holder(this);
++        m_scriptCache.insert(relativeUrl, blob);
+     }
+ 
+     loadWithCachedUnit(blob.data(), &cached, Synchronous);
+@@ -1420,13 +1392,13 @@ QQmlRefPointer<QQmlScriptBlob> QQmlTypeLoader::getScript(
+ 
+     QQmlRefPointer<QQmlScriptBlob> scriptBlob;
+     {
+-        QQmlTypeLoaderSharedDataPtr data(&m_data);
+-        scriptBlob = data->scriptCache.value(url);
++        LockHolder<QQmlTypeLoader> holder(this);
++        scriptBlob = m_scriptCache.value(url);
+ 
+         // Also try the relative URL since manually registering native modules doesn't require
+         // passing an absolute URL and we don't have a reference URL for native modules.
+         if (!scriptBlob && unNormalizedUrl != relativeUrl)
+-            scriptBlob = data->scriptCache.value(relativeUrl);
++            scriptBlob = m_scriptCache.value(relativeUrl);
+ 
+         if (scriptBlob)
+             return scriptBlob;
+@@ -1434,11 +1406,11 @@ QQmlRefPointer<QQmlScriptBlob> QQmlTypeLoader::getScript(
+         scriptBlob = QQml::makeRefPointer<QQmlScriptBlob>(url, this, isModuleUrl(url)
+                 ? QQmlScriptBlob::IsESModule::Yes
+                 : QQmlScriptBlob::IsESModule::No);
+-        data->scriptCache.insert(url, scriptBlob);
++        m_scriptCache.insert(url, scriptBlob);
+     }
+ 
+     QQmlMetaType::CachedUnitLookupError error = QQmlMetaType::CachedUnitLookupError::NoError;
+-    const QQmlMetaType::CacheMode cacheMode = aotCacheMode();
++    const QQmlMetaType::CacheMode cacheMode = scriptBlob->aotCacheMode();
+     if (const QQmlPrivate::CachedQmlUnit *cachedUnit = (cacheMode != QQmlMetaType::RejectAll)
+             ? QQmlMetaType::findCachedCompilationUnit(scriptBlob->url(), cacheMode, &error)
+             : nullptr) {
+@@ -1456,7 +1428,7 @@ Returns a QQmlQmldirData for \a url.  The QQmlQmldirData may be cached.
+ */
+ QQmlRefPointer<QQmlQmldirData> QQmlTypeLoader::getQmldir(const QUrl &url)
+ {
+-    // Can be called from either thread.
++    // TODO: Can be called from either thread and hold on to the lock for too long.
+ 
+     Q_ASSERT(!url.isRelative() &&
+             (QQmlFile::urlToLocalFileOrQrc(url).isEmpty() ||
+@@ -1464,13 +1436,13 @@ QQmlRefPointer<QQmlQmldirData> QQmlTypeLoader::getQmldir(const QUrl &url)
+ 
+     QQmlRefPointer<QQmlQmldirData> qmldirData;
+     {
+-        QQmlTypeLoaderSharedDataPtr data(&m_data);
+-        qmldirData = data->qmldirCache.value(url);
++        LockHolder<QQmlTypeLoader> holder(this);
++        qmldirData = m_qmldirCache.value(url);
+         if (qmldirData)
+             return qmldirData;
+ 
+         qmldirData = QQml::makeRefPointer<QQmlQmldirData>(url, this);
+-        data->qmldirCache.insert(url, qmldirData);
++        m_qmldirCache.insert(url, qmldirData);
+     }
+ 
+     QQmlTypeLoader::load(QQmlDataBlob::Ptr(qmldirData.data()));
+@@ -1488,7 +1460,7 @@ directory, for the same reason.
+ */
+ QString QQmlTypeLoader::absoluteFilePath(const QString &path)
+ {
+-    // Can be called from either thread.
++    // TODO: Can be called from either thread.
+ 
+     if (path.isEmpty())
+         return QString();
+@@ -1519,14 +1491,14 @@ QString QQmlTypeLoader::absoluteFilePath(const QString &path)
+     int lastSlash = path.lastIndexOf(QLatin1Char('/'));
+     QString dirPath(path.left(lastSlash));
+ 
+-    QQmlTypeLoaderSharedDataPtr data(&m_data);
+-    if (!data->importDirCache.contains(dirPath)) {
++    // TODO: Lock should be released when we're done with the cache
++    LockHolder<QQmlTypeLoader> holder(this);
++    if (!m_importDirCache.contains(dirPath)) {
+         bool exists = QDir(dirPath).exists();
+         QCache<QString, bool> *entry = exists ? new QCache<QString, bool> : nullptr;
+-        data->importDirCache.insert(dirPath, entry);
++        m_importDirCache.insert(dirPath, entry);
+     }
+-    QCache<QString, bool> *fileSet = data->importDirCache.object(dirPath);
+-
++    QCache<QString, bool> *fileSet = m_importDirCache.object(dirPath);
+     if (!fileSet)
+         return QString();
+ 
+@@ -1560,12 +1532,12 @@ bool QQmlTypeLoader::fileExists(const QString &path, const QString &file)
+ 
+     Q_ASSERT(path.endsWith(QLatin1Char('/')));
+ 
+-    QQmlTypeLoaderSharedDataPtr data(&m_data);
+-    QCache<QString, bool> *fileSet = data->importDirCache.object(path);
++    LockHolder<QQmlTypeLoader> holder(this);
++    QCache<QString, bool> *fileSet = m_importDirCache.object(path);
+     if (fileSet) {
+         if (bool *value = fileSet->object(file))
+             return *value;
+-    } else if (data->importDirCache.contains(path)) {
++    } else if (m_importDirCache.contains(path)) {
+         // explicit nullptr in cache
+         return false;
+     }
+@@ -1573,7 +1545,7 @@ bool QQmlTypeLoader::fileExists(const QString &path, const QString &file)
+     auto addToCache = [&](const QFileInfo &fileInfo) {
+         if (!fileSet) {
+             fileSet = fileInfo.dir().exists() ? new QCache<QString, bool> : nullptr;
+-            const bool inserted = data->importDirCache.insert(path, fileSet);
++            bool inserted = m_importDirCache.insert(path, fileSet);
+             Q_ASSERT(inserted);
+             if (!fileSet)
+                 return false;
+@@ -1640,14 +1612,14 @@ bool QQmlTypeLoader::directoryExists(const QString &path)
+         --length;
+     QString dirPath(path.left(length));
+ 
+-    QQmlTypeLoaderSharedDataPtr data(&m_data);
+-    if (!data->importDirCache.contains(dirPath)) {
++    LockHolder<QQmlTypeLoader> holder(this);
++    if (!m_importDirCache.contains(dirPath)) {
+         bool exists = QDir(dirPath).exists();
+         QCache<QString, bool> *files = exists ? new QCache<QString, bool> : nullptr;
+-        data->importDirCache.insert(dirPath, files);
++        m_importDirCache.insert(dirPath, files);
+     }
+ 
+-    QCache<QString, bool> *fileSet = data->importDirCache.object(dirPath);
++    QCache<QString, bool> *fileSet = m_importDirCache.object(dirPath);
+     return fileSet != nullptr;
+ }
+ 
+@@ -1661,7 +1633,11 @@ It can also be a remote path for a remote directory import, but it will have bee
+ */
+ const QQmlTypeLoaderQmldirContent QQmlTypeLoader::qmldirContent(const QString &filePathIn)
+ {
+-    ASSERT_LOADTHREAD();
++    // TODO: Either this can only be called from the type loader thread. Then we don't need to lock.
++    //       Or it can be called from both threads, then we need to lock all other access to the
++    //       m_importQmlDirCache, too.
++
++    LockHolder<QQmlTypeLoader> holder(this);
+ 
+     QString filePath;
+ 
+@@ -1672,22 +1648,19 @@ const QQmlTypeLoaderQmldirContent QQmlTypeLoader::qmldirContent(const QString &f
+     // Yet, this heuristic is the best we can do until we pass more structured information here,
+     // for example a QUrl also for local files.
+     QUrl url(filePathIn);
+-
+-    QQmlTypeLoaderThreadDataPtr data(&m_data);
+-
+     if (url.scheme().size() < 2) {
+         filePath = filePathIn;
+     } else {
+         filePath = QQmlFile::urlToLocalFileOrQrc(url);
+         if (filePath.isEmpty()) { // Can't load the remote here, but should be cached
+-            if (auto entry = data->importQmlDirCache.value(filePathIn))
++            if (auto entry = m_importQmlDirCache.value(filePathIn))
+                 return **entry;
+             else
+                 return QQmlTypeLoaderQmldirContent();
+         }
+     }
+ 
+-    QQmlTypeLoaderQmldirContent **val = data->importQmlDirCache.value(filePath);
++    QQmlTypeLoaderQmldirContent **val = m_importQmlDirCache.value(filePath);
+     if (val)
+         return **val;
+     QQmlTypeLoaderQmldirContent *qmldir = new QQmlTypeLoaderQmldirContent;
+@@ -1710,22 +1683,23 @@ const QQmlTypeLoaderQmldirContent QQmlTypeLoader::qmldirContent(const QString &f
+ #undef NOT_READABLE_ERROR
+ #undef CASE_MISMATCH_ERROR
+ 
+-    data->importQmlDirCache.insert(filePath, qmldir);
++    m_importQmlDirCache.insert(filePath, qmldir);
+     return *qmldir;
+ }
+ 
+ void QQmlTypeLoader::setQmldirContent(const QString &url, const QString &content)
+ {
++    // TODO: Should this lock?
++
+     ASSERT_LOADTHREAD();
+ 
+-    QQmlTypeLoaderThreadDataPtr data(&m_data);
+     QQmlTypeLoaderQmldirContent *qmldir;
+-    QQmlTypeLoaderQmldirContent **val = data->importQmlDirCache.value(url);
++    QQmlTypeLoaderQmldirContent **val = m_importQmlDirCache.value(url);
+     if (val) {
+         qmldir = *val;
+     } else {
+         qmldir = new QQmlTypeLoaderQmldirContent;
+-        data->importQmlDirCache.insert(url, qmldir);
++        m_importQmlDirCache.insert(url, qmldir);
+     }
+ 
+     if (!qmldir->hasContent())
+@@ -1747,41 +1721,31 @@ void QQmlTypeLoader::clearCache()
+     // hack into the various data structures below.
+     shutdownThread();
+ 
+-    QQmlTypeLoaderThreadDataPtr threadData(&m_data);
+-    qDeleteAll(threadData->importQmlDirCache);
+-    threadData->checksumCache.clear();
+-    threadData->importQmlDirCache.clear();
++    qDeleteAll(m_importQmlDirCache);
+ 
+-    QQmlTypeLoaderSharedDataPtr data(&m_data);
+-    data->typeCache.clear();
+-    data->typeCacheTrimThreshold = QQmlTypeLoaderSharedData::MinimumTypeCacheTrimThreshold;
+-    data->scriptCache.clear();
+-    data->qmldirCache.clear();
+-    data->importDirCache.clear();
++    m_typeCache.clear();
++    m_typeCacheTrimThreshold = TYPELOADER_MINIMUM_TRIM_THRESHOLD;
++    m_scriptCache.clear();
++    m_qmldirCache.clear();
++    m_importDirCache.clear();
++    m_importQmlDirCache.clear();
++    m_checksumCache.clear();
+ 
+     // The thread will auto-restart next time we need it.
+ }
+ 
+-void QQmlTypeLoader::trimCache()
+-{
+-    const QQmlTypeLoaderSharedDataPtr data(&m_data);
+-    trimCache(data);
+-}
+-
+-void QQmlTypeLoader::updateTypeCacheTrimThreshold(const QQmlTypeLoaderSharedDataPtr &data)
++void QQmlTypeLoader::updateTypeCacheTrimThreshold()
+ {
+     // This can be called from either thread and is called from a method that locks.
+ 
+-    int size = data->typeCache.size();
+-    if (size > data->typeCacheTrimThreshold)
+-        data->typeCacheTrimThreshold = size * 2;
+-    if (size < data->typeCacheTrimThreshold / 2) {
+-        data->typeCacheTrimThreshold
+-                = qMax(size * 2, int(QQmlTypeLoaderSharedData::MinimumTypeCacheTrimThreshold));
+-    }
++    int size = m_typeCache.size();
++    if (size > m_typeCacheTrimThreshold)
++        m_typeCacheTrimThreshold = size * 2;
++    if (size < m_typeCacheTrimThreshold / 2)
++        m_typeCacheTrimThreshold = qMax(size * 2, TYPELOADER_MINIMUM_TRIM_THRESHOLD);
+ }
+ 
+-void QQmlTypeLoader::trimCache(const QQmlTypeLoaderSharedDataPtr &data)
++void QQmlTypeLoader::trimCache()
+ {
+     // This can be called from either thread. It has to be called while the type loader mutex
+     // is locked. It drops potentially live blobs, but only ones which are isCompleteOrError and
+@@ -1789,7 +1753,7 @@ void QQmlTypeLoader::trimCache(const QQmlTypeLoaderSharedDataPtr &data)
+ 
+     while (true) {
+         bool deletedOneType = false;
+-        for (auto iter = data->typeCache.begin(), end = data->typeCache.end(); iter != end;)  {
++        for (TypeCache::Iterator iter = m_typeCache.begin(), end = m_typeCache.end(); iter != end;)  {
+             const QQmlRefPointer<QQmlTypeData> &typeData = iter.value();
+ 
+             // typeData->m_compiledData may be set early on in the proccess of loading a file, so
+@@ -1819,7 +1783,7 @@ void QQmlTypeLoader::trimCache(const QQmlTypeLoaderSharedDataPtr &data)
+             }
+ 
+             // There are no live objects of this type
+-            iter = data->typeCache.erase(iter);
++            iter = m_typeCache.erase(iter);
+             deletedOneType = true;
+         }
+ 
+@@ -1829,21 +1793,21 @@ void QQmlTypeLoader::trimCache(const QQmlTypeLoaderSharedDataPtr &data)
+ 
+     // TODO: release any scripts which are no longer referenced by any types
+ 
+-    updateTypeCacheTrimThreshold(data);
++    updateTypeCacheTrimThreshold();
+ 
+     QQmlMetaType::freeUnusedTypesAndCaches();
+ }
+ 
+ bool QQmlTypeLoader::isTypeLoaded(const QUrl &url) const
+ {
+-    const QQmlTypeLoaderSharedDataConstPtr data(&m_data);
+-    return data->typeCache.contains(url);
++    LockHolder<QQmlTypeLoader> holder(const_cast<QQmlTypeLoader *>(this));
++    return m_typeCache.contains(url);
+ }
+ 
+ bool QQmlTypeLoader::isScriptLoaded(const QUrl &url) const
+ {
+-    const QQmlTypeLoaderSharedDataConstPtr data(&m_data);
+-    return data->scriptCache.contains(url);
++    LockHolder<QQmlTypeLoader> holder(const_cast<QQmlTypeLoader *>(this));
++    return m_scriptCache.contains(url);
+ }
+ 
+ /*!
+@@ -1866,11 +1830,10 @@ QQmlTypeLoader::LocalQmldirResult QQmlTypeLoader::locateLocalQmldir(
+     // Check cache first
+ 
+     LocalQmldirResult result = QmldirNotFound;
+-    QQmlTypeLoaderThreadData::QmldirInfo *cacheTail = nullptr;
++    QmldirInfo *cacheTail = nullptr;
+ 
+-    QQmlTypeLoaderThreadDataPtr threadData(&m_data);
+-    QQmlTypeLoaderThreadData::QmldirInfo **cachePtr = threadData->qmldirInfo.value(import->uri);
+-    QQmlTypeLoaderThreadData::QmldirInfo *cacheHead = cachePtr ? *cachePtr : nullptr;
++    QmldirInfo **cachePtr = m_qmldirInfo.value(import->uri);
++    QmldirInfo *cacheHead = cachePtr ? *cachePtr : nullptr;
+     if (cacheHead) {
+         cacheTail = cacheHead;
+         do {
+@@ -1897,8 +1860,7 @@ QQmlTypeLoader::LocalQmldirResult QQmlTypeLoader::locateLocalQmldir(
+         return result;
+     }
+ 
+-    QQmlTypeLoaderConfiguredDataConstPtr configuredData(&m_data);
+-    const bool hasInterceptors = !configuredData->urlInterceptors.isEmpty();
++    const bool hasInterceptors = !m_urlInterceptors.isEmpty();
+ 
+     // Interceptor might redirect remote files to local ones.
+     QStringList localImportPaths = importPathList(hasInterceptors ? LocalOrRemote : Local);
+@@ -1920,10 +1882,9 @@ QQmlTypeLoader::LocalQmldirResult QQmlTypeLoader::locateLocalQmldir(
+             //    (even if they don't do anything in this case).
+             // Fixing this would open the door to follow-up problems but wouldn't result in any
+             // significant benefit.
+-            const QUrl intercepted = doInterceptUrl(
++            const QUrl intercepted = interceptUrl(
+                     QQmlImports::urlFromLocalFileOrQrcOrUrl(qmldirPath),
+-                    QQmlAbstractUrlInterceptor::QmldirFile,
+-                    configuredData->urlInterceptors);
++                    QQmlAbstractUrlInterceptor::QmldirFile);
+             qmldirPath = QQmlFile::urlToLocalFileOrQrc(intercepted);
+             if (result != QmldirInterceptedToRemote
+                 && qmldirPath.isEmpty()
+@@ -1944,7 +1905,7 @@ QQmlTypeLoader::LocalQmldirResult QQmlTypeLoader::locateLocalQmldir(
+                 sanitizeUNCPath(&qmldirAbsoluteFilePath);
+             }
+ 
+-            QQmlTypeLoaderThreadData::QmldirInfo *cache = new QQmlTypeLoaderThreadData::QmldirInfo;
++            QmldirInfo *cache = new QmldirInfo;
+             cache->version = import->version;
+             cache->qmldirFilePath = qmldirAbsoluteFilePath;
+             cache->qmldirPathUrl = url;
+@@ -1952,7 +1913,7 @@ QQmlTypeLoader::LocalQmldirResult QQmlTypeLoader::locateLocalQmldir(
+             if (cacheTail)
+                 cacheTail->next = cache;
+             else
+-                threadData->qmldirInfo.insert(import->uri, cache);
++                m_qmldirInfo.insert(import->uri, cache);
+             cacheTail = cache;
+ 
+             if (result != QmldirFound) {
+@@ -1968,7 +1929,7 @@ QQmlTypeLoader::LocalQmldirResult QQmlTypeLoader::locateLocalQmldir(
+ 
+     // Nothing found? Add an empty cache entry to signal that for further requests.
+     if (result == QmldirNotFound || result == QmldirInterceptedToRemote) {
+-        QQmlTypeLoaderThreadData::QmldirInfo *cache = new QQmlTypeLoaderThreadData::QmldirInfo;
++        QmldirInfo *cache = new QmldirInfo;
+         cache->version = import->version;
+         cache->next = cacheHead;
+         if (result == QmldirInterceptedToRemote) {
+@@ -1976,7 +1937,7 @@ QQmlTypeLoader::LocalQmldirResult QQmlTypeLoader::locateLocalQmldir(
+             // We only use it to discern QmldirInterceptedToRemote from QmldirNotFound above.
+             cache->qmldirPathUrl = QStringLiteral("intercepted");
+         }
+-        threadData->qmldirInfo.insert(import->uri, cache);
++        m_qmldirInfo.insert(import->uri, cache);
+ 
+         if (result == QmldirNotFound) {
+             qCDebug(lcQmlImport)
+diff --git a/src/qml/qml/qqmltypeloader_p.h b/src/qml/qml/qqmltypeloader_p.h
+index d7b340394c..4b924e551c 100644
+--- a/src/qml/qml/qqmltypeloader_p.h
++++ b/src/qml/qml/qqmltypeloader_p.h
+@@ -18,7 +18,6 @@
+ #include <private/qqmldatablob_p.h>
+ #include <private/qqmlimport_p.h>
+ #include <private/qqmlmetatype_p.h>
+-#include <private/qqmltypeloaderdata_p.h>
+ #include <private/qqmltypeloaderthread_p.h>
+ #include <private/qv4compileddata_p.h>
+ #include <private/qv4engine_p.h>
+@@ -26,6 +25,9 @@
+ #include <QtQml/qtqmlglobal.h>
+ #include <QtQml/qqmlerror.h>
+ 
++#include <QtCore/qcache.h>
++#include <QtCore/qmutex.h>
++
+ #include <memory>
+ 
+ QT_BEGIN_NAMESPACE
+@@ -44,7 +46,7 @@ class Q_QML_EXPORT QQmlTypeLoader
+ {
+     Q_DECLARE_TR_FUNCTIONS(QQmlTypeLoader)
+ public:
+-    using ChecksumCache = QQmlTypeLoaderThreadData::ChecksumCache;
++    using ChecksumCache = QHash<quintptr, QByteArray>;
+     enum Mode { PreferSynchronous, Asynchronous, Synchronous };
+ 
+     class Q_QML_EXPORT Blob : public QQmlDataBlob
+@@ -123,6 +125,11 @@ public:
+                 QList<QQmlError> *errors);
+         virtual QString stringAt(int) const { return QString(); }
+ 
++        bool isDebugging() const;
++        bool readCacheFile() const;
++        bool writeCacheFile() const;
++        QQmlMetaType::CacheMode aotCacheMode() const;
++
+         QQmlRefPointer<QQmlImports> m_importCache;
+         QVector<PendingImportPtr> m_unresolvedImports;
+         QVector<QQmlRefPointer<QQmlQmldirData>> m_qmldirs;
+@@ -168,22 +175,18 @@ public:
+             QV4::CompiledData::ResolvedTypeReferenceMap *resolvedTypeCache,
+             const QList<TypeReference> &compositeSingletons)
+     {
+-        QQmlTypeLoaderThreadDataPtr data(&m_data);
+-
+         QCryptographicHash hash(QCryptographicHash::Md5);
+-        return (resolvedTypeCache->addToHash(&hash, &data->checksumCache)
++        return (resolvedTypeCache->addToHash(&hash, &m_checksumCache)
+                     && addTypeReferenceChecksumsToHash(
+-                        compositeSingletons, &data->checksumCache, &hash))
++                        compositeSingletons, &m_checksumCache, &hash))
+                 ? hash.result()
+                 : QByteArray();
+     }
+ 
+     static QUrl normalize(const QUrl &unNormalizedUrl);
+ 
+-    QQmlRefPointer<QQmlTypeData> getType(
+-            const QUrl &unNormalizedUrl, Mode mode = PreferSynchronous);
+-    QQmlRefPointer<QQmlTypeData> getType(
+-            const QByteArray &data, const QUrl &url, Mode mode = PreferSynchronous);
++    QQmlRefPointer<QQmlTypeData> getType(const QUrl &unNormalizedUrl, Mode mode = PreferSynchronous);
++    QQmlRefPointer<QQmlTypeData> getType(const QByteArray &, const QUrl &url, Mode mode = PreferSynchronous);
+ 
+     QQmlRefPointer<QV4::CompiledData::CompilationUnit> injectModule(
+             const QUrl &relativeUrl, const QV4::CompiledData::Unit *unit);
+@@ -204,9 +207,12 @@ public:
+     bool isTypeLoaded(const QUrl &url) const;
+     bool isScriptLoaded(const QUrl &url) const;
+ 
+-    void loadWithStaticData(
+-            const QQmlDataBlob::Ptr &blob, const QByteArray &data, Mode mode = PreferSynchronous);
++    void lock() { ensureThread()->lock(); }
++    void unlock() { ensureThread()->unlock(); }
+ 
++    void load(const QQmlDataBlob::Ptr &,  Mode = PreferSynchronous);
++    void loadWithStaticData(const QQmlDataBlob::Ptr &blob, const QByteArray &, Mode = PreferSynchronous);
++    void loadWithCachedUnit(const QQmlDataBlob::Ptr &blob, const QQmlPrivate::CachedQmlUnit *unit, Mode mode = PreferSynchronous);
+     void drop(const QQmlDataBlob::Ptr &blob);
+ 
+     void initializeEngine(QQmlEngineExtensionInterface *, const char *);
+@@ -223,67 +229,40 @@ public:
+     quintptr profiler() const { return 0; }
+     void setProfiler(quintptr) {}
+ #else
+-    QQmlProfiler *profiler() const
+-    {
+-        QQmlTypeLoaderConfiguredDataConstPtr data(&m_data);
+-        return data->profiler.data();
+-    }
++    QQmlProfiler *profiler() const { return m_profiler.data(); }
+     void setProfiler(QQmlProfiler *profiler);
+ #endif // QT_CONFIG(qml_debug)
+ 
+-    QStringList importPathList() const
+-    {
+-        QQmlTypeLoaderConfiguredDataConstPtr data(&m_data);
+-        return data->importPaths;
+-    }
++    QStringList importPathList() const { return m_importPaths; }
+     void setImportPathList(const QStringList &paths);
+     void addImportPath(const QString& dir);
+ 
+-    QStringList pluginPathList() const
+-    {
+-        QQmlTypeLoaderConfiguredDataConstPtr data(&m_data);
+-        return data->pluginPaths;
+-    }
++    QStringList pluginPathList() const { return m_pluginPaths; }
+     void setPluginPathList(const QStringList &paths);
+     void addPluginPath(const QString& path);
+ 
+-    void setPluginInitialized(const QString &plugin)
+-    {
+-        QQmlTypeLoaderThreadDataPtr data(&m_data);
+-        data->initializedPlugins.insert(plugin);
+-    }
++    void setPluginInitialized(const QString &plugin) { m_initializedPlugins.insert(plugin); }
+     bool isPluginInitialized(const QString &plugin) const
+     {
+-        QQmlTypeLoaderThreadDataConstPtr data(&m_data);
+-        return data->initializedPlugins.contains(plugin);
++        return m_initializedPlugins.contains(plugin);
+     }
+ 
+     void setModulePluginProcessingDone(const QString &module)
+     {
+-        QQmlTypeLoaderThreadDataPtr data(&m_data);
+-        data->modulesForWhichPluginsHaveBeenProcessed.insert(module);
++        m_modulesForWhichPluginsHaveBeenProcessed.insert(module);
+     }
+     bool isModulePluginProcessingDone(const QString &module)
+     {
+-        QQmlTypeLoaderThreadDataConstPtr data(&m_data);
+-        return data->modulesForWhichPluginsHaveBeenProcessed.contains(module);
++        return m_modulesForWhichPluginsHaveBeenProcessed.contains(module);
+     }
+ 
+ #if QT_CONFIG(qml_network)
+-    QQmlNetworkAccessManagerFactoryPtrConst networkAccessManagerFactory() const;
++    QQmlNetworkAccessManagerFactory *networkAccessManagerFactory() const;
+     void setNetworkAccessManagerFactory(QQmlNetworkAccessManagerFactory *factory);
+     QNetworkAccessManager *createNetworkAccessManager(QObject *parent) const;
+ #endif
+ 
+-    bool writeCacheFile();
+-    bool readCacheFile();
+-    bool isDebugging();
+-
+ private:
+-    friend struct PlainLoader;
+-    friend struct CachedLoader;
+-    friend struct StaticLoader;
+-
+     friend class QQmlDataBlob;
+     friend class QQmlTypeLoaderThread;
+ #if QT_CONFIG(qml_network)
+@@ -299,26 +278,30 @@ private:
+         QmldirRejected
+     };
+ 
+-    QQmlTypeLoaderThread *thread() const { return m_data.thread(); }
+-    QQmlEngine *engine() const { return m_data.engine(); }
++    struct QmldirInfo {
++        QTypeRevision version;
++        QString qmldirFilePath;
++        QString qmldirPathUrl;
++        QmldirInfo *next;
++    };
+ 
+     void startThread();
+     void shutdownThread();
+     QQmlTypeLoaderThread *ensureThread()
+     {
+-        if (!thread())
++        if (!m_thread)
+             startThread();
+-        return thread();
++        return m_thread;
+     }
+ 
+-    void trimCache(const QQmlTypeLoaderSharedDataPtr &data);
+-
+     void loadThread(const QQmlDataBlob::Ptr &);
+     void loadWithStaticDataThread(const QQmlDataBlob::Ptr &, const QByteArray &);
+     void loadWithCachedUnitThread(const QQmlDataBlob::Ptr &blob, const QQmlPrivate::CachedQmlUnit *unit);
+ #if QT_CONFIG(qml_network)
+     void networkReplyFinished(QNetworkReply *);
+     void networkReplyProgress(QNetworkReply *, qint64, qint64);
++
++    typedef QHash<QNetworkReply *, QQmlDataBlob::Ptr> NetworkReplies;
+ #endif
+ 
+     void setData(const QQmlDataBlob::Ptr &, const QByteArray &);
+@@ -333,14 +316,65 @@ private:
+             QQmlTypeLoader::Blob *blob, const QQmlTypeLoader::Blob::PendingImportPtr &import,
+             QList<QQmlError> *errors);
+ 
+-    void load(const QQmlDataBlob::Ptr &blob, Mode mode = PreferSynchronous);
+-    void loadWithCachedUnit(
+-            const QQmlDataBlob::Ptr &blob, const QQmlPrivate::CachedQmlUnit *unit,
+-            Mode mode = PreferSynchronous);
++    typedef QHash<QUrl, QQmlRefPointer<QQmlTypeData>> TypeCache;
++    typedef QHash<QUrl, QQmlRefPointer<QQmlScriptBlob>> ScriptCache;
++    typedef QHash<QUrl, QQmlRefPointer<QQmlQmldirData>> QmldirCache;
++    typedef QCache<QString, QCache<QString, bool> > ImportDirCache;
++    typedef QStringHash<QQmlTypeLoaderQmldirContent *> ImportQmlDirCache;
++
++    // URL interceptors must be set before loading any types. Otherwise we get data races.
++    QList<QQmlAbstractUrlInterceptor *> m_urlInterceptors;
++    QQmlEngine *m_engine;
++    QQmlTypeLoaderThread *m_thread = nullptr;
++
++#if QT_CONFIG(qml_debug)
++    QScopedPointer<QQmlProfiler> m_profiler;
++#endif
++
++#if QT_CONFIG(qml_network)
++    NetworkReplies m_networkReplies;
++#endif
++    TypeCache m_typeCache;
++    ScriptCache m_scriptCache;
++    QmldirCache m_qmldirCache;
++    ImportDirCache m_importDirCache;
++    ImportQmlDirCache m_importQmlDirCache;
++    ChecksumCache m_checksumCache;
++    int m_typeCacheTrimThreshold;
++
++    QV4::ExecutionEngine::DiskCacheOptions m_diskCacheOptions
++            = QV4::ExecutionEngine::DiskCache::Enabled;
++    bool m_isDebugging = false;
++
++    // Maps from an import to a linked list of qmldir info.
++    // Used in locateLocalQmldir()
++    QStringHash<QmldirInfo *> m_qmldirInfo;
++
++    QStringList m_importPaths;
++    QStringList m_pluginPaths;
++
++    // Modules for which plugins have been loaded and processed in the context of this type
++    // loader's engine. Plugins can have engine-specific initialization callbacks. This is why
++    // we have to keep track of this.
++    QSet<QString> m_modulesForWhichPluginsHaveBeenProcessed;
++
++    // Plugins that have been initialized in the context of this engine. In theory, the same
++    // plugin can be used for multiple modules. Therefore, we need to keep track of this
++    // separately from m_modulesForWhichPluginsHaveBeenProcessed.
++    QSet<QString> m_initializedPlugins;
++
++#if QT_CONFIG(qml_network)
++    QQmlNetworkAccessManagerFactory *m_networkAccessManagerFactory = nullptr;
++
++    // We need a separate mutex because the network access manger factory can be accessed not
++    // only from the engine thread and the type loader thread, but also from any WorkerScripts
++    // running in parallel to both.
++    mutable QMutex m_networkAccessManagerMutex;
++#endif
+ 
+     template<typename Loader>
+     void doLoad(const Loader &loader, const QQmlDataBlob::Ptr &blob, Mode mode);
+-    void updateTypeCacheTrimThreshold(const QQmlTypeLoaderSharedDataPtr &data);
++    void updateTypeCacheTrimThreshold();
+ 
+     template<typename TypeReference>
+     static bool addTypeReferenceChecksumsToHash(
+@@ -362,9 +396,9 @@ private:
+         return true;
+     }
+ 
+-    QQmlMetaType::CacheMode aotCacheMode();
+-
+-    QQmlTypeLoaderLockedData m_data;
++    friend struct PlainLoader;
++    friend struct CachedLoader;
++    friend struct StaticLoader;
+ };
+ 
+ QT_END_NAMESPACE
+diff --git a/src/qml/qml/qqmltypeloaderdata.cpp b/src/qml/qml/qqmltypeloaderdata.cpp
+deleted file mode 100644
+index 4fcece621c..0000000000
+--- a/src/qml/qml/qqmltypeloaderdata.cpp
++++ /dev/null
+@@ -1,18 +0,0 @@
+-// Copyright (C) 2024 The Qt Company Ltd.
+-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+-
+-#include "qqmltypeloaderdata_p.h"
+-
+-#include <private/qqmldirdata_p.h>
+-#include <private/qqmlprofiler_p.h>
+-#include <private/qqmlscriptblob_p.h>
+-#include <private/qqmltypedata_p.h>
+-
+-QT_BEGIN_NAMESPACE
+-
+-QQmlTypeLoaderLockedData::QQmlTypeLoaderLockedData(QQmlEngine *engine)
+-    : m_engine(engine)
+-{
+-}
+-
+-QT_END_NAMESPACE
+diff --git a/src/qml/qml/qqmltypeloaderdata_p.h b/src/qml/qml/qqmltypeloaderdata_p.h
+deleted file mode 100644
+index f9ab346cbb..0000000000
+--- a/src/qml/qml/qqmltypeloaderdata_p.h
++++ /dev/null
+@@ -1,346 +0,0 @@
+-// Copyright (C) 2024 The Qt Company Ltd.
+-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+-
+-#ifndef QQMLTYPELOADERDATA_P_H
+-#define QQMLTYPELOADERDATA_P_H
+-
+-//
+-//  W A R N I N G
+-//  -------------
+-//
+-// This file is not part of the Qt API.  It exists purely as an
+-// implementation detail.  This header file may change from version to
+-// version without notice, or even be removed.
+-//
+-// We mean it.
+-//
+-
+-#include <private/qqmlrefcount_p.h>
+-#include <private/qqmltypeloaderqmldircontent_p.h>
+-#include <private/qqmltypeloaderthread_p.h>
+-#include <private/qv4engine_p.h>
+-
+-#include <QtQml/qtqmlglobal.h>
+-#include <QtQml/qqmlengine.h>
+-
+-#include <QtCore/qcache.h>
+-#include <QtCore/qthread.h>
+-
+-QT_BEGIN_NAMESPACE
+-
+-class QQmlProfiler;
+-class QQmlQmldirData;
+-class QQmlScriptBlob;
+-class QQmlTypeData;
+-
+-class QQmlTypeLoaderSharedData
+-{
+-    Q_DISABLE_COPY_MOVE(QQmlTypeLoaderSharedData)
+-public:
+-    enum : int { MinimumTypeCacheTrimThreshold = 64 };
+-
+-    using TypeCache = QHash<QUrl, QQmlRefPointer<QQmlTypeData>>;
+-    using ScriptCache = QHash<QUrl, QQmlRefPointer<QQmlScriptBlob>>;
+-    using QmldirCache = QHash<QUrl, QQmlRefPointer<QQmlQmldirData>>;
+-    using ImportDirCache = QCache<QString, QCache<QString, bool>>;
+-
+-    QQmlTypeLoaderSharedData() = default;
+-
+-    ScriptCache scriptCache;
+-    TypeCache typeCache;
+-    QmldirCache qmldirCache;
+-    ImportDirCache importDirCache;
+-
+-    int typeCacheTrimThreshold = MinimumTypeCacheTrimThreshold;
+-};
+-
+-class QQmlTypeLoaderThreadData
+-{
+-    Q_DISABLE_COPY_MOVE(QQmlTypeLoaderThreadData)
+-public:
+-    using ChecksumCache = QHash<quintptr, QByteArray>;
+-    using ImportQmlDirCache = QStringHash<QQmlTypeLoaderQmldirContent *>;
+-
+-    struct QmldirInfo {
+-        QTypeRevision version;
+-        QString qmldirFilePath;
+-        QString qmldirPathUrl;
+-        QmldirInfo *next;
+-    };
+-
+-    QQmlTypeLoaderThreadData() = default;
+-
+-    ImportQmlDirCache importQmlDirCache;
+-    ChecksumCache checksumCache;
+-
+-    // Maps from an import to a linked list of qmldir info.
+-    // Used in locateLocalQmldir()
+-    QStringHash<QmldirInfo *> qmldirInfo;
+-
+-    // Modules for which plugins have been loaded and processed in the context of this type
+-    // loader's engine. Plugins can have engine-specific initialization callbacks. This is why
+-    // we have to keep track of this.
+-    QSet<QString> modulesForWhichPluginsHaveBeenProcessed;
+-
+-    // Plugins that have been initialized in the context of this engine. In theory, the same
+-    // plugin can be used for multiple modules. Therefore, we need to keep track of this
+-    // separately from modulesForWhichPluginsHaveBeenProcessed.
+-    QSet<QString> initializedPlugins;
+-
+-#if QT_CONFIG(qml_network)
+-    typedef QHash<QNetworkReply *, QQmlDataBlob::Ptr> NetworkReplies;
+-    NetworkReplies networkReplies;
+-#endif
+-};
+-
+-class QQmlTypeLoaderConfiguredData
+-{
+-    Q_DISABLE_COPY_MOVE(QQmlTypeLoaderConfiguredData)
+-public:
+-    QQmlTypeLoaderConfiguredData() = default;
+-
+-    QStringList importPaths;
+-    QStringList pluginPaths;
+-
+-    // URL interceptors must be set before loading any types. Otherwise we get data races.
+-    QList<QQmlAbstractUrlInterceptor *> urlInterceptors;
+-
+-#if QT_CONFIG(qml_debug)
+-    QScopedPointer<QQmlProfiler> profiler;
+-#endif
+-
+-    QV4::ExecutionEngine::DiskCacheOptions diskCacheOptions
+-            = QV4::ExecutionEngine::DiskCache::Enabled;
+-    bool isDebugging = false;
+-    bool initialized = false;
+-};
+-
+-#if QT_CONFIG(qml_network)
+-class QQmlTypeLoaderNetworkAccessManagerData
+-{
+-    Q_DISABLE_COPY_MOVE(QQmlTypeLoaderNetworkAccessManagerData)
+-public:
+-    QQmlTypeLoaderNetworkAccessManagerData() = default;
+-
+-    QQmlNetworkAccessManagerFactory *networkAccessManagerFactory = nullptr;
+-
+-    // We need a separate mutex because the network access manger factory can be accessed not
+-    // only from the engine thread and the type loader thread, but also from any WorkerScripts
+-    // running in parallel to both.
+-    mutable QMutex networkAccessManagerMutex;
+-};
+-#endif // QTCONFIG(qml_network)
+-
+-class QQmlTypeLoaderLockedData
+-{
+-    template<typename Data, typename LockedData>
+-    friend class QQmlTypeLoaderSharedDataPtrBase;
+-
+-    template<typename Data, typename LockedData>
+-    friend class QQmlTypeLoaderThreadDataPtrBase;
+-
+-    template<typename Data, typename LockedData>
+-    friend class QQmlTypeLoaderConfiguredDataPtrBase;
+-
+-    template<typename Data, typename LockedData>
+-    friend class QQmlNetworkAccessManagerFactoryPtrBase;
+-    friend class QQmlNetworkAccessManagerFactoryPtr;
+-
+-    Q_DISABLE_COPY_MOVE(QQmlTypeLoaderLockedData)
+-public:
+-    QQmlTypeLoaderLockedData(QQmlEngine *engine);
+-
+-    QQmlTypeLoaderThread *thread() const { return m_thread; }
+-
+-    void createThread(QQmlTypeLoader *loader)
+-    {
+-        Q_ASSERT(m_engine->thread()->isCurrentThread());
+-        m_thread = new QQmlTypeLoaderThread(loader);
+-    }
+-
+-    void deleteThread()
+-    {
+-        Q_ASSERT(m_engine->thread()->isCurrentThread());
+-        Q_ASSERT(m_thread);
+-        delete m_thread;
+-        m_thread = nullptr;
+-    }
+-
+-    QQmlEngine *engine() const
+-    {
+-        Q_ASSERT(m_engine->thread()->isCurrentThread());
+-        return m_engine;
+-    }
+-
+-private:
+-    QQmlTypeLoaderSharedData m_sharedData;
+-    QQmlTypeLoaderThreadData m_threadData;
+-    QQmlTypeLoaderConfiguredData m_configuredData;
+-#if QT_CONFIG(qml_network)
+-    QQmlTypeLoaderNetworkAccessManagerData m_networkAccessManagerData;
+-#endif
+-
+-    QQmlEngine *m_engine = nullptr;
+-    QQmlTypeLoaderThread *m_thread = nullptr;
+-};
+-
+-template<typename Data, typename LockedData>
+-class QQmlTypeLoaderSharedDataPtrBase
+-{
+-    Q_DISABLE_COPY_MOVE(QQmlTypeLoaderSharedDataPtrBase)
+-public:
+-    Q_NODISCARD_CTOR QQmlTypeLoaderSharedDataPtrBase(LockedData *data) : data(data)
+-    {
+-        Q_ASSERT(data);
+-        if (QQmlTypeLoaderThread *thread = data->thread())
+-            thread->lock();
+-    }
+-
+-    ~QQmlTypeLoaderSharedDataPtrBase()
+-    {
+-        Q_ASSERT(data);
+-        if (QQmlTypeLoaderThread *thread = data->thread())
+-            thread->unlock();
+-    }
+-
+-    Data &operator*() const { return data->m_sharedData; }
+-    Data *operator->() const { return &data->m_sharedData; }
+-    operator Data *() const { return &data->m_sharedData; }
+-
+-private:
+-    LockedData *data = nullptr;
+-};
+-
+-using QQmlTypeLoaderSharedDataPtr
+-        = QQmlTypeLoaderSharedDataPtrBase<QQmlTypeLoaderSharedData, QQmlTypeLoaderLockedData>;
+-using QQmlTypeLoaderSharedDataConstPtr
+-        = QQmlTypeLoaderSharedDataPtrBase<const QQmlTypeLoaderSharedData, const QQmlTypeLoaderLockedData>;
+-
+-template<typename Data, typename LockedData>
+-class QQmlTypeLoaderThreadDataPtrBase
+-{
+-    Q_DISABLE_COPY_MOVE(QQmlTypeLoaderThreadDataPtrBase)
+-public:
+-    Q_NODISCARD_CTOR QQmlTypeLoaderThreadDataPtrBase(LockedData *data) : data(data)
+-    {
+-        Q_ASSERT(data);
+-
+-        // You have to either be on the type loader thread or shut it down before accessing this.
+-        Q_ASSERT(!data->thread() || data->thread()->isThisThread());
+-    }
+-
+-    Data &operator*() const { return data->m_threadData; }
+-    Data *operator->() const { return &data->m_threadData; }
+-    operator Data *() const { return &data->m_threadData; }
+-
+-private:
+-    LockedData *data = nullptr;
+-};
+-
+-using QQmlTypeLoaderThreadDataPtr
+-        = QQmlTypeLoaderThreadDataPtrBase<QQmlTypeLoaderThreadData, QQmlTypeLoaderLockedData>;
+-using QQmlTypeLoaderThreadDataConstPtr
+-        = QQmlTypeLoaderThreadDataPtrBase<const QQmlTypeLoaderThreadData, const QQmlTypeLoaderLockedData>;
+-
+-
+-template<typename Data, typename LockedData>
+-class QQmlTypeLoaderConfiguredDataPtrBase
+-{
+-    Q_DISABLE_COPY_MOVE(QQmlTypeLoaderConfiguredDataPtrBase)
+-public:
+-    Q_NODISCARD_CTOR QQmlTypeLoaderConfiguredDataPtrBase(LockedData *data) : data(data)
+-    {
+-        Q_ASSERT(data);
+-
+-        if constexpr (!std::is_const_v<Data>) {
+-            // const access is generally fine
+-            // For mutable access we first need to make sure the thread is shut down.
+-            if (data->thread())
+-                data->deleteThread();
+-        }
+-    }
+-
+-    Data &operator*() const { return data->m_configuredData; }
+-    Data *operator->() const { return &data->m_configuredData; }
+-    operator Data *() const { return &data->m_configuredData; }
+-
+-private:
+-    LockedData *data = nullptr;
+-};
+-
+-using QQmlTypeLoaderConfiguredDataPtr
+-        = QQmlTypeLoaderConfiguredDataPtrBase<QQmlTypeLoaderConfiguredData, QQmlTypeLoaderLockedData>;
+-using QQmlTypeLoaderConfiguredDataConstPtr
+-        = QQmlTypeLoaderConfiguredDataPtrBase<const QQmlTypeLoaderConfiguredData, const QQmlTypeLoaderLockedData>;
+-
+-#if QT_CONFIG(qml_network)
+-class QQmlEnginePublicAPIToken;
+-template<typename Data, typename LockedData>
+-class QQmlNetworkAccessManagerFactoryPtrBase
+-{
+-    Q_DISABLE_COPY_MOVE(QQmlNetworkAccessManagerFactoryPtrBase)
+-public:
+-    Q_NODISCARD_CTOR QQmlNetworkAccessManagerFactoryPtrBase(LockedData *data) : data(data)
+-    {
+-        Q_ASSERT(data);
+-        data->m_networkAccessManagerData.networkAccessManagerMutex.lock();
+-    }
+-
+-    ~QQmlNetworkAccessManagerFactoryPtrBase()
+-    {
+-        Q_ASSERT(data);
+-        data->m_networkAccessManagerData.networkAccessManagerMutex.unlock();
+-    }
+-
+-    QQmlNetworkAccessManagerFactory &operator*() const
+-    {
+-        return *data->m_networkAccessManagerData.networkAccessManagerFactory;
+-    }
+-
+-    QQmlNetworkAccessManagerFactory *operator->() const
+-    {
+-        return data->m_networkAccessManagerData.networkAccessManagerFactory;
+-    }
+-
+-    operator bool() const
+-    {
+-        return data->m_networkAccessManagerData.networkAccessManagerFactory != nullptr;
+-    }
+-
+-    // This is dangerous since it allows you to subvert the locking.
+-    // You must only do this when serving public API that can't be changed for now.
+-    QQmlNetworkAccessManagerFactory *get(const QQmlEnginePublicAPIToken &) const
+-    {
+-        return data->m_networkAccessManagerData.networkAccessManagerFactory;
+-    }
+-
+-protected:
+-    LockedData *data = nullptr;
+-};
+-
+-// This is const in the sense that you cannot reset the pointer. Therefore the "Const" postfix.
+-// That's in contrast to the other *Ptr classes here that are const in the way that the _data_
+-// pointed to cannot be modified.
+-using QQmlNetworkAccessManagerFactoryPtrConst
+-        = QQmlNetworkAccessManagerFactoryPtrBase<const QQmlTypeLoaderNetworkAccessManagerData, const QQmlTypeLoaderLockedData>;
+-
+-class QQmlNetworkAccessManagerFactoryPtr
+-    : public QQmlNetworkAccessManagerFactoryPtrBase<QQmlTypeLoaderNetworkAccessManagerData, QQmlTypeLoaderLockedData>
+-{
+-    Q_DISABLE_COPY(QQmlNetworkAccessManagerFactoryPtr)
+-public:
+-    Q_NODISCARD_CTOR QQmlNetworkAccessManagerFactoryPtr(QQmlTypeLoaderLockedData *lockedData)
+-        : QQmlNetworkAccessManagerFactoryPtrBase<QQmlTypeLoaderNetworkAccessManagerData, QQmlTypeLoaderLockedData>(lockedData)
+-    {
+-    }
+-
+-    void reset(QQmlNetworkAccessManagerFactory *factory)
+-    {
+-        data->m_networkAccessManagerData.networkAccessManagerFactory = factory;
+-    }
+-};
+-#endif // QT_CONFIG(qml_network)
+-
+-QT_END_NAMESPACE
+-
+-#endif // QQMLTYPELOADERDATA_P_H
+diff --git a/src/qml/qml/qqmltypeloaderthread.cpp b/src/qml/qml/qqmltypeloaderthread.cpp
+index 7220a3fdf7..027ebea1b0 100644
+--- a/src/qml/qml/qqmltypeloaderthread.cpp
++++ b/src/qml/qml/qqmltypeloaderthread.cpp
+@@ -138,7 +138,7 @@ void QQmlTypeLoaderThread::initializeExtensionMain(QQmlExtensionInterface *iface
+                                                 const char *uri)
+ {
+     // We can use m_engine because we're on the engine thread.
+-    QQmlEngine *engine = m_loader->engine();
++    QQmlEngine *engine = m_loader->m_engine;
+     Q_ASSERT(engine->thread() == QThread::currentThread());
+     iface->initializeEngine(engine, uri);
+ }
+@@ -147,7 +147,7 @@ void QQmlTypeLoaderThread::initializeEngineExtensionMain(QQmlEngineExtensionInte
+                                                 const char *uri)
+ {
+     // We can use m_engine because we're on the engine thread.
+-    QQmlEngine *engine = m_loader->engine();
++    QQmlEngine *engine = m_loader->m_engine;
+     Q_ASSERT(engine->thread() == QThread::currentThread());
+     iface->initializeEngine(engine, uri);
+ }
+-- 
+2.51.2
+

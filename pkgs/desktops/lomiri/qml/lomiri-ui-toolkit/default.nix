@@ -105,6 +105,9 @@ stdenv.mkDerivation (finalAttrs: {
       tests/unit/visual/tst_icon.{11,13}.qml \
       tests/unit/visual/tst_imageprovider.11.qml \
       --replace-fail '/usr/share' '${suru-icon-theme}/share'
+
+    substituteInPlace src/LomiriToolkit/splitview.cpp \
+      --replace-fail 'QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)' '0'
   ''
   + lib.optionalString (!withQt6) ''
     for subproject in po app-launch-profiler lomiri-ui-toolkit-launcher; do

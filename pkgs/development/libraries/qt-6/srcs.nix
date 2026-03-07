@@ -60,11 +60,17 @@
     };
   };
   qtdeclarative = {
-    version = "6.10.0";
+    version = "6.10.0-dev";
     src = fetchurl {
-      url = "${mirror}/official_releases/qt/6.10/6.10.0/submodules/qtdeclarative-everywhere-src-6.10.0.tar.xz";
-      sha256 = "1c7nar7q92w8l7wkmwbl0f6j4g1c8kw8jbn1bf35sf821593bzbf";
-      name = "qtdeclarative-everywhere-src-6.10.0.tar.xz";
+      #url = "${mirror}/official_releases/qt/6.10/6.10.0/submodules/qtdeclarative-everywhere-src-6.10.0.tar.xz";
+      #sha256 = "1c7nar7q92w8l7wkmwbl0f6j4g1c8kw8jbn1bf35sf821593bzbf";
+      #name = "qtdeclarative-everywhere-src-6.10.0.tar.xz";
+
+      #url = "https://github.com/qt/qtdeclarative/archive/6be33f6a54704e3563c265c71f3c163c548f8d7b.tar.gz";
+      #hash = "sha256-yUS5+CFxW9B868SSy+WixLZ6JuyQWzZj6q+hJCjHq+Q=";
+      url = "https://github.com/qt/qtdeclarative/archive/5cfdc8136b8a0080bf70c71d6d18e17c56f418fa.tar.gz";
+      hash = "sha256-zMLsExdIuCrOFrkS1GHHKyI1cFnfz+tEvD3sAAn5Hu4=";
+      name = "qtdeclarative-src-6.10.0-dev.tar.gz";
     };
   };
   qtdoc = {
