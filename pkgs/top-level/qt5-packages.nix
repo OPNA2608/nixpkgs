@@ -158,6 +158,8 @@ makeScopeWithSplicing' {
 
         pulseaudio-qt = callPackage ../development/libraries/pulseaudio-qt { };
 
+        pyotherside = callPackage ../development/libraries/pyotherside { };
+
         qca = callPackage ../development/libraries/qca {
           inherit (libsForQt5) qtbase;
         };
