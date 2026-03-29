@@ -14,23 +14,28 @@
   qtdeclarative,
   qtlocation,
   qtpositioning,
-  qtquickcontrols2,
+  qtquickcontrols2 ? null, # Qt6: merged into qtdeclarative
   qtwebengine,
   wrapQtAppsHook,
 }:
 
+let
+  withQt6 = lib.strings.versionAtLeast qtbase.version "6";
+in
 stdenv.mkDerivation (finalAttrs: {
   pname = "lomiri-weather-app";
-  version = "6.2.0";
+  #version = "6.2.0";
+  version = "local";
 
-  src = fetchFromGitLab {
+  /*src = fetchFromGitLab {
     owner = "ubports";
     repo = "development/apps/lomiri-weather-app";
     tag = "v${finalAttrs.version}";
     hash = "sha256-sQFAaF6waca/2TpBznqow1Hu9nGNpN5NLKyqwbPrXuU=";
-  };
+  };*/
+  src = ~/Development/ubports/lomiri-weather-app;
 
-  patches = [
+  /*patches = [
     # Allow disabling of connectivity check, allows usage without lomiri-indicator-network running
     # Remove when version > 6.2.0
     (fetchpatch {
@@ -50,13 +55,13 @@ stdenv.mkDerivation (finalAttrs: {
       url = "https://gitlab.com/ubports/development/apps/lomiri-weather-app/-/commit/5f4148254caf15c036708a5f81ef79d24f3c8646.patch";
       hash = "sha256-cd2jVlbIxzdq0IJevm8uhCVC9CzQ5DQI8FeS8SggKdc=";
     })
-  ];
+  ];*/
 
   postPatch =
     # Queries qmake for the QML installation path, which returns a reference to Qt5's build directory
     ''
       substituteInPlace CMakeLists.txt \
-        --replace-fail 'qmake -query QT_INSTALL_QML' 'echo ''${CMAKE_INSTALL_PREFIX}/${qtbase.qtQmlPrefix}'
+        --replace-fail "\''${QMAKE_EXECUTABLE} -query QT_INSTALL_QML" 'echo ''${CMAKE_INSTALL_PREFIX}/${qtbase.qtQmlPrefix}'
     ''
     # We don't want absolute paths in desktop files
     + ''
@@ -66,10 +71,10 @@ stdenv.mkDerivation (finalAttrs: {
     ''
     # CMake 4.0 dropped support for old minimum CMake versions. Bump the minimum.
     # Remove when version > 6.2.0
-    + ''
+    /*+ ''
       substituteInPlace CMakeLists.txt \
         --replace-fail 'cmake_minimum_required(VERSION 3.5)' 'cmake_minimum_required(VERSION 3.10)'
-    ''
+    ''*/
     + lib.optionalString (!finalAttrs.finalPackage.doCheck) ''
       substituteInPlace CMakeLists.txt \
         --replace-fail 'add_subdirectory(tests)' ""
@@ -86,7 +91,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     flatbuffers
     qtlocation
-    qtquickcontrols2
     qtwebengine
 
     # QML
@@ -95,9 +99,13 @@ stdenv.mkDerivation (finalAttrs: {
     pyotherside
     qtdeclarative
     qtpositioning
+  ]
+  ++ lib.optionals (!withQt6) [
+    qtquickcontrols2
   ];
 
   cmakeFlags = [
+    (lib.strings.cmakeBool "ENABLE_QT6" withQt6)
     (lib.strings.cmakeBool "CLICK_MODE" false)
     (lib.strings.cmakeBool "INSTALL_TESTS" false)
     (lib.strings.cmakeBool "CONNECTIVITY_CHECK" false) # Makes running outside of Lomiri possible
