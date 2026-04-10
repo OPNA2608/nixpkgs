@@ -177,17 +177,28 @@ lib.makeExtensible (
 
       nix_2_30 = addTests "nix_2_30" self.nixComponents_2_30.nix-everything;
 
-      nixComponents_2_31 = nixDependencies.callPackage ./modular/packages.nix rec {
-        version = "2.31.3";
-        inherit (self.nix_2_30.meta) teams;
-        otherSplices = generateSplicesForNixComponents "nixComponents_2_31";
-        src = fetchFromGitHub {
-          owner = "NixOS";
-          repo = "nix";
-          tag = version;
-          hash = "sha256-oe0YWe8f+pwQH4aYD2XXLW5iEHyXNUddurqJ5CUVCIk=";
-        };
-      };
+      nixComponents_2_31 =
+        (nixDependencies.callPackage ./modular/packages.nix rec {
+          version = "2.31.3";
+          inherit (self.nix_2_30.meta) teams;
+          otherSplices = generateSplicesForNixComponents "nixComponents_2_31";
+          src = fetchFromGitHub {
+            owner = "NixOS";
+            repo = "nix";
+            tag = version;
+            hash = "sha256-oe0YWe8f+pwQH4aYD2XXLW5iEHyXNUddurqJ5CUVCIk=";
+          };
+        }).appendPatches
+          (
+            patches_common
+            ++ [
+              (fetchpatch2 {
+                name = "nix-2.31-Skip-tests_functional_stale-file-handle-if-the-error-doesnt-happen.patch";
+                url = "https://github.com/NixOS/nix/commit/b07cb3f02f07449493aee7e4cf24b0d678d348b3.patch?full_index=1";
+                hash = "sha256-6JNWUR6RbSkOxheYTcZEW/JxF+7yRpn7r9l3xfAobzI=";
+              })
+            ]
+          );
 
       nix_2_31 = addTests "nix_2_31" self.nixComponents_2_31.nix-everything;
 
