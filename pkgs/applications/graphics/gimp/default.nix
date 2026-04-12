@@ -18,6 +18,7 @@
   pango,
   cairo,
   libarchive,
+  lua,
   luajit,
   freetype,
   fontconfig,
@@ -81,6 +82,7 @@ let
       pygobject3
     ]
   );
+  lua' = if lib.meta.availableOn stdenv.hostPlatform luajit then luajit else lua;
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "gimp";
@@ -223,7 +225,7 @@ stdenv.mkDerivation (finalAttrs: {
     adwaita-icon-theme
 
     # for Lua plug-ins
-    (luajit.withPackages (pp: [
+    (lua'.withPackages (pp: [
       pp.lgi
     ]))
   ]
