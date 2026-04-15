@@ -372,6 +372,9 @@ stdenv.mkDerivation (finalAttrs: {
     maintainers = with lib.maintainers; [ jtojnar ];
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    # Build invokes built binary to convert assets, binary hangs during plugin loading on big-endian platforms (s390x, ppc64)
+    # https://gitlab.gnome.org/GNOME/gimp/-/issues/12522
+    broken = stdenv.hostPlatform.isBigEndian;
     mainProgram = "gimp";
   };
 })
