@@ -99,6 +99,9 @@ let
     "i686-openbsd"
     "x86_64-openbsd"
 
+    # Haiku
+    "x86_64-haiku"
+
     # Redox
     "x86_64-redox"
 
@@ -192,6 +195,7 @@ in
   openbsd = filterDoubles predicates.isOpenBSD;
   unix = filterDoubles predicates.isUnix;
   wasi = filterDoubles predicates.isWasi;
+  haiku = filterDoubles predicates.isHaiku;
   redox = filterDoubles predicates.isRedox;
   windows = filterDoubles predicates.isWindows;
   genode = filterDoubles predicates.isGenode;

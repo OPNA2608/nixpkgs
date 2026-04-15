@@ -136,6 +136,8 @@ let
             "uclibc"
           else if final.isAndroid then
             "bionic"
+          else if final.isHaiku then
+            "libroot"
           else if
             final.isLinux # default
           then
@@ -210,6 +212,7 @@ let
               freebsd = "FreeBSD";
               openbsd = "OpenBSD";
               wasi = "Wasi";
+              haiku = "Haiku";
               redox = "Redox";
               genode = "Genode";
             }
@@ -253,6 +256,7 @@ let
             || isMinGW
             || isWindows # Windows
             || isWasm # WASM
+            || isHaiku
           )
           && !isStatic;
 

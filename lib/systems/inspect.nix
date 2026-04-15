@@ -355,6 +355,9 @@ rec {
     isWasi = {
       kernel = kernels.wasi;
     };
+    isHaiku = {
+      kernel = kernels.haiku;
+    };
     isRedox = {
       kernel = kernels.redox;
     };

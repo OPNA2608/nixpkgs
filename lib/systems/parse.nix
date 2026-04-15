@@ -612,6 +612,10 @@ rec {
         execFormat = wasm;
         families = { };
       };
+      haiku = {
+        execFormat = elf;
+        families = { };
+      };
       redox = {
         execFormat = elf;
         families = { };
@@ -851,6 +855,7 @@ rec {
         else if
           elemAt l 1 == "apple"
           || elem (elemAt l 2) [
+            "haiku"
             "redox"
             "mmixware"
             "ghcjs"

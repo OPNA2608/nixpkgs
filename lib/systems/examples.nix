@@ -448,6 +448,12 @@ rec {
     useLLVM = true;
   };
 
+  # Haiku
+
+  x86_64-haiku = {
+    config = "x86_64-unknown-haiku";
+  };
+
   #
   # WASM
   #
