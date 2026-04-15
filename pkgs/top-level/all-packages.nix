@@ -6354,6 +6354,8 @@ with pkgs;
       glibc
     else if libc == "bionic" then
       bionic
+    else if libc == "libroot" then
+      libroot
     else if libc == "uclibc" then
       uclibc-ng
     else if libc == "avrlibc" then
