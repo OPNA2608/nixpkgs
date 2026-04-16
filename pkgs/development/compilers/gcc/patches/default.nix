@@ -253,3 +253,10 @@ optionals noSysDirs (
   })
 ]
 ++ optional (targetPlatform.isMusl && targetPlatform.isx86_32) ./libssp-noshared-musl32.patch
+++ optionals (is15 && targetPlatform.isHaiku) [
+  (fetchurl {
+    name = "Sil-GCC15-Haiku.patch";
+    url = "https://github.com/AmanoTeam/Sil/raw/b1f84547c19847fcf15528a8f08e6418d658677b/patches/0001-GCC-15.patch";
+    hash = "sha256-BQ9ji5ydfe0Ea4exc7qrjlGKIsIrHZGNSl+l4j2+zgg=";
+  })
+]

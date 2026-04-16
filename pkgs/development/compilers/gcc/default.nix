@@ -297,6 +297,11 @@ pipe
            '-s' # workaround for hitting hydra log limit
            'LIMITS_H_TEST=false'
         )
+      ''
+      # This object doesn't seem to exist anymore
+      + optionalString targetPlatform.isHaiku ''
+        substituteInPlace gcc/config/haiku.h \
+          --replace-fail ' init_term_dyn.o%s' ""
       '';
 
       inherit
