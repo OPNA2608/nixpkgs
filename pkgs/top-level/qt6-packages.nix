@@ -69,6 +69,8 @@ makeScopeWithSplicing' {
 
       ktactilefeedback = kdePackages.callPackage ../development/libraries/ktactilefeedback { };
 
+      libaccounts-qt = callPackage ../development/libraries/libaccounts-qt { };
+
       libiodata = callPackage ../development/libraries/libiodata { };
 
       libqaccessibilityclient = callPackage ../development/libraries/libqaccessibilityclient { };

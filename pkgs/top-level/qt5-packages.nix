@@ -102,6 +102,8 @@ makeScopeWithSplicing' {
 
         ldutils = callPackage ../development/libraries/ldutils { };
 
+        libaccounts-qt = callPackage ../development/libraries/libaccounts-qt { };
+
         libcommuni = callPackage ../development/libraries/libcommuni { };
 
         libiodata = callPackage ../development/libraries/libiodata { };
