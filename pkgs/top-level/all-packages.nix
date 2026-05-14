@@ -4483,6 +4483,19 @@ with pkgs;
 
   wrapWatcom = callPackage ../development/compilers/open-watcom/wrapper.nix { };
 
+  open-watcom-unwrapped =
+    let
+      callPackage' =
+        if stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64 then
+          pkgsi686Linux.callPackage
+        else
+          callPackage;
+    in
+    callPackage' ../development/compilers/open-watcom/1.9.nix { };
+  open-watcom-full-unwrapped = open-watcom-unwrapped.override {
+    withDocs = true;
+    withGUI = true;
+  };
   open-watcom-v2-unwrapped = callPackage ../development/compilers/open-watcom/v2.nix { };
   open-watcom-v2-full-unwrapped = open-watcom-v2-unwrapped.override {
     withDocs = true;
@@ -4490,6 +4503,8 @@ with pkgs;
   };
   open-watcom-bin-unwrapped = callPackage ../development/compilers/open-watcom/bin.nix { };
 
+  open-watcom = wrapWatcom open-watcom-unwrapped { };
+  open-watcom-full = wrapWatcom open-watcom-full-unwrapped { };
   open-watcom-v2 = wrapWatcom open-watcom-v2-unwrapped { };
   open-watcom-v2-full = wrapWatcom open-watcom-v2-full-unwrapped { };
   open-watcom-bin = wrapWatcom open-watcom-bin-unwrapped { };

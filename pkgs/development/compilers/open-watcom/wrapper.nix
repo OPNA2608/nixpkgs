@@ -166,7 +166,12 @@ let
           };
       };
 
-      inherit (open-watcom) meta;
+      meta = open-watcom.meta // {
+        platforms = if builtins.elem "x86_64-linux" open-watcom.meta.platforms then
+          open-watcom.meta.platforms
+        else
+          (open-watcom.meta.platforms ++ [ "x86_64-linux" ]);
+      };
     };
 in
 lib.makeOverridable wrapper
