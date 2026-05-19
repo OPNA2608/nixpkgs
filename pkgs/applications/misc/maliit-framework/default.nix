@@ -1,9 +1,12 @@
 {
   lib,
   stdenv,
+  stdenvNoCC,
   fetchFromGitHub,
 
+  glib,
   qtbase,
+  wrapGAppsHook4,
 
   at-spi2-atk,
   at-spi2-core,
@@ -53,6 +56,13 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals enableExamples [
     "examples"
+  ];
+
+  patches = [
+    # maliit-server loads keyboard plugins from the configure-time-defined MALIIT_PLUGINS_DIR, which points into maliit-framework.
+    # maliit-framework itself doesn't have any keyboard plugins though, so maliit-server doesn't really work.
+    # Let the environment at runtime dictate what directory keyboard plugins should be loaded from.
+    ./2000-Allow-external-wrapper-to-point-to-plugins.patch
   ];
 
   postPatch =
@@ -117,6 +127,57 @@ stdenv.mkDerivation (finalAttrs: {
   env = {
     FONTCONFIG_FILE = lib.optionalString enableDocumentation "${fontconfig.out}/etc/fonts/fonts.conf";
     QT_PLUGIN_PATH = lib.optionalString finalAttrs.finalPackage.doCheck "${lib.getBin qtbase}/${qtbase.qtPluginPrefix}";
+  };
+
+  passthru = {
+    wrapServerWithPlugin =
+      {
+        pluginPackage,
+        binaryName,
+      }@maliitWrapperArgs:
+
+      stdenvNoCC.mkDerivation {
+        name = "maliit-server-wrapper-${maliitWrapperArgs.pluginPackage.name}";
+
+        dontUnpack = true;
+        dontConfigure = true;
+        dontBuild = true;
+
+        # wrapGAppsHook in case any schemas get used
+        # wrapQtAppsHook absorbs propagatedBuildInputs for QML import dirs
+        nativeBuildInputs = [
+          wrapGAppsHook4
+          wrapQtAppsHook
+        ];
+
+        buildInputs = [
+          maliitWrapperArgs.pluginPackage
+          glib
+        ];
+
+        dontWrapGApps = true;
+
+        installPhase = ''
+          runHook preInstall
+
+          mkdir -p $out/bin
+          ln -vs ${lib.getExe finalAttrs.finalPackage} $out/bin/${maliitWrapperArgs.binaryName}
+
+          runHook postInstall
+        '';
+
+        preFixup = ''
+          qtWrapperArgs+=(
+            --set NIX_MALIIT_PLUGINS_DIR ${lib.getBin maliitWrapperArgs.pluginPackage}/lib/maliit/plugins
+            "''${gappsWrapperArgs[@]}"
+          )
+        '';
+
+        meta = finalAttrs.meta // {
+          description = "Maliit server, wrapped for ${maliitWrapperArgs.pluginPackage.pname}";
+          mainProgram = maliitWrapperArgs.binaryName;
+        };
+      };
   };
 
   meta = {
