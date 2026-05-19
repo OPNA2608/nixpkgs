@@ -43,8 +43,11 @@ stdenv.mkDerivation {
     maliit-framework
     qtfeedback
     qtmultimedia
-    qtquickcontrols2
     qtgraphicaleffects
+  ];
+
+  propagatedBuildInputs = [
+    qtquickcontrols2
   ];
 
   cmakeFlags = [
