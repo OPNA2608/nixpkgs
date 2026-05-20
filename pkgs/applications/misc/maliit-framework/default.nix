@@ -3,6 +3,7 @@
   stdenv,
   stdenvNoCC,
   fetchFromGitHub,
+  nixosTests,
 
   glib,
   qtbase,
@@ -130,6 +131,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   passthru = {
+    tests = {
+      wrapper-x11 = nixosTests.maliit.x11;
+    };
     wrapServerWithPlugin =
       {
         pluginPackage,

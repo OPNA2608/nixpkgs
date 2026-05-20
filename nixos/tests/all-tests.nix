@@ -946,6 +946,7 @@ in
   mailhog = runTest ./mailhog.nix;
   mailman = runTest ./mailman.nix;
   mailpit = runTest ./mailpit.nix;
+  maliit = discoverTests (import ./maliit.nix);
   man = runTest ./man.nix;
   mariadb-galera = handleTest ./mysql/mariadb-galera.nix { };
   marytts = runTest ./marytts.nix;
