@@ -96,6 +96,7 @@ let
       hfd-service = callPackage ./services/hfd-service { };
       lomiri-history-service = callPackage ./services/lomiri-history-service { };
       lomiri-indicator-datetime = ayatana-indicator-datetime.override { enableLomiriFeatures = true; };
+      lomiri-keyboard = callPackage ./services/lomiri-keyboard { };
       lomiri-polkit-agent = callPackage ./services/lomiri-polkit-agent { };
       lomiri-telephony-service = callPackage ./services/lomiri-telephony-service { };
       mediascanner2 = callPackage ./services/mediascanner2 { };
