@@ -29,6 +29,14 @@ stdenv.mkDerivation (finalAttrs: {
     ./darwin-x86-sysctl.patch
   ];
 
+  postPatch =
+    # Copy-pasting typo
+    # https://github.com/Dr-Noob/cpufetch/issues/350
+    ''
+      substituteInPlace src/ppc/udev.c \
+        --replace-fail 'memset(name, 0, sizeof(char) * 128)' 'memset(path, 0, sizeof(char) * 128)'
+    '';
+
   installPhase = ''
     runHook preInstall
 
