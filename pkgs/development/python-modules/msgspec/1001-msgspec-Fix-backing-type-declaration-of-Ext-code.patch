@@ -1,0 +1,35 @@
+From 85a1278d2f13cddf236d919d3250b6fa95c886d1 Mon Sep 17 00:00:00 2001
+From: OPNA2608 <opna2608@protonmail.com>
+Date: Fri, 7 Aug 2026 19:37:59 +0200
+Subject: [PATCH] src/msgspec/_core.c: Fix backing type declaration of Ext.code
+
+Fixes the TestExt test suite on big-endian systems.
+
+`(Ext).code` is implemented by a `long` in the C code, but declared to be backed by an `int` for access from Python. Correct this.
+
+When `long` is larger than `int`, the previous declaration caused only an endian-specific part of the `code` value to get
+returned when read from Python-land. On little-endian it was the lower half, and with the valid range of `code` values being
+small enough to fit in 1 byte, everything seemed fine.
+
+On big-endian, this returned the upper half of the `long` instead, so all `assert`s of `(Ext).code` values failed because
+the only possible values were 0 and -1.
+---
+ src/msgspec/_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/msgspec/_core.c b/src/msgspec/_core.c
+index 5fab232..e5252ca 100644
+--- a/src/msgspec/_core.c
++++ b/src/msgspec/_core.c
+@@ -9315,7 +9315,7 @@ Ext_dealloc(Ext *self)
+ }
+ 
+ static PyMemberDef Ext_members[] = {
+-    {"code", T_INT, offsetof(Ext, code), READONLY, "The extension type code"},
++    {"code", T_LONG, offsetof(Ext, code), READONLY, "The extension type code"},
+     {"data", T_OBJECT_EX, offsetof(Ext, data), READONLY, "The extension data payload"},
+     {NULL},
+ };
+-- 
+2.54.0
+

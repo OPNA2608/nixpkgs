@@ -37,6 +37,14 @@ buildPythonPackage rec {
     hash = "sha256-DWDmnSuo12oXl9NVfNhIOtWrQeJ9DMmHxOyHY33Datk=";
   };
 
+  patches = [
+    # Ext.code is backed by a long, not an int. int (with sizeof(int) < sizeof(long)) makes it return the high half
+    # of the long on big-endian, so every code turns 0 or -1 when read.
+    # Fixes TestExt suite, and runtime usage of msgpack.Ext(), on big-endian.
+    # https://github.com/msgspec/msgspec/pull/1135
+    ./1001-msgspec-Fix-backing-type-declaration-of-Ext-code.patch
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
