@@ -164,6 +164,10 @@ stdenv.mkDerivation (finalAttrs: {
     # Meson does not support using different directories during build and
     # for installation like Autotools did with flags passed to make install.
     ./fix-install-paths.patch
+
+    # Fixes BPF build on powerpc64-linux w/ ELFv1-targeting glibc
+    # https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/merge_requests/2529
+    ./1001-bpf-Detect-ELF-ABI-version-on-ppc64.patch
   ];
 
   nativeBuildInputs = [
