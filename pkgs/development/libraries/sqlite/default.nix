@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchurl,
+  fetchpatch,
   unzip,
   tcl,
   zlib,
@@ -42,6 +43,16 @@ stdenv.mkDerivation rec {
   };
 
   patches = [
+    # Make test failures actually fail the build
+    (fetchpatch {
+      name = "0001-sqlite-testrunner-communicate-test-failure-to-make.patch";
+      url = "https://github.com/sqlite/sqlite/commit/4e4962f6b303688412746b54200ff5402c047aee.patch";
+      includes = [
+        "test/testrunner.tcl"
+      ];
+      hash = "sha256-DLV2ML2zzjd1nEVScDF1sFDdZm1CrOWt5M10rRwXYCY=";
+    })
+
     # Fix fts3corrupt4.test failure on big-endian
     # https://sqlite.org/forum/forumpost/40492f69f7
     # Doesn't seem to have been submitted yet :(
