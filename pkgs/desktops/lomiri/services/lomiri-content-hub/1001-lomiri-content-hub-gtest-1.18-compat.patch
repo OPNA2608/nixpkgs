@@ -1,0 +1,33 @@
+From d324e6ccd368d32db98d9a80c828b7b9a152179c Mon Sep 17 00:00:00 2001
+From: OPNA2608 <opna2608@protonmail.com>
+Date: Fri, 11 Sep 2026 21:54:17 +0200
+Subject: [PATCH] 
+ tests/acceptance-tests/app_hub_communication_known_sources.cpp: Conditionally
+ drop gtest Invoke() wrapping
+
+With -Werror enabled:
+
+error: 'typename std::decay<_Tp>::type testing::Invoke(FunctionImpl&&) [with FunctionImpl = Hub_querying_known_peers_returns_correct_value_Test::TestBody()::<lambda()>::<lambda(com::lomiri::content::Type, const std::function<void(const com::lomiri::content::Peer&)>&)>&; typename std::decay<_Tp>::type = Hub_querying_known_peers_returns_correct_value_Test::TestBody()::<lambda()>::<lambda(com::lomiri::content::Type, const std::function<void(const com::lomiri::content::Peer&)>&)>]' is deprecated: Actions can now be implicitly constructed from callables. No need to create wrapper objects using Invoke(). [-Werror=deprecated-declarations]
+---
+ .../acceptance-tests/app_hub_communication_known_sources.cpp  | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/tests/acceptance-tests/app_hub_communication_known_sources.cpp b/tests/acceptance-tests/app_hub_communication_known_sources.cpp
+index d69f8a9..8db30fb 100644
+--- a/tests/acceptance-tests/app_hub_communication_known_sources.cpp
++++ b/tests/acceptance-tests/app_hub_communication_known_sources.cpp
+@@ -111,7 +111,11 @@ TEST(Hub, querying_known_peers_returns_correct_value)
+         auto mock = new MockedPeerRegistry{};
+         EXPECT_CALL(*mock, enumerate_known_sources_for_type(_, _)).
+         Times(Exactly(1)).
++#if (GTEST_VERSION_MAJOR > 1 || (GTEST_VERSION_MAJOR == 1 && GTEST_VERSION_MINOR >= 18))
++        WillRepeatedly(enumerate);
++#else
+         WillRepeatedly(Invoke(enumerate));
++#endif
+ 
+         EXPECT_CALL(*mock, install_source_for_type(_, _)).
+         Times(Exactly(1)).
+-- 
+2.54.0
+

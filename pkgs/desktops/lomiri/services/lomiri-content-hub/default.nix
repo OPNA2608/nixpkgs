@@ -54,6 +54,11 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
+  patches = [
+    # Remove when https://gitlab.com/ubports/development/core/lomiri-content-hub/-/merge_requests/62 merged & in release
+    ./1001-lomiri-content-hub-gtest-1.18-compat.patch
+  ];
+
   postPatch = ''
     substituteInPlace import/*/Content/CMakeLists.txt \
       --replace-fail "\''${CMAKE_INSTALL_LIBDIR}/qt\''${QT_VERSION_MAJOR}/qml" "\''${CMAKE_INSTALL_PREFIX}/${qtbase.qtQmlPrefix}"
@@ -128,8 +133,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "ENABLE_UBUNTU_COMPAT" (!withQt6))
     (lib.cmakeBool "ENABLE_WERROR" (!withQt6)) # Known issues on Qt6
   ];
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations"; # gtest-1.18
 
   preBuild =
     let
