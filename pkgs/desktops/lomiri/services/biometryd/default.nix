@@ -51,6 +51,9 @@ stdenv.mkDerivation (finalAttrs: {
       url = "https://gitlab.com/ubports/development/core/biometryd/-/commit/8def6dfb18ee56971f0f64e3622af2a5a39ab0f6.patch";
       hash = "sha256-PddZRML4Gc+s4aNeOyZwJJjmPSixMGFVFNcrO9dNDSI=";
     })
+
+    # Remove when https://gitlab.com/ubports/development/core/biometryd/-/merge_requests/52 merged & in release
+    ./1001-biometryd-gtest-1.18-compat.patch
   ];
 
   postPatch = ''

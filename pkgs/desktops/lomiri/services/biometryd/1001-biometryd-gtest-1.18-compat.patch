@@ -1,0 +1,92 @@
+From a2e72ea588bd2855162a71be1b5c0d12a6d595b4 Mon Sep 17 00:00:00 2001
+From: OPNA2608 <opna2608@protonmail.com>
+Date: Fri, 11 Sep 2026 15:21:29 +0200
+Subject: [PATCH] tests/test_dispatching_service_and_device.cpp: Conditionally
+ drop gtest Invoke() wrapping
+
+With -Werror enabled:
+
+error: 'typename std::decay<_Tp>::type testing::Invoke(FunctionImpl&&) [with FunctionImpl = DispatchingDevice_calls_into_dispatcher_for_template_store_size_query_Test::TestBody()::<lambda(const biometry::util::Dispatcher::Task&)>; typename std::decay<_Tp>::type = DispatchingDevice_calls_into_dispatcher_for_template_store_size_query_Test::TestBody()::<lambda(const biometry::util::Dispatcher::Task&)>]' is deprecated: Actions can now be implicitly constructed from callables. No need to create wrapper objects using Invoke(). [-Werror=deprecated-declarations]
+---
+ tests/test_dispatching_service_and_device.cpp | 24 +++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/tests/test_dispatching_service_and_device.cpp b/tests/test_dispatching_service_and_device.cpp
+index 80f3c35..4b80c0f 100644
+--- a/tests/test_dispatching_service_and_device.cpp
++++ b/tests/test_dispatching_service_and_device.cpp
+@@ -43,7 +43,11 @@ TEST(DispatchingDevice, calls_into_dispatcher_for_template_store_size_query)
+     ON_CALL(*device, template_store()).WillByDefault(ReturnRef(*template_store));
+ 
+     auto dispatcher = std::make_shared<NiceMock<MockDispatcher>>();
++#if (GTEST_VERSION_MAJOR > 1 || (GTEST_VERSION_MAJOR == 1 && GTEST_VERSION_MINOR >= 18))
++    EXPECT_CALL(*dispatcher, dispatch(_)).Times(1).WillOnce([](const biometry::util::Dispatcher::Task& task) { task(); });
++#else
+     EXPECT_CALL(*dispatcher, dispatch(_)).Times(1).WillOnce(Invoke([](const biometry::util::Dispatcher::Task& task) { task(); }));
++#endif
+ 
+     auto dispatching = std::make_shared<biometry::devices::Dispatching>(dispatcher, device);
+     auto op = dispatching->template_store().size(biometry::Application::system(), biometry::User::current());
+@@ -63,7 +67,11 @@ TEST(DispatchingDevice, calls_into_dispatcher_for_template_store_list)
+     ON_CALL(*device, template_store()).WillByDefault(ReturnRef(*template_store));
+ 
+     auto dispatcher = std::make_shared<NiceMock<MockDispatcher>>();
++#if (GTEST_VERSION_MAJOR > 1 || (GTEST_VERSION_MAJOR == 1 && GTEST_VERSION_MINOR >= 18))
++    EXPECT_CALL(*dispatcher, dispatch(_)).Times(1).WillOnce([](const biometry::util::Dispatcher::Task& task) { task(); });
++#else
+     EXPECT_CALL(*dispatcher, dispatch(_)).Times(1).WillOnce(Invoke([](const biometry::util::Dispatcher::Task& task) { task(); }));
++#endif
+ 
+     auto dispatching = std::make_shared<biometry::devices::Dispatching>(dispatcher, device);
+     auto op = dispatching->template_store().list(biometry::Application::system(), biometry::User::current());
+@@ -83,7 +91,11 @@ TEST(DispatchingDevice, calls_into_dispatcher_for_template_store_size_enrollment
+     ON_CALL(*device, template_store()).WillByDefault(ReturnRef(*template_store));
+ 
+     auto dispatcher = std::make_shared<NiceMock<MockDispatcher>>();
++#if (GTEST_VERSION_MAJOR > 1 || (GTEST_VERSION_MAJOR == 1 && GTEST_VERSION_MINOR >= 18))
++    EXPECT_CALL(*dispatcher, dispatch(_)).Times(1).WillOnce([](const biometry::util::Dispatcher::Task& task) { task(); });
++#else
+     EXPECT_CALL(*dispatcher, dispatch(_)).Times(1).WillOnce(Invoke([](const biometry::util::Dispatcher::Task& task) { task(); }));
++#endif
+ 
+     auto dispatching = std::make_shared<biometry::devices::Dispatching>(dispatcher, device);
+     auto op = dispatching->template_store().enroll(biometry::Application::system(), biometry::User::current());
+@@ -103,7 +115,11 @@ TEST(DispatchingDevice, calls_into_dispatcher_for_template_store_removal)
+     ON_CALL(*device, template_store()).WillByDefault(ReturnRef(*template_store));
+ 
+     auto dispatcher = std::make_shared<NiceMock<MockDispatcher>>();
++#if (GTEST_VERSION_MAJOR > 1 || (GTEST_VERSION_MAJOR == 1 && GTEST_VERSION_MINOR >= 18))
++    EXPECT_CALL(*dispatcher, dispatch(_)).Times(1).WillOnce([](const biometry::util::Dispatcher::Task& task) { task(); });
++#else
+     EXPECT_CALL(*dispatcher, dispatch(_)).Times(1).WillOnce(Invoke([](const biometry::util::Dispatcher::Task& task) { task(); }));
++#endif
+ 
+     auto dispatching = std::make_shared<biometry::devices::Dispatching>(dispatcher, device);
+     auto op = dispatching->template_store().remove(biometry::Application::system(), biometry::User::current(), 42);
+@@ -123,7 +139,11 @@ TEST(DispatchingDevice, calls_into_dispatcher_for_template_store_clearance)
+     ON_CALL(*device, template_store()).WillByDefault(ReturnRef(*template_store));
+ 
+     auto dispatcher = std::make_shared<NiceMock<MockDispatcher>>();
++#if (GTEST_VERSION_MAJOR > 1 || (GTEST_VERSION_MAJOR == 1 && GTEST_VERSION_MINOR >= 18))
++    EXPECT_CALL(*dispatcher, dispatch(_)).Times(1).WillOnce([](const biometry::util::Dispatcher::Task& task) { task(); });
++#else
+     EXPECT_CALL(*dispatcher, dispatch(_)).Times(1).WillOnce(Invoke([](const biometry::util::Dispatcher::Task& task) { task(); }));
++#endif
+ 
+     auto dispatching = std::make_shared<biometry::devices::Dispatching>(dispatcher, device);
+     auto op = dispatching->template_store().clear(biometry::Application::system(), biometry::User::current());
+@@ -143,7 +163,11 @@ TEST(DispatchingDevice, calls_into_dispatcher_for_identification)
+     ON_CALL(*device, identifier()).WillByDefault(ReturnRef(*identifier));
+ 
+     auto dispatcher = std::make_shared<NiceMock<MockDispatcher>>();
++#if (GTEST_VERSION_MAJOR > 1 || (GTEST_VERSION_MAJOR == 1 && GTEST_VERSION_MINOR >= 18))
++    EXPECT_CALL(*dispatcher, dispatch(_)).Times(1).WillOnce([](const biometry::util::Dispatcher::Task& task) { task(); });
++#else
+     EXPECT_CALL(*dispatcher, dispatch(_)).Times(1).WillOnce(Invoke([](const biometry::util::Dispatcher::Task& task) { task(); }));
++#endif
+ 
+     auto dispatching = std::make_shared<biometry::devices::Dispatching>(dispatcher, device);
+     auto op = dispatching->identifier().identify_user(biometry::Application::system(), biometry::Reason::unknown());
+-- 
+2.54.0
+
