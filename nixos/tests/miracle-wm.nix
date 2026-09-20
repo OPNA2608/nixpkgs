@@ -64,8 +64,9 @@
         etc."xdg/foot/foot.ini".source = (pkgs.formats.ini { }).generate "foot.ini" {
           main = {
             font = "inconsolata:size=16";
+            initial-color-theme = "light";
           };
-          colors = rec {
+          colors-light = rec {
             foreground = "000000";
             background = "ffffff";
             regular2 = foreground;
@@ -99,6 +100,8 @@
   testScript =
     { ... }:
     ''
+      import datetime
+
       start_all()
       machine.wait_for_unit("multi-user.target")
 
@@ -119,13 +122,13 @@
 
           # please actually register that we want to close the window
           machine.succeed("ydotool mousemove -- 10 10")
-          machine.sleep(3)
+          machine.sleep(datetime.timedelta(seconds=3))
 
           machine.send_chars("exit\n")
 
           # please actually register that we want to close the window
           machine.succeed("ydotool mousemove -- 10 10")
-          machine.sleep(3)
+          machine.sleep(datetime.timedelta(seconds=3))
 
           machine.wait_until_fails("pgrep foot")
 
@@ -140,13 +143,13 @@
 
           # please actually register that we want to close the window
           machine.succeed("ydotool mousemove -- 10 10")
-          machine.sleep(3)
+          machine.sleep(datetime.timedelta(seconds=3))
 
           machine.send_chars("exit\n")
 
           # please actually register that we want to close the window
           machine.succeed("ydotool mousemove -- 10 10")
-          machine.sleep(3)
+          machine.sleep(datetime.timedelta(seconds=3))
 
           machine.wait_until_fails("pgrep alacritty")
     '';
