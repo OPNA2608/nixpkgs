@@ -30,6 +30,11 @@ let
       name = "qtpim-src-${version}";
     };
 
+    patches = [
+      # Fixes uncritical byteorder issues in some tests by forcing LE conversion before reinterpret_cast<char*>
+      ./qtpim-endianness.patch
+    ];
+
     # Avoid test plugins getting installed
     postPatch = ''
       substituteInPlace \

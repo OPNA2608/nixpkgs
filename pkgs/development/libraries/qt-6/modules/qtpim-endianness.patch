@@ -1,0 +1,58 @@
+diff --git a/tests/auto/contacts/qcontactfilter/tst_qcontactfilter.cpp b/tests/auto/contacts/qcontactfilter/tst_qcontactfilter.cpp
+index 9916f6e0..8fa7399d 100644
+--- a/tests/auto/contacts/qcontactfilter/tst_qcontactfilter.cpp
++++ b/tests/auto/contacts/qcontactfilter/tst_qcontactfilter.cpp
+@@ -1,6 +1,7 @@
+ // Copyright (C) 2026 The Qt Company Ltd.
+ // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
+ #include <QtTest/QtTest>
++#include <QLEInteger>
+ #include <QMetaType>
+ 
+ #include <QtContacts/qcontacts.h>
+@@ -16,12 +17,14 @@ Q_DECLARE_METATYPE(QContactFilter)
+ 
+ static inline QContactId makeId(const QString &managerName, uint id)
+ {
+-    return QContactId(QStringLiteral("qtcontacts:basic%1:").arg(managerName), QByteArray(reinterpret_cast<const char *>(&id), sizeof(uint)));
++    QLEInteger<uint> idLE = QLEInteger<uint>(id);
++    return QContactId(QStringLiteral("qtcontacts:basic%1:").arg(managerName), QByteArray(reinterpret_cast<const char *>(&idLE), sizeof(uint)));
+ }
+ 
+ static inline QContactCollectionId makeCollectionId(uint id)
+ {
+-    return QContactCollectionId(QStringLiteral("qtcontacts:basic:"), QByteArray(reinterpret_cast<const char *>(&id), sizeof(uint)));
++    QLEInteger<uint> idLE = QLEInteger<uint>(id);
++    return QContactCollectionId(QStringLiteral("qtcontacts:basic:"), QByteArray(reinterpret_cast<const char *>(&idLE), sizeof(uint)));
+ }
+ 
+ class tst_QContactFilter : public QObject
+diff --git a/tests/auto/organizer/qorganizeritemfilter/tst_qorganizeritemfilter.cpp b/tests/auto/organizer/qorganizeritemfilter/tst_qorganizeritemfilter.cpp
+index cc101a9c..3e3f3328 100644
+--- a/tests/auto/organizer/qorganizeritemfilter/tst_qorganizeritemfilter.cpp
++++ b/tests/auto/organizer/qorganizeritemfilter/tst_qorganizeritemfilter.cpp
+@@ -1,6 +1,7 @@
+ // Copyright (C) 2026 The Qt Company Ltd.
+ // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
+ #include <QtTest/QtTest>
++#include <QLEInteger>
+ #include <QtCore/QMetaType>
+ 
+ #include <QtOrganizer/qorganizer.h>
+@@ -17,12 +18,14 @@ Q_DECLARE_METATYPE(QOrganizerItemDetailFieldFilter)
+ 
+ static inline QOrganizerItemId makeItemId(uint id)
+ {
+-    return QOrganizerItemId(QStringLiteral("qtorganizer:basic:"), QByteArray(reinterpret_cast<const char *>(&id), sizeof(uint)));
++    QLEInteger<uint> idLE = QLEInteger<uint>(id);
++    return QOrganizerItemId(QStringLiteral("qtorganizer:basic:"), QByteArray(reinterpret_cast<const char *>(&idLE), sizeof(uint)));
+ }
+ 
+ static inline QOrganizerCollectionId makeCollectionId(uint id)
+ {
+-    return QOrganizerCollectionId(QStringLiteral("qtorganizer:basic:"), QByteArray(reinterpret_cast<const char *>(&id), sizeof(uint)));
++    QLEInteger<uint> idLE = QLEInteger<uint>(id);
++    return QOrganizerCollectionId(QStringLiteral("qtorganizer:basic:"), QByteArray(reinterpret_cast<const char *>(&idLE), sizeof(uint)));
+ }
+ 
+ 
