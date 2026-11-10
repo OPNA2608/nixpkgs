@@ -26,7 +26,7 @@ PLATFORMS=(
   loongarch64-unknown-linux-musl
   x86_64-unknown-freebsd
 )
-BASEURL=https://static.rust-lang.org/dist
+BASEURL=https://dev-static.rust-lang.org/dist
 VERSION=${1:-}
 DATE=${2:-}
 
