@@ -233,7 +233,14 @@ lib.makeOverridable (
           (fetchpatch {
             url = "https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/patch/?id=d9e5c3e9e75162f845880535957b7fd0b4637d23";
             hash = "sha256-bBOyJcP6jUvozFJU0SPTOf3cmnTQ6ZZ4PlHjiniHXLU=";
-          });
+          })
+      ++ [
+        # We build inside of $dev, so architectures with uncompressed vmlinux as their build target (e.g. powerpc64[le]-linux)
+        # need to be *perfectly free* of debug information, otherwise we get a cyclic dependency between outputs.
+        # This ports some things from x86/riscv archs to powerpc, to get debuginfo-free purgatory & vDSOs.
+        # TODO: Should be submitted to LKML. *I* am not touching that place...
+        ./powerpc-strip-embedded-ELFs.patch
+      ];
 
     buildFlags = [
       target
