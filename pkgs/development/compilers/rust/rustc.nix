@@ -106,6 +106,10 @@ stdenv.mkDerivation (finalAttrs: {
       ]
     );
     RUSTDOCFLAGS = "-A rustdoc::broken-intra-doc-links";
+
+    # https://github.com/rust-lang/rust/issues/163272
+    # Worker threads in prebuilt binary still default to much smaller stack size
+    RUST_MIN_STACK = 17 * 1024 * 1024;
   };
 
   # We need rust to build rust. If we don't provide it, configure will try to download it.
