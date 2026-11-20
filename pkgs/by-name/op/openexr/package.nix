@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fetchpatch,
   cmake,
   ctestCheckHook,
   imath,
@@ -31,9 +32,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   patches =
+    [
+      # Remove when version >= 3.5.3
+      (fetchpatch {
+        name = "0001-openexr-Fix-byte-swapped-deep-sample-count-table-on-BE.patch";
+        url = "https://github.com/AcademySoftwareFoundation/openexr/commit/e27ee517642b57d694cd9130c30818b360ba8870.patch";
+        hash = "sha256-vlucIxsEb6VB3GD7xCzkVodyV2sHquYYzhwV38MRdt0=";
+      })
+    ]
     # Disable broken test on musl libc
     # https://github.com/AcademySoftwareFoundation/openexr/issues/1556
-    lib.optional stdenv.hostPlatform.isMusl ./disable-iex-test.patch;
+    ++ lib.optional stdenv.hostPlatform.isMusl ./disable-iex-test.patch;
 
   # tests are determined to use /var/tmp on unix
   postPatch = ''
@@ -71,21 +80,26 @@ stdenv.mkDerivation (finalAttrs: {
     # Optimistically assuming the former here.
     "OpenEXRCore.testDWAACompression"
     "OpenEXRCore.testDWABCompression"
-    "OpenEXR.testCompositeDeepScanLine"
+    "OpenEXRCore.testZstdCompression"
     "OpenEXR.testCompression"
+    "OpenEXR.testConversion"
+    "OpenEXR.testCopyDeepScanLine"
+    "OpenEXR.testCopyDeepTiled"
+    "OpenEXR.testCopyPixels"
     "OpenEXR.testCRgba"
     "OpenEXR.testDeepScanLineBasic"
-    "OpenEXR.testDeepScanLineMultipleRead"
     "OpenEXR.testDeepTiledBasic"
-    "OpenEXR.testFutureProofing"
-    "OpenEXR.testMultiPartFileMixingBasic"
+    "OpenEXR.testExistingStreams"
+    "OpenEXR.testLargeDataWindowOffsets"
+    "OpenEXR.testLJ2KBoundary"
     "OpenEXR.testRgba"
     "OpenEXR.testRgbaThreading"
     "OpenEXR.testSampleImages"
     "OpenEXR.testSharedFrameBuffer"
+    "OpenEXR.testTiledCompression"
+    "OpenEXR.testTiledCopyPixels"
+    "OpenEXR.testTiledLineOrder"
     "OpenEXR.testTiledRgba"
-    "OpenEXRUtil.testDeepImage"
-    "OpenEXRUtil.testIO"
   ];
 
   passthru.tests = {
