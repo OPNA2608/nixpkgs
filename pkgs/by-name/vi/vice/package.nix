@@ -23,7 +23,7 @@
   wrapGAppsHook3,
   xdg-utils,
   libevdev,
-  pulseaudio,
+  libpulseaudio,
   desktop-file-utils,
 }:
 
@@ -61,7 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
     libGL
     libGLU
     libpng
-    pulseaudio
+    libpulseaudio
     readline
     SDL
     SDL_image
