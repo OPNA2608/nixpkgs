@@ -262,12 +262,14 @@ stdenv.mkDerivation (finalAttrs: {
     cargo
     cargo-c
     jq
-    nasm
     validatePkgConfig
   ]
   ++ lib.optionals requiresBindgen [
     cmake
     rustPlatform.bindgenHook
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isx86 [
+    nasm
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     lld
